@@ -3,11 +3,12 @@ import { Monitor, ShoppingCart, Ticket, Package, Lock, BarChart3 } from 'lucide-
 import { Pdv } from './components/Pdv';
 import { FichasList } from './components/FichasList';
 import { FichaDetalhes } from './components/FichaDetalhes';
+import { Mercadorias } from './components/Mercadorias';
 import './App.css';
-import './components/Header.css'; // Como movemos a lógica do Header pra cá, precisamos do CSS
+import './components/Header.css'; 
 
 function App() {
-  // Controla qual aba está ativa ('caixa', 'fichas')
+  // Controla qual aba está ativa ('caixa', 'fichas', 'mercadorias', etc)
   const [abaAtiva, setAbaAtiva] = useState('caixa');
   
   // Se for null, mostra a lista. Se tiver um número, mostra os detalhes da ficha
@@ -29,6 +30,10 @@ function App() {
         );
       }
       return <FichasList onSelectFicha={(id) => setFichaSelecionadaId(id)} />;
+    }
+
+    if (abaAtiva === 'mercadorias') {
+      return <Mercadorias />;
     }
 
     return <div style={{padding: 24}}><h1>Módulo em desenvolvimento...</h1></div>;
@@ -60,9 +65,26 @@ function App() {
             <Ticket size={18} /> Fichas
           </button>
           
-          <button className="nav-item" onClick={() => setAbaAtiva('mercadorias')}><Package size={18} /> Mercadorias</button>
-          <button className="nav-item" onClick={() => setAbaAtiva('cofre')}><Lock size={18} /> Cofre</button>
-          <button className="nav-item" onClick={() => setAbaAtiva('relatorios')}><BarChart3 size={18} /> Relatórios</button>
+          <button 
+            className={`nav-item ${abaAtiva === 'mercadorias' ? 'active' : ''}`} 
+            onClick={() => setAbaAtiva('mercadorias')}
+          >
+            <Package size={18} /> Mercadorias
+          </button>
+          
+          <button 
+            className={`nav-item ${abaAtiva === 'cofre' ? 'active' : ''}`} 
+            onClick={() => setAbaAtiva('cofre')}
+          >
+            <Lock size={18} /> Cofre
+          </button>
+          
+          <button 
+            className={`nav-item ${abaAtiva === 'relatorios' ? 'active' : ''}`} 
+            onClick={() => setAbaAtiva('relatorios')}
+          >
+            <BarChart3 size={18} /> Relatórios
+          </button>
         </nav>
       </header>
 

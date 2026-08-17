@@ -1,0 +1,352 @@
+/* =========================================
+   ESTILOS: MERCADORIAS (Cads, Detalhes e Modal)
+   ========================================= */
+
+.mercadorias-wrapper {
+  padding: 24px 32px;
+  height: calc(100vh - 70px);
+  overflow-y: auto;
+  background-color: #f8fafc;
+  box-sizing: border-box;
+  font-family: -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
+}
+
+/* --- LISTAGEM E CABEÇALHOS --- */
+.merc-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.merc-title {
+  margin: 0;
+  color: #1e293b;
+  font-size: 1.6rem;
+  font-weight: 600;
+}
+
+.merc-controls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.merc-search {
+  display: flex;
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 0 12px;
+  height: 40px;
+  width: 280px;
+}
+
+.merc-search input {
+  border: none;
+  outline: none;
+  margin-left: 8px;
+  width: 100%;
+  font-size: 0.95rem;
+  color: #334155;
+}
+
+.merc-select {
+  height: 40px;
+  padding: 0 12px;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  outline: none;
+  color: #334155;
+  background: #ffffff;
+}
+
+.merc-btn-novo {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  padding: 0 20px;
+  height: 40px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.2s;
+}
+
+.merc-btn-novo:hover { background: #2563eb; }
+
+/* --- GRID DE CARDS --- */
+.merc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.merc-card {
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 20px;
+  border: 1px solid #e2e8f0;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.merc-card:hover { border-color: #94a3b8; }
+
+.merc-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.merc-card-title h3 {
+  margin: 0 0 4px 0;
+  color: #1e293b;
+  font-size: 1.15rem;
+}
+
+.merc-badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.merc-badge.pendente { background: #fee2e2; color: #dc2626; }
+.merc-badge.paga { background: #dcfce3; color: #16a34a; }
+
+.merc-card-info p {
+  margin: 4px 0;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.merc-card-total {
+  font-size: 1.4rem !important;
+  font-weight: 700 !important;
+  color: #0f172a !important;
+  margin-top: 12px !important;
+}
+
+/* --- TELA DE DETALHES --- */
+.merc-detalhes-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.merc-btn-voltar {
+  background: white;
+  border: 1px solid #cbd5e1;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  color: #475569;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.merc-btn-voltar:hover { background: #f1f5f9; }
+
+.merc-detalhes-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.merc-panel {
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 24px;
+  border: 1px solid #e2e8f0;
+}
+
+.merc-panel h3 {
+  margin-top: 0;
+  color: #1e293b;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.merc-info-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  font-size: 0.95rem;
+}
+
+.merc-info-row span:first-child { color: #64748b; }
+.merc-info-row span:last-child { font-weight: 600; color: #1e293b; }
+
+.merc-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.merc-table th, .merc-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 0.95rem;
+}
+
+.merc-table th { color: #64748b; font-weight: 600; }
+
+.btn-pagar-parcela {
+  background: #16a34a;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+.btn-pagar-parcela:hover { background: #15803d; }
+
+/* --- MODAL DE CADASTRO --- */
+.merc-modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(15, 23, 42, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.merc-modal-content {
+  background: white;
+  border-radius: 8px;
+  width: 700px;
+  max-width: 95%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+.merc-modal-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.merc-modal-header h2 { margin: 0; font-size: 1.4rem; color: #0f172a; }
+
+.merc-btn-close {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #64748b;
+}
+
+.merc-modal-body { padding: 24px; }
+
+.merc-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.merc-input-group label {
+  display: block;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #475569;
+  margin-bottom: 6px;
+}
+
+.merc-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  outline: none;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+.merc-input:focus { border-color: #3b82f6; }
+
+/* Área de Divisão de Pagamentos */
+.merc-split-area {
+  background: #f8fafc;
+  padding: 16px;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  margin-top: 24px;
+}
+
+.merc-split-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px dashed #cbd5e1;
+}
+.merc-split-row:last-child { border-bottom: none; padding-bottom: 0; }
+
+.merc-split-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.merc-split-input {
+  width: 140px;
+  padding: 8px;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  text-align: right;
+}
+
+.merc-boleto-details {
+  background: #eff6ff;
+  padding: 16px;
+  border-radius: 6px;
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.merc-modal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f8fafc;
+}
+
+.merc-restante {
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+.merc-restante.error { color: #dc2626; }
+.merc-restante.success { color: #16a34a; }
+
+.merc-btn-salvar {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.merc-btn-salvar:disabled { background: #94a3b8; cursor: not-allowed; }

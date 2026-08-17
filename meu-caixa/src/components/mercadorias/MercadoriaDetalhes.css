@@ -1,0 +1,86 @@
+.mdet-container {
+  animation: fadeIn 0.3s ease;
+}
+
+.mdet-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.mdet-btn-voltar {
+  background: white;
+  border: 1px solid #cbd5e1;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  color: #475569;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mdet-btn-voltar:hover { background: #f1f5f9; }
+
+.mdet-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  gap: 24px;
+}
+
+.mdet-panel {
+  background: white;
+  border-radius: 8px;
+  padding: 24px;
+  border: 1px solid #e2e8f0;
+}
+
+.mdet-panel h3 {
+  margin-top: 0;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+}
+
+.mdet-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  font-size: 0.95rem;
+}
+
+.mdet-row span:first-child { color: #64748b; }
+.mdet-row span:last-child { font-weight: 600; color: #1e293b; }
+
+.mdet-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.mdet-table th, .mdet-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.mdet-badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+.mdet-badge.pendente { background: #fee2e2; color: #dc2626; }
+.mdet-badge.paga { background: #dcfce3; color: #16a34a; }
+
+.mdet-btn-pagar {
+  background: #10b981;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+}
+.mdet-btn-pagar:hover { background: #059669; }

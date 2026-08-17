@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { Search, User } from 'lucide-react';
-import './Fichas.css';
+import './FichasList.css';
 
-// Dados falsos simulando seu banco de dados
 const DADOS_FICHAS = [
   { id: 1, nome: 'João Silva', telefone: '(42) 99999-1111', totalDevido: 150.50, status: 'pendente' },
   { id: 2, nome: 'Maria Oliveira', telefone: '(42) 98888-2222', totalDevido: 0, status: 'paga' },
@@ -21,7 +20,6 @@ export function FichasList({ onSelectFicha }: FichasListProps) {
   const formatCurrency = (value: number) => 
     new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
 
-  // Filtragem
   const fichasFiltradas = DADOS_FICHAS.filter(ficha => {
     const matchBusca = ficha.nome.toLowerCase().includes(busca.toLowerCase());
     const matchStatus = filtroStatus === 'todas' || ficha.status === filtroStatus;
@@ -29,46 +27,48 @@ export function FichasList({ onSelectFicha }: FichasListProps) {
   });
 
   return (
-    <div className="fichas-container">
-      <div className="fichas-header">
-        <h2>Controle de Fichas</h2>
-        <div className="fichas-controls">
-          <div className="search-box">
-            <Search size={18} color="#64748b" />
+    <div className="fichas-list-container">
+      <div className="fichas-list-header">
+        <h2 className="fichas-list-title">Fichas de Clientes</h2>
+        <div className="fichas-list-controls">
+          <div className="fichas-list-search">
+            <Search size={20} color="#94a3b8" />
             <input 
               type="text" 
-              placeholder="Buscar cliente..." 
+              placeholder="Pesquisar cliente..." 
               value={busca}
               onChange={(e) => setBusca(e.target.value)}
             />
           </div>
           <select 
-            className="filter-select"
+            className="fichas-list-filter"
             value={filtroStatus}
             onChange={(e) => setFiltroStatus(e.target.value)}
           >
-            <option value="todas">Todas as Fichas</option>
+            <option value="todas">Status: Todos</option>
             <option value="pendente">Pendentes</option>
             <option value="paga">Pagas</option>
           </select>
         </div>
       </div>
 
-      <div className="fichas-grid">
+      <div className="fichas-list-grid">
         {fichasFiltradas.map(ficha => (
-          <div key={ficha.id} className="ficha-card" onClick={() => onSelectFicha(ficha.id)}>
-            <div className="ficha-card-header">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <User size={20} color="#64748b" />
+          <div key={ficha.id} className="fichas-list-card" onClick={() => onSelectFicha(ficha.id)}>
+            <div className="fichas-list-card-header">
+              <div className="fichas-list-card-title">
+                <div className="fichas-list-avatar">
+                  <User size={20} color="#3b82f6" />
+                </div>
                 <h3>{ficha.nome}</h3>
               </div>
-              <span className={`status-badge status-${ficha.status}`}>
+              <span className={`fichas-list-badge ${ficha.status === 'pendente' ? 'pendente' : 'paga'}`}>
                 {ficha.status}
               </span>
             </div>
-            <div className="ficha-card-body">
-              <p>Telefone: {ficha.telefone}</p>
-              <p className="ficha-total">
+            <div className="fichas-list-card-body">
+              <p>Contato: <span>{ficha.telefone}</span></p>
+              <p className="fichas-list-total">
                 {ficha.totalDevido > 0 ? formatCurrency(ficha.totalDevido) : 'Quitado'}
               </p>
             </div>
@@ -77,9 +77,9 @@ export function FichasList({ onSelectFicha }: FichasListProps) {
       </div>
       
       {fichasFiltradas.length === 0 && (
-        <p style={{ textAlign: 'center', color: '#64748b', marginTop: '40px' }}>
-          Nenhuma ficha encontrada.
-        </p>
+        <div className="fichas-list-empty">
+          <p>Nenhum cliente encontrado com os filtros atuais.</p>
+        </div>
       )}
     </div>
   );

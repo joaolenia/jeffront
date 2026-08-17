@@ -1,0 +1,160 @@
+/* =========================================
+   ESTILOS: LISTAGEM DE FICHAS (FLAT DESIGN)
+   ========================================= */
+
+.fichas-list-container {
+  padding: 24px 32px;
+  height: calc(100vh - 70px);
+  overflow-y: auto;
+  background-color: #f8fafc; /* Fundo leve para contraste com os cards brancos */
+  box-sizing: border-box;
+}
+
+.fichas-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.fichas-list-title {
+  margin: 0;
+  color: #1e293b;
+  font-size: 1.6rem;
+  font-weight: 600;
+}
+
+.fichas-list-controls {
+  display: flex;
+  gap: 12px;
+}
+
+.fichas-list-search {
+  display: flex;
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 0 12px;
+  height: 40px;
+  width: 300px;
+  transition: border-color 0.2s;
+}
+
+.fichas-list-search:focus-within {
+  border-color: #3b82f6;
+}
+
+.fichas-list-search input {
+  border: none;
+  outline: none;
+  margin-left: 8px;
+  width: 100%;
+  font-size: 0.95rem;
+  color: #334155;
+  background: transparent;
+}
+
+.fichas-list-filter {
+  height: 40px;
+  padding: 0 12px;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  outline: none;
+  font-size: 0.95rem;
+  color: #334155;
+  background-color: #ffffff;
+  cursor: pointer;
+}
+
+.fichas-list-filter:focus {
+  border-color: #3b82f6;
+}
+
+.fichas-list-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+/* Cards sem animação exagerada, apenas borda no hover */
+.fichas-list-card {
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 20px;
+  border: 1px solid #e2e8f0;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.fichas-list-card:hover {
+  border-color: #94a3b8;
+}
+
+.fichas-list-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.fichas-list-card-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.fichas-list-avatar {
+  background: #f1f5f9;
+  padding: 8px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fichas-list-card-title h3 {
+  margin: 0;
+  color: #334155;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.fichas-list-badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.fichas-list-badge.pendente { background: #fee2e2; color: #dc2626; }
+.fichas-list-badge.paga { background: #dcfce3; color: #16a34a; }
+
+.fichas-list-card-body p {
+  margin: 4px 0;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.fichas-list-card-body span {
+  color: #475569;
+}
+
+.fichas-list-total {
+  font-size: 1.4rem !important;
+  font-weight: 700 !important;
+  color: #0f172a !important;
+  margin-top: 12px !important;
+}
+
+.fichas-list-empty {
+  text-align: center;
+  color: #64748b;
+  margin-top: 60px;
+  font-size: 1rem;
+  background: white;
+  padding: 32px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}

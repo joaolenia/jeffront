@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { ArrowLeft, CheckCircle, CreditCard, DollarSign } from 'lucide-react';
-import './Fichas.css';
+import './FichaDetalhes.css';
 
-// Simulando dados de vendas fiadas de um cliente
 const VENDAS_MOCK = [
   { id: 101, data: '10/08/2026', descricao: 'Pão, Leite, Manteiga', valor: 25.50 },
   { id: 102, data: '12/08/2026', descricao: 'Carne, Refrigerante', valor: 75.00 },
@@ -15,7 +14,6 @@ interface FichaDetalhesProps {
 }
 
 export function FichaDetalhes({ fichaId, onVoltar }: FichaDetalhesProps) {
-  // Na prática, você buscaria os dados do cliente usando o 'fichaId'
   const nomeCliente = "João Silva"; 
   const totalDevidoOriginal = 150.50;
 
@@ -32,34 +30,36 @@ export function FichaDetalhes({ fichaId, onVoltar }: FichaDetalhesProps) {
     if (tipoPagamento === 'parcial') {
       valorPago = parseFloat(valorParcial.replace(',', '.'));
       if (isNaN(valorPago) || valorPago <= 0 || valorPago > totalDevidoOriginal) {
-        alert('Informe um valor parcial válido (maior que 0 e menor/igual à dívida).');
+        alert('Informe um valor válido e menor ou igual ao total da dívida.');
         return;
       }
     }
 
-    alert(`Pagamento de ${formatCurrency(valorPago)} via ${formaPagamento} registrado com sucesso para ${nomeCliente}!`);
-    onVoltar(); // Volta pra lista após pagar
+    alert(`Sucesso! Pagamento de ${formatCurrency(valorPago)} via ${formaPagamento} registrado para ${nomeCliente}.`);
+    onVoltar();
   };
 
   return (
-    <div className="fichas-container">
-      <div className="detalhes-header">
-        <button className="btn-voltar" onClick={onVoltar}>
+    <div className="ficha-detalhes-container">
+      <div className="ficha-detalhes-header">
+        <button className="ficha-detalhes-btn-voltar" onClick={onVoltar}>
           <ArrowLeft size={20} /> Voltar
         </button>
-        <h2>Ficha de: <span>{nomeCliente}</span></h2>
+        <h2 className="ficha-detalhes-title">
+          Acerto de Conta: <span>{nomeCliente}</span>
+        </h2>
       </div>
 
-      <div className="detalhes-layout">
-        {/* Painel Esquerdo: Histórico de Vendas */}
-        <div className="vendas-list">
-          <h3>Histórico de Compras Não Pagas</h3>
-          <table className="modern-table">
+      <div className="ficha-detalhes-layout">
+        {/* Painel Esquerdo: Lista de vendas */}
+        <div className="ficha-detalhes-historico">
+          <h3>Histórico de Compras em Aberto</h3>
+          <table className="ficha-detalhes-table">
             <thead>
               <tr>
                 <th>Data</th>
-                <th>Descrição (Resumo)</th>
-                <th>Valor</th>
+                <th>Resumo dos Itens</th>
+                <th className="align-right">Valor</th>
               </tr>
             </thead>
             <tbody>
@@ -67,33 +67,34 @@ export function FichaDetalhes({ fichaId, onVoltar }: FichaDetalhesProps) {
                 <tr key={venda.id}>
                   <td>{venda.data}</td>
                   <td>{venda.descricao}</td>
-                  <td style={{ fontWeight: 'bold' }}>{formatCurrency(venda.valor)}</td>
+                  <td className="align-right bold-text">{formatCurrency(venda.valor)}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
 
-        {/* Painel Direito: Ações de Pagamento */}
-        <div className="pagamento-panel">
-          <h3>Acerto de Conta</h3>
+        {/* Painel Direito: Ações */}
+        <div className="ficha-detalhes-pagamento">
+          <h3>Detalhes do Pagamento</h3>
           
-          <div className="total-divida">
+          <div className="ficha-detalhes-total">
+            <p>Dívida Total</p>
             {formatCurrency(totalDevidoOriginal)}
           </div>
 
-          <div className="tipo-pagamento">
+          <div className="ficha-detalhes-tipo-pgto">
             <button 
-              className={`btn-tipo ${tipoPagamento === 'integral' ? 'active' : ''}`}
+              className={`ficha-detalhes-btn-tipo ${tipoPagamento === 'integral' ? 'active' : ''}`}
               onClick={() => setTipoPagamento('integral')}
             >
               Valor Integral
             </button>
             <button 
-              className={`btn-tipo ${tipoPagamento === 'parcial' ? 'active' : ''}`}
+              className={`ficha-detalhes-btn-tipo ${tipoPagamento === 'parcial' ? 'active' : ''}`}
               onClick={() => {
                 setTipoPagamento('parcial');
-                setValorParcial(''); // Limpa o input se mudar pra parcial
+                setValorParcial('');
               }}
             >
               Valor Parcial
@@ -101,8 +102,8 @@ export function FichaDetalhes({ fichaId, onVoltar }: FichaDetalhesProps) {
           </div>
 
           {tipoPagamento === 'parcial' && (
-            <div className="valor-input">
-              <label>Valor a abater (R$)</label>
+            <div className="ficha-detalhes-input-group">
+              <label>Valor que será pago agora (R$)</label>
               <input 
                 type="number" 
                 step="0.01"
@@ -114,24 +115,26 @@ export function FichaDetalhes({ fichaId, onVoltar }: FichaDetalhesProps) {
             </div>
           )}
 
-          <div className="payment-methods" style={{ marginTop: '8px' }}>
-            <button 
-              className={`btn-pay ${formaPagamento === 'Dinheiro' ? 'active' : ''}`}
-              onClick={() => setFormaPagamento('Dinheiro')}
-            ><DollarSign size={18}/> Dinheiro</button>
-            <button 
-              className={`btn-pay ${formaPagamento === 'Cartão' ? 'active' : ''}`}
-              onClick={() => setFormaPagamento('Cartão')}
-            ><CreditCard size={18}/> Cartão</button>
-            <button 
-              className={`btn-pay ${formaPagamento === 'Pix' ? 'active' : ''}`}
-              onClick={() => setFormaPagamento('Pix')}
-            >Pix</button>
+          <div className="ficha-detalhes-metodos-container">
+            <label>Forma de Recebimento</label>
+            <div className="ficha-detalhes-metodos">
+              <button 
+                className={`ficha-detalhes-btn-metodo ${formaPagamento === 'Dinheiro' ? 'active' : ''}`}
+                onClick={() => setFormaPagamento('Dinheiro')}
+              ><DollarSign size={18}/> Dinheiro</button>
+              <button 
+                className={`ficha-detalhes-btn-metodo ${formaPagamento === 'Cartão' ? 'active' : ''}`}
+                onClick={() => setFormaPagamento('Cartão')}
+              ><CreditCard size={18}/> Cartão</button>
+              <button 
+                className={`ficha-detalhes-btn-metodo ${formaPagamento === 'Pix' ? 'active' : ''}`}
+                onClick={() => setFormaPagamento('Pix')}
+              >Pix</button>
+            </div>
           </div>
 
-          <button className="btn-confirmar-pgto" onClick={handlePagar}>
-            <CheckCircle size={24} />
-            Confirmar Recebimento
+          <button className="ficha-detalhes-btn-confirmar" onClick={handlePagar}>
+            <CheckCircle size={22} /> Confirmar Pagamento
           </button>
         </div>
       </div>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Monitor, ShoppingCart, Ticket, Package, Lock, BarChart3 } from 'lucide-react';
 import { Pdv } from './components/Pdv';
 import { FichasList } from './components/FichasList';

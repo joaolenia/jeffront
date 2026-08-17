@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import  { useState } from 'react';
 import { Search, User } from 'lucide-react';
 import './FichasList.css';
 

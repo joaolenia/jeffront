@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import  { useState } from 'react';
 import { ArrowLeft, CheckCircle, CreditCard, DollarSign } from 'lucide-react';
 import './FichaDetalhes.css';
 
@@ -13,7 +13,7 @@ interface FichaDetalhesProps {
   onVoltar: () => void;
 }
 
-export function FichaDetalhes({ fichaId, onVoltar }: FichaDetalhesProps) {
+export function FichaDetalhes({  onVoltar }: FichaDetalhesProps) {
   const nomeCliente = "João Silva"; 
   const totalDevidoOriginal = 150.50;
 

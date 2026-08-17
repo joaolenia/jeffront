@@ -1,4 +1,3 @@
-import React from 'react';
 
 // Aqui definimos o que é um Item
 interface Item {

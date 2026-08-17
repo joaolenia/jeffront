@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import type { Mercadoria, Parcela } from './types';
 import './MercadoriaCadastro.css';

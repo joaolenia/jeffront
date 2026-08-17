@@ -1,5 +1,5 @@
 // src/components/mercadorias/Mercadorias.tsx
-import React, { useState } from 'react';
+import  { useState } from 'react';
 import type { Mercadoria } from './types';
 import { MercadoriasList } from './MercadoriasList';
 import { MercadoriaDetalhes } from './MercadoriaDetalhes';

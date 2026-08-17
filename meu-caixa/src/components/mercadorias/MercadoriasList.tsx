@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import  { useState } from 'react';
 import { Search, Plus, Package } from 'lucide-react';
 import type { Mercadoria } from './types';
 import './MercadoriasList.css';

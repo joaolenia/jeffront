@@ -1,5 +1,6 @@
 import React from 'react';
 
+// Aqui definimos o que é um Item
 interface Item {
   id: number;
   nome: string;
@@ -7,12 +8,16 @@ interface Item {
   preco: number;
 }
 
+// AQUI ESTÁ A CORREÇÃO: Avisamos ao TypeScript tudo o que este componente vai receber
 interface CupomFiscalProps {
   itens: Item[];
   total: number;
+  formaPagamento: string;
+  valorRecebido: number;
+  troco: number;
 }
 
-export function CupomFiscal({ itens, total }: CupomFiscalProps) {
+export function CupomFiscal({ itens, total, formaPagamento, valorRecebido, troco }: CupomFiscalProps) {
   const formatCurrency = (value: number) => 
     new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
 
@@ -56,6 +61,26 @@ export function CupomFiscal({ itens, total }: CupomFiscalProps) {
           <span>TOTAL R$</span>
           <span>{formatCurrency(total)}</span>
         </div>
+        
+        <div className="payment-info">
+          <div className="info-row">
+            <span>Pagamento:</span>
+            <span>{formaPagamento}</span>
+          </div>
+          {formaPagamento === 'Dinheiro' && (
+            <>
+              <div className="info-row">
+                <span>Recebido:</span>
+                <span>{formatCurrency(valorRecebido)}</span>
+              </div>
+              <div className="info-row">
+                <span>Troco:</span>
+                <span>{formatCurrency(troco)}</span>
+              </div>
+            </>
+          )}
+        </div>
+
         <hr className="dashed-line" />
         <p>Obrigado pela preferência!</p>
         <p>Volte Sempre</p>

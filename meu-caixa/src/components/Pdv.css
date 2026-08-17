@@ -1,238 +1,158 @@
-/* Container Principal */
+/* Layout Base */
 .pdv-container {
   display: flex;
   flex-direction: column;
   height: calc(100vh - 70px);
   background-color: #f1f5f9;
   padding: 24px;
+  box-sizing: border-box;
 }
 
 .pdv-layout {
   display: grid;
-  grid-template-columns: 2fr 1fr;
+  grid-template-columns: 2.2fr 1.2fr;
   gap: 24px;
   height: 100%;
 }
 
-/* Painel Esquerdo */
-.pdv-left-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+.pdv-left-panel, .summary-card {
   background: white;
   border-radius: 12px;
   padding: 20px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-}
-
-.search-bar {
-  display: flex;
-  align-items: center;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  padding: 0 16px;
-  height: 54px;
-}
-
-.search-bar input {
-  flex: 1;
-  border: none;
-  background: transparent;
-  padding-left: 12px;
-  font-size: 1.1rem;
-  outline: none;
-}
-
-.search-icon {
-  color: #64748b;
-}
-
-/* Tabela Moderna */
-.cart-list {
-  flex: 1;
-  overflow-y: auto;
-}
-
-.modern-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.modern-table th {
-  background-color: #f8fafc;
-  color: #475569;
-  font-weight: 600;
-  text-align: left;
-  padding: 12px 16px;
-  border-bottom: 2px solid #e2e8f0;
-}
-
-.modern-table td {
-  padding: 16px;
-  border-bottom: 1px solid #f1f5f9;
-  color: #334155;
-  font-size: 1.05rem;
-}
-
-.btn-icon-danger {
-  background: #fee2e2;
-  color: #ef4444;
-  border: none;
-  padding: 8px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: 0.2s;
-}
-
-.btn-icon-danger:hover {
-  background: #fca5a5;
-  color: white;
-}
-
-/* Painel Direito (Resumo) */
-.pdv-right-panel {
-  display: flex;
-  flex-direction: column;
-}
-
-.summary-card {
-  background: white;
-  border-radius: 12px;
-  padding: 24px;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
   display: flex;
   flex-direction: column;
   height: 100%;
+  box-sizing: border-box;
 }
 
-.summary-card h2 {
-  font-size: 1.25rem;
-  color: #64748b;
-  margin-top: 0;
-  margin-bottom: 12px;
-}
-
-.total-display {
-  background: #0f172a;
-  color: #38bdf8;
-  font-size: 3rem;
-  font-weight: 700;
-  text-align: right;
-  padding: 24px;
-  border-radius: 8px;
-  margin-bottom: 24px;
-}
-
-.shortcuts-info {
-  margin-bottom: auto;
-  padding: 16px;
-  background: #f8fafc;
-  border-radius: 8px;
-}
-
-.shortcuts-info p {
-  margin: 8px 0;
-  color: #475569;
+/* Formulário de Adicionar Item */
+.add-item-form {
   display: flex;
-  align-items: center;
   gap: 12px;
+  align-items: flex-end;
+  background: #f8fafc;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  margin-bottom: 20px;
 }
 
-.shortcuts-info span {
-  background: #e2e8f0;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 0.85rem;
-  font-weight: bold;
-  color: #0f172a;
-}
-
-/* Botões de Ação */
-.action-buttons {
+.input-group {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 6px;
+  flex: 1;
 }
 
-.btn-action {
+.input-group label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.input-group input {
+  height: 44px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 0 12px;
+  font-size: 1rem;
+  outline: none;
+}
+.input-group input:focus { border-color: #38bdf8; box-shadow: 0 0 0 2px #bae6fd; }
+
+.btn-add {
+  height: 44px;
+  width: 50px;
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  width: 100%;
-  padding: 20px;
-  border: none;
-  border-radius: 8px;
-  font-size: 1.2rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  color: white;
+  transition: 0.2s;
+}
+.btn-add:hover { background-color: #2563eb; }
+
+/* Tabela Moderna */
+.cart-list { flex: 1; overflow-y: auto; }
+.modern-table { width: 100%; border-collapse: collapse; }
+.modern-table th {
+  background-color: #f8fafc; color: #475569; font-weight: 600;
+  text-align: left; padding: 12px; border-bottom: 2px solid #e2e8f0;
+}
+.modern-table td { padding: 12px; border-bottom: 1px solid #f1f5f9; color: #334155; }
+
+.btn-icon-danger {
+  background: #fee2e2; color: #ef4444; border: none;
+  padding: 8px; border-radius: 6px; cursor: pointer;
+}
+.btn-icon-danger:hover { background: #fca5a5; color: white; }
+
+/* Resumo e Pagamento */
+.total-display {
+  background: #0f172a; color: #38bdf8; font-size: 3rem; font-weight: 700;
+  text-align: right; padding: 24px; border-radius: 8px; margin-bottom: 20px;
 }
 
+.payment-section h3 { margin: 0 0 12px 0; font-size: 1.1rem; color: #334155; }
+.payment-methods { display: flex; gap: 8px; margin-bottom: 16px; }
+
+.btn-pay {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  gap: 6px; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px;
+  background: white; cursor: pointer; font-weight: 600; color: #475569;
+}
+.btn-pay.active { background: #38bdf8; color: #0f172a; border-color: #38bdf8; }
+
+.cash-inputs { background: #f8fafc; padding: 16px; border-radius: 8px; margin-bottom: 16px;}
+.change-display { margin-top: 12px; font-size: 1.2rem; font-weight: 600; color: #0f172a; }
+.change-display span { color: #16a34a; font-size: 1.4rem; }
+
+.shortcuts-info { margin-top: auto; margin-bottom: 16px; padding: 12px; background: #f8fafc; border-radius: 8px; }
+.shortcuts-info p { margin: 6px 0; color: #475569; display: flex; align-items: center; gap: 12px; }
+.shortcuts-info span { background: #e2e8f0; padding: 4px 8px; border-radius: 4px; font-weight: bold; color: #0f172a; }
+
+.action-buttons { display: flex; flex-direction: column; gap: 12px; }
+.btn-action {
+  display: flex; align-items: center; justify-content: center; gap: 12px;
+  padding: 16px; border: none; border-radius: 8px; font-size: 1.1rem;
+  font-weight: 600; cursor: pointer; color: white;
+}
 .btn-success { background-color: #22c55e; }
 .btn-success:hover { background-color: #16a34a; }
-
 .btn-primary { background-color: #3b82f6; }
 .btn-primary:hover { background-color: #2563eb; }
 
 /* =========================================
    CONFIGURAÇÃO DE IMPRESSÃO (CUPOM 80MM)
    ========================================= */
-.cupom-container {
-  display: none; /* Oculto na tela do PC */
-}
+.cupom-container { display: none; }
 
 @media print {
-  /* Oculta tudo na tela, exceto o cupom */
-  body * {
-    visibility: hidden;
+  body * { visibility: hidden; }
+  .hide-on-print { display: none !important; }
+  
+  .cupom-container, .cupom-container * { visibility: visible; }
+  
+  .cupom-container {
+    display: block; position: absolute; left: 0; top: 0;
+    width: 80mm; padding: 0; margin: 0;
+    font-family: monospace; font-size: 12px; color: black;
   }
   
-  .hide-on-print {
-    display: none !important;
-  }
-
-  /* Exibe o Cupom Fiscal e seus filhos */
-  .cupom-container, .cupom-container * {
-    visibility: visible;
-  }
-
-  .cupom-container {
-    display: block;
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 80mm; /* Tamanho exato da bobina */
-    padding: 0;
-    margin: 0;
-    font-family: monospace;
-    font-size: 12px;
-    color: black;
-  }
-
-  /* Estilização interna do Cupom */
   .cupom-header { text-align: center; }
   .cupom-header h2 { font-size: 16px; margin: 4px 0; }
   .cupom-header p { margin: 2px 0; font-size: 11px; }
-  .cupom-header h3 { margin: 8px 0; font-size: 14px; }
+  .dashed-line { border: none; border-top: 1px dashed black; margin: 8px 0; }
   
-  .dashed-line {
-    border: none;
-    border-top: 1px dashed black;
-    margin: 8px 0;
-  }
-
   .cupom-table { width: 100%; text-align: left; }
   .cupom-table th, .cupom-table td { padding: 4px 0; }
   
-  .cupom-footer { margin-top: 16px; text-align: center; }
-  .total-row {
-    display: flex;
-    justify-content: space-between;
-    font-weight: bold;
-    font-size: 14px;
-    margin: 8px 0;
-  }
+  .cupom-footer { margin-top: 16px; }
+  .total-row, .info-row { display: flex; justify-content: space-between; margin: 4px 0; }
+  .total-row { font-weight: bold; font-size: 14px; margin: 8px 0; }
+  .cupom-footer p { text-align: center; }
 }

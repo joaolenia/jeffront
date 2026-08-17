@@ -1,4 +1,4 @@
-import { Pdv } from './components/pages/pdv/Pdv';
+import { Pdv } from './components/Pdv';
 
 function App() {
   return <Pdv />;

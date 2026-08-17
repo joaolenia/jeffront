@@ -1,5 +1,11 @@
-import { ArrowLeft } from 'lucide-react';
-import type  { Mercadoria } from './types';
+// src/components/mercadorias/MercadoriaDetalhes.tsx
+
+import  { useState } from 'react';
+import { 
+  ArrowLeft, FileText, CheckCircle2, Clock, Wallet, 
+  Building2, Banknote, Receipt, X 
+} from 'lucide-react';
+import  type{ Mercadoria } from './types';
 import './MercadoriaDetalhes.css';
 
 interface Props {
@@ -9,72 +15,123 @@ interface Props {
 }
 
 export function MercadoriaDetalhes({ mercadoria, onVoltar, onPagarParcela }: Props) {
+  // Controla qual parcela está com o menu de pagamento aberto
+  const [parcelaEmPagamento, setParcelaEmPagamento] = useState<number | null>(null);
+
   const formatCurrency = (val: number) => 
     new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
 
-  const handleBaixar = (parcelaNum: number) => {
-    const origem = window.prompt("De onde o dinheiro foi retirado? (Digite 'caixa' ou 'cofre')");
-    const origemNormalizada = origem?.trim().toLowerCase();
-    
-    if (origemNormalizada === 'caixa' || origemNormalizada === 'cofre') {
-      onPagarParcela(mercadoria.id, parcelaNum, origemNormalizada);
-    } else if (origem !== null) {
-      alert("Origem inválida. Operação cancelada.");
-    }
+  const confirmarPagamento = (parcelaNum: number, origem: 'caixa' | 'cofre') => {
+    onPagarParcela(mercadoria.id, parcelaNum, origem);
+    setParcelaEmPagamento(null); // Fecha o menu após pagar
   };
 
   return (
     <div className="mdet-container">
       <div className="mdet-header">
         <button className="mdet-btn-voltar" onClick={onVoltar}>
-          <ArrowLeft size={20} /> Voltar
+          <ArrowLeft size={18} /> Voltar
         </button>
-        <h2 style={{margin: 0, fontSize: '1.8rem', color: '#0f172a'}}>Nota: {mercadoria.fornecedor}</h2>
+        <div className="mdet-title-group">
+          <h2 className="mdet-title">{mercadoria.fornecedor}</h2>
+          <p className="mdet-subtitle">Detalhes da operação • {mercadoria.data}</p>
+        </div>
       </div>
 
       <div className="mdet-grid">
+        {/* Painel da Esquerda: Resumo */}
         <div className="mdet-panel">
-          <h3>Resumo da Operação</h3>
-          <div className="mdet-row"><span>Data:</span> <span>{mercadoria.data}</span></div>
-          <div className="mdet-row"><span>Status Geral:</span> <span style={{color: mercadoria.status === 'paga' ? '#16a34a' : '#ef4444'}}>{mercadoria.status.toUpperCase()}</span></div>
-          <div className="mdet-row" style={{fontSize: '1.2rem', marginTop: 16}}>
-            <span>Valor Total:</span> <span>{formatCurrency(mercadoria.valorTotal)}</span>
-          </div>
+          <h3><FileText size={20} color="var(--accent-blue)"/> Resumo da Nota</h3>
           
-          <h3 style={{marginTop: 32}}>Composição</h3>
-          <div className="mdet-row"><span>Pago via Caixa:</span> <span>{formatCurrency(mercadoria.pagamento.caixa)}</span></div>
-          <div className="mdet-row"><span>Pago via Cofre:</span> <span>{formatCurrency(mercadoria.pagamento.cofre)}</span></div>
-          <div className="mdet-row"><span>Ficou em Boleto:</span> <span style={{color: '#ef4444'}}>{formatCurrency(mercadoria.pagamento.boleto)}</span></div>
+          <div className="mdet-summary-item">
+            <span className="mdet-summary-label">Status Geral</span>
+            <span className={`mdet-badge ${mercadoria.status}`}>
+              {mercadoria.status === 'paga' ? <CheckCircle2 size={14} /> : <Clock size={14} />}
+              {mercadoria.status}
+            </span>
+          </div>
+
+          <div className="mdet-summary-item">
+            <span className="mdet-summary-label"><Wallet size={16}/> Pago via Caixa</span>
+            <span className="mdet-summary-value">{formatCurrency(mercadoria.pagamento.caixa)}</span>
+          </div>
+
+          <div className="mdet-summary-item">
+            <span className="mdet-summary-label"><Building2 size={16}/> Pago via Cofre</span>
+            <span className="mdet-summary-value">{formatCurrency(mercadoria.pagamento.cofre)}</span>
+          </div>
+
+          <div className="mdet-summary-item">
+            <span className="mdet-summary-label" style={{color: '#fda4af'}}><Receipt size={16}/> Em Boleto/Prazo</span>
+            <span className="mdet-summary-value" style={{color: '#fda4af'}}>
+              {formatCurrency(mercadoria.pagamento.boleto)}
+            </span>
+          </div>
+
+          <div className="mdet-summary-item mdet-total-highlight">
+            <span className="mdet-summary-label">Valor Total</span>
+            <span className="mdet-summary-value">{formatCurrency(mercadoria.valorTotal)}</span>
+          </div>
         </div>
 
+        {/* Painel da Direita: Parcelas */}
         <div className="mdet-panel">
-          <h3>Parcelas e Vencimentos</h3>
+          <h3><Banknote size={20} color="var(--accent-green)"/> Gestão de Parcelas</h3>
+          
           {mercadoria.parcelasBoleto.length === 0 ? (
-            <p style={{color: '#64748b', fontStyle: 'italic'}}>Nenhum boleto gerado para esta nota.</p>
+            <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
+              <CheckCircle2 size={48} opacity={0.2} style={{ marginBottom: 16 }} />
+              <p>Esta nota não possui boletos ou parcelas a prazo.</p>
+            </div>
           ) : (
             <table className="mdet-table">
               <thead>
                 <tr>
-                  <th>Nº</th>
+                  <th>Parc.</th>
                   <th>Vencimento</th>
                   <th>Valor</th>
                   <th>Status</th>
-                  <th>Ação</th>
+                  <th style={{ textAlign: 'right' }}>Ação</th>
                 </tr>
               </thead>
               <tbody>
                 {mercadoria.parcelasBoleto.map(p => (
                   <tr key={p.numero}>
-                    <td style={{fontWeight: 'bold', color: '#475569'}}>{p.numero}x</td>
+                    <td style={{ color: 'var(--text-muted)' }}>{p.numero}x</td>
                     <td>{p.vencimento}</td>
-                    <td style={{fontWeight: 700}}>{formatCurrency(p.valor)}</td>
-                    <td><span className={`mdet-badge ${p.status}`}>{p.status}</span></td>
+                    <td style={{ fontWeight: 600 }}>{formatCurrency(p.valor)}</td>
                     <td>
-                      {p.status === 'pendente' ? (
-                        <button className="mdet-btn-pagar" onClick={() => handleBaixar(p.numero)}>Baixar</button>
+                      <span className={`mdet-badge ${p.status}`}>
+                        {p.status}
+                      </span>
+                    </td>
+                    <td style={{ textAlign: 'right' }}>
+                      
+                      {/* LÓGICA DE EXIBIÇÃO DAS AÇÕES */}
+                      {p.status === 'paga' ? (
+                        <div className="mdet-pago-text" style={{justifyContent: 'flex-end'}}>
+                          <CheckCircle2 size={16} color="var(--accent-green)"/>
+                          Retirado do <strong>{p.origemPgto}</strong>
+                        </div>
+                      ) : parcelaEmPagamento === p.numero ? (
+                        <div className="mdet-action-popover" style={{justifyContent: 'flex-end'}}>
+                          <span style={{fontSize: '0.8rem', color: 'var(--text-muted)', marginRight: 4}}>Origem:</span>
+                          <button className="mdet-btn-option" onClick={() => confirmarPagamento(p.numero, 'caixa')}>
+                            <Wallet size={14}/> Caixa
+                          </button>
+                          <button className="mdet-btn-option" onClick={() => confirmarPagamento(p.numero, 'cofre')}>
+                            <Building2 size={14}/> Cofre
+                          </button>
+                          <button className="mdet-btn-option cancel" onClick={() => setParcelaEmPagamento(null)}>
+                            <X size={16}/>
+                          </button>
+                        </div>
                       ) : (
-                        <span style={{fontSize: '0.85rem', color: '#94a3b8', fontWeight: 600}}>Pago ({p.origemPgto})</span>
+                        <button className="mdet-btn-primary" onClick={() => setParcelaEmPagamento(p.numero)}>
+                          Baixar Parcela
+                        </button>
                       )}
+
                     </td>
                   </tr>
                 ))}

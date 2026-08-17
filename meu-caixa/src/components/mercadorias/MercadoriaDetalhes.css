@@ -1,4 +1,7 @@
-.mdet-container { animation: fadeIn 0.3s ease; }
+.mdet-container { 
+  animation: fadeIn 0.3s ease; 
+  color: #334155;
+}
 
 .mdet-header {
   display: flex;
@@ -9,7 +12,7 @@
 
 .mdet-btn-voltar {
   background: white;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #cbd5e1;
   padding: 10px 16px;
   border-radius: 8px;
   cursor: pointer;
@@ -19,9 +22,33 @@
   align-items: center;
   gap: 8px;
   transition: all 0.2s;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
 }
 
-.mdet-btn-voltar:hover { background: #f8fafc; border-color: #cbd5e1; }
+.mdet-btn-voltar:hover { 
+  background: #f8fafc; 
+  border-color: #94a3b8; 
+  transform: translateX(-2px);
+}
+
+.mdet-title-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.mdet-title {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+}
+
+.mdet-subtitle {
+  color: #64748b;
+  font-size: 0.95rem;
+  margin: 4px 0 0 0;
+}
 
 .mdet-grid {
   display: grid;
@@ -34,58 +61,174 @@
   border-radius: 12px;
   padding: 28px;
   border: 1px solid #e2e8f0;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
 }
 
 .mdet-panel h3 {
   margin-top: 0;
+  font-size: 1.15rem;
+  color: #1e293b;
   border-bottom: 1px solid #f1f5f9;
   padding-bottom: 16px;
   margin-bottom: 20px;
-  color: #0f172a;
-  font-size: 1.15rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-.mdet-row {
+/* Resumo Itens */
+.mdet-summary-item {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 14px;
-  font-size: 1rem;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px dashed #e2e8f0;
+}
+.mdet-summary-item:last-child { border-bottom: none; }
+
+.mdet-summary-label { color: #64748b; font-size: 0.95rem; display: flex; align-items: center; gap: 8px;}
+.mdet-summary-value { font-weight: 600; font-size: 1.05rem; color: #1e293b; }
+
+.mdet-total-highlight {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  padding: 16px;
+  border-radius: 12px;
+  margin-top: 24px;
+}
+.mdet-total-highlight .mdet-summary-value {
+  font-size: 1.5rem;
+  color: #1d4ed8;
+  font-weight: 800;
+}
+.mdet-total-highlight .mdet-summary-label {
+  color: #3b82f6;
+  font-weight: 600;
 }
 
-.mdet-row span:first-child { color: #64748b; }
-.mdet-row span:last-child { font-weight: 600; color: #1e293b; }
-
+/* Tabela Moderna */
 .mdet-table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
 }
 
-.mdet-table th { color: #64748b; font-weight: 600; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em; }
-.mdet-table th, .mdet-table td {
-  padding: 16px 12px;
-  text-align: left;
-  border-bottom: 1px solid #f1f5f9;
-}
-
-.mdet-badge {
-  padding: 6px 10px;
-  border-radius: 6px;
-  font-size: 0.75rem;
-  font-weight: bold;
+.mdet-table th {
+  color: #64748b;
+  font-weight: 600;
+  font-size: 0.85rem;
   text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0 16px 12px 16px;
+  border-bottom: 2px solid #e2e8f0;
 }
-.mdet-badge.pendente { background: #fef2f2; color: #ef4444; }
-.mdet-badge.paga { background: #f0fdf4; color: #16a34a; }
 
-.mdet-btn-pagar {
+.mdet-table td {
+  padding: 16px;
+  font-size: 1rem;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+}
+
+.mdet-table tbody tr {
+  transition: background 0.2s ease;
+}
+.mdet-table tbody tr:hover td {
+  background: #f8fafc;
+}
+
+/* Badges */
+.mdet-badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.mdet-badge.pendente { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+.mdet-badge.paga { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
+
+/* Ações de Pagamento Inline */
+.mdet-btn-primary {
   background: #10b981;
   color: white;
   border: none;
   padding: 8px 16px;
-  border-radius: 6px;
-  cursor: pointer;
+  border-radius: 50px;
   font-weight: 600;
-  transition: background 0.2s;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
 }
-.mdet-btn-pagar:hover { background: #059669; }
+.mdet-btn-primary:hover {
+  background: #059669;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3);
+}
+
+.mdet-action-popover {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  animation: popIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  background: white;
+  padding: 6px;
+  border-radius: 50px;
+  border: 1px solid #cbd5e1;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.mdet-btn-option {
+  background: #f1f5f9;
+  color: #334155;
+  border: 1px solid #e2e8f0;
+  padding: 6px 12px;
+  border-radius: 50px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.mdet-btn-option:hover { 
+  background: #e2e8f0; 
+  color: #0f172a;
+}
+.mdet-btn-option.cancel { 
+  background: transparent; 
+  border: none;
+  color: #94a3b8; 
+  padding: 6px;
+}
+.mdet-btn-option.cancel:hover { 
+  color: #ef4444; 
+  background: #fee2e2;
+}
+
+.mdet-pago-text {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+/* Animações */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes popIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@media (max-width: 900px) {
+  .mdet-grid { grid-template-columns: 1fr; }
+}

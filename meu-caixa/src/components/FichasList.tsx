@@ -1,4 +1,4 @@
-import  { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Search, FileText, CheckCircle, Clock, ChevronRight, AlertCircle, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api';
@@ -48,7 +48,6 @@ export function FichasList() {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(value) || 0);
   };
 
-  // Aplica os filtros de pesquisa e status
   const fichasFiltradas = fichas.filter(ficha => {
     const matchesSearch = ficha.clienteNome?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'TODOS' || ficha.status === statusFilter;
@@ -59,7 +58,9 @@ export function FichasList() {
     <div className="fichas-container">
       <div className="fichas-header">
         <div className="header-title">
-          <FileText size={28} color="#3b82f6" />
+          <div className="icon-wrapper">
+            <FileText size={24} color="#2563eb" />
+          </div>
           <h1>Contas de Clientes (Crediário)</h1>
         </div>
       </div>
@@ -69,7 +70,7 @@ export function FichasList() {
           <Search size={20} className="search-icon" />
           <input 
             type="text" 
-            placeholder="Pesquisar cliente..." 
+            placeholder="Pesquisar cliente por nome..." 
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -77,18 +78,20 @@ export function FichasList() {
         
         <div className="status-filter">
           <label>Status:</label>
-          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as any)}>
-            <option value="TODOS">Todos</option>
-            <option value="ABERTA">Abertas</option>
-            <option value="PAGA">Pagas</option>
-          </select>
+          <div className="select-wrapper">
+            <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as any)}>
+              <option value="TODOS">Todos</option>
+              <option value="ABERTA">Abertas</option>
+              <option value="PAGA">Pagas</option>
+            </select>
+          </div>
         </div>
       </div>
 
       {loading && (
         <div className="loading-state">
           <Loader2 size={40} className="spinner" />
-          <p>Carregando fichas...</p>
+          <p>Carregando clientes...</p>
         </div>
       )}
 
@@ -96,13 +99,13 @@ export function FichasList() {
         <div className="error-state">
           <AlertCircle size={40} />
           <p>{error}</p>
-          <button onClick={fetchFichas}>Tentar Novamente</button>
+          <button className="btn-retry" onClick={fetchFichas}>Tentar Novamente</button>
         </div>
       )}
 
       {!loading && !error && fichasFiltradas.length === 0 && (
         <div className="empty-state">
-          <FileText size={48} />
+          <FileText size={48} opacity={0.3} />
           <p>Nenhuma ficha encontrada.</p>
         </div>
       )}
@@ -116,36 +119,27 @@ export function FichasList() {
             return (
               <div 
                 key={ficha.id} 
-                className={`ficha-card ${isPaga ? 'paga' : 'aberta'}`}
+                className={`ficha-card ${isPaga ? 'is-paga' : 'is-aberta'}`}
                 onClick={() => navigate(`/fichas/${ficha.id}`)}
               >
                 <div className="card-top">
-                  <h3>{ficha.clienteNome}</h3>
+                  <h3 title={ficha.clienteNome}>{ficha.clienteNome}</h3>
                   <span className={`status-badge ${isPaga ? 'badge-paga' : 'badge-aberta'}`}>
                     {isPaga ? <CheckCircle size={14} /> : <Clock size={14} />}
                     {isPaga ? 'PAGA' : 'ABERTA'}
                   </span>
                 </div>
-                
-                <div className="card-body">
-                  <div className="info-group">
-                    <span className="label">Total Comprado</span>
-                    <span className="value">{formatCurrency(ficha.valorTotal)}</span>
-                  </div>
-                  <div className="info-group">
-                    <span className="label">Total Pago</span>
-                    <span className="value success">{formatCurrency(ficha.valorPago)}</span>
-                  </div>
-                </div>
 
                 <div className="card-footer">
-                  <div className="saldo-group">
-                    <span>Saldo Devedor</span>
-                    <strong className={isPaga ? 'success' : 'danger'}>
+                  <div className="saldo-info">
+                    <span className="saldo-label">Saldo Devedor</span>
+                    <span className={`saldo-value ${isPaga ? 'success' : 'danger'}`}>
                       {formatCurrency(saldoDevedor > 0 ? saldoDevedor : 0)}
-                    </strong>
+                    </span>
                   </div>
-                  <ChevronRight size={20} color="#94a3b8" />
+                  <div className="action-icon">
+                    <ChevronRight size={20} />
+                  </div>
                 </div>
               </div>
             );

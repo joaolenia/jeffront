@@ -1,36 +1,45 @@
 .fichas-container {
-  padding: 24px;
+  padding: 32px 24px;
   max-width: 1200px;
   margin: 0 auto;
 }
 
+/* Header */
 .fichas-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   margin-bottom: 24px;
 }
 
 .header-title {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
+}
+
+.icon-wrapper {
+  background: #eff6ff;
+  padding: 12px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .header-title h1 {
   margin: 0;
-  font-size: 1.75rem;
+  font-size: 1.8rem;
   color: #0f172a;
+  font-weight: 700;
 }
 
+/* Filtros */
 .fichas-filters {
   display: flex;
   gap: 16px;
-  margin-bottom: 24px;
+  margin-bottom: 32px;
   background: white;
-  padding: 16px;
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  padding: 16px 20px;
+  border-radius: 16px;
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
   align-items: center;
   flex-wrap: wrap;
 }
@@ -38,167 +47,189 @@
 .search-wrapper {
   flex: 1;
   position: relative;
-  min-width: 250px;
+  min-width: 280px;
 }
 
 .search-wrapper .search-icon {
   position: absolute;
-  left: 12px;
+  left: 14px;
   top: 50%;
   transform: translateY(-50%);
-  color: #94a3b8;
+  color: #64748b;
 }
 
 .search-wrapper input {
   width: 100%;
-  height: 44px;
-  padding: 0 16px 0 40px;
+  height: 46px;
+  padding: 0 16px 0 44px;
   border: 1px solid #cbd5e1;
-  border-radius: 8px;
-  font-size: 1rem;
+  border-radius: 10px;
+  font-size: 0.95rem;
   outline: none;
-  box-sizing: border-box;
+  background: #f8fafc;
+  transition: all 0.2s;
 }
 
 .search-wrapper input:focus {
+  background: white;
   border-color: #3b82f6;
-  box-shadow: 0 0 0 3px #eff6ff;
+  box-shadow: 0 0 0 4px #eff6ff;
 }
 
 .status-filter {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
 }
 
 .status-filter label {
   font-weight: 600;
   color: #475569;
+  font-size: 0.95rem;
 }
 
 .status-filter select {
-  height: 44px;
+  height: 46px;
   padding: 0 16px;
   border: 1px solid #cbd5e1;
-  border-radius: 8px;
-  font-size: 1rem;
+  border-radius: 10px;
+  font-size: 0.95rem;
   outline: none;
-  background: white;
+  background: #f8fafc;
   cursor: pointer;
+  min-width: 140px;
+  font-weight: 500;
+  color: #0f172a;
 }
 
 /* Grid de Cards */
 .fichas-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 24px;
 }
 
 .ficha-card {
   background: white;
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  border-radius: 16px;
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
   border: 1px solid #e2e8f0;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .ficha-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+  transform: translateY(-4px);
+  box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
   border-color: #cbd5e1;
 }
 
 .card-top {
+  padding: 20px 20px 16px 20px;
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 16px;
+  gap: 12px;
 }
 
 .card-top h3 {
   margin: 0;
-  font-size: 1.1rem;
+  font-size: 1.15rem;
   color: #1e293b;
-  word-break: break-word;
+  font-weight: 700;
+  line-height: 1.3;
+  /* Truncar texto muito grande */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .status-badge {
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 4px 10px;
+  gap: 6px;
+  padding: 6px 12px;
   border-radius: 20px;
   font-size: 0.75rem;
   font-weight: 700;
+  letter-spacing: 0.5px;
 }
 
 .badge-aberta {
-  background: #fef3c7;
+  background: #fffbeb;
   color: #d97706;
+  border: 1px solid #fde68a;
 }
 
 .badge-paga {
-  background: #dcfce7;
+  background: #f0fdf4;
+  color: #16a34a;
+  border: 1px solid #bbf7d0;
+}
+
+
+
+
+
+
+
+.info-value.success {
   color: #16a34a;
 }
 
-.card-body {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 16px;
-  padding-bottom: 16px;
-  border-bottom: 1px dashed #e2e8f0;
-}
-
-.info-group {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.info-group .label {
-  font-size: 0.8rem;
-  color: #64748b;
-  font-weight: 600;
-}
-
-.info-group .value {
-  font-size: 1rem;
-  color: #334155;
-  font-weight: 500;
-}
-
-.info-group .value.success {
-  color: #16a34a;
-}
-
+/* Rodapé do Card (Saldo) */
 .card-footer {
+  background-color: #f8fafc;
+  padding: 16px 20px;
+  border-top: 1px solid #f1f5f9;
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-top: auto;
 }
 
-.saldo-group {
+.saldo-info {
   display: flex;
   flex-direction: column;
+  gap: 4px;
 }
 
-.saldo-group span {
+.saldo-label {
   font-size: 0.8rem;
   color: #64748b;
+  font-weight: 600;
 }
 
-.saldo-group strong {
-  font-size: 1.25rem;
+.saldo-value {
+  font-size: 1.35rem;
+  font-weight: 800;
 }
 
-.saldo-group strong.danger { color: #ef4444; }
-.saldo-group strong.success { color: #16a34a; }
+.saldo-value.danger { color: #ef4444; }
+.saldo-value.success { color: #16a34a; }
+
+.action-icon {
+  background: white;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  border: 1px solid #e2e8f0;
+  transition: 0.2s;
+}
+
+.ficha-card:hover .action-icon {
+  background: #3b82f6;
+  color: white;
+  border-color: #3b82f6;
+}
 
 /* States */
 .loading-state, .error-state, .empty-state {
@@ -206,23 +237,25 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 60px 20px;
+  padding: 80px 20px;
   text-align: center;
   background: white;
-  border-radius: 12px;
+  border-radius: 16px;
   color: #64748b;
+  border: 1px dashed #cbd5e1;
 }
 
 .spinner { animation: spin 1s linear infinite; color: #3b82f6; margin-bottom: 16px;}
-.error-state { color: #ef4444; }
-.error-state button {
+.error-state { color: #ef4444; border-color: #fca5a5; background: #fef2f2; }
+.btn-retry {
   margin-top: 16px;
-  padding: 10px 20px;
+  padding: 10px 24px;
   background: #ef4444;
   color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
+  font-weight: 600;
 }
 
 @keyframes spin { 100% { transform: rotate(360deg); } }

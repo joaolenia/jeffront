@@ -1,6 +1,6 @@
 import  { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, User, DollarSign, AlertCircle, Loader2, CheckCircle, Trash2 } from 'lucide-react';
+import { ArrowLeft, User, DollarSign, AlertCircle, Loader2, CheckCircle, Trash2, Wallet } from 'lucide-react';
 import api from '../api';
 import './FichaDetalhes.css';
 import type { Ficha } from './FichasList';
@@ -16,13 +16,11 @@ export function FichaDetalhes() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  // Estados de Pagamento
   const [modoPagamento, setModoPagamento] = useState<ModoPagamento>('INTEGRAL');
   const [valorDigitado, setValorDigitado] = useState<string>('');
   const [formaPagamento, setFormaPagamento] = useState<FormaPagamento>('Dinheiro');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Estados de Exclusão
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -50,7 +48,6 @@ export function FichaDetalhes() {
     if (!ficha || isSubmitting) return;
 
     let valorParaPagar = 0;
-    
     if (modoPagamento === 'INTEGRAL') {
       valorParaPagar = saldoDevedor;
     } else {
@@ -87,7 +84,7 @@ export function FichaDetalhes() {
 
       alert('Pagamento registrado com sucesso!');
       setValorDigitado('');
-      fetchFicha(ficha.id.toString()); // Recarrega os dados
+      fetchFicha(ficha.id.toString());
     } catch (err) {
       console.error('Erro ao registrar pagamento:', err);
       alert('Erro ao registrar pagamento. Tente novamente.');
@@ -101,7 +98,6 @@ export function FichaDetalhes() {
     setIsDeleting(true);
     try {
       await api.delete(`/fichas/${ficha.id}`);
-      alert('Ficha excluída com sucesso.');
       navigate('/fichas');
     } catch (err) {
       console.error('Erro ao excluir ficha:', err);
@@ -122,189 +118,192 @@ export function FichaDetalhes() {
     });
   };
 
-  if (loading) {
-    return (
-      <div className="ficha-details-container center">
-        <Loader2 size={40} className="spinner" />
-        <p>Carregando dados da ficha...</p>
-      </div>
-    );
-  }
+  if (loading) return (
+    <div className="fd-centered-state"><Loader2 size={40} className="spinner" /><p>Carregando dados da ficha...</p></div>
+  );
 
-  if (error || !ficha) {
-    return (
-      <div className="ficha-details-container center error-state">
-        <AlertCircle size={40} />
-        <h2>Ops!</h2>
-        <p>{error}</p>
-        <button className="btn-back" onClick={() => navigate('/fichas')}>Voltar para Lista</button>
-      </div>
-    );
-  }
+  if (error || !ficha) return (
+    <div className="fd-centered-state fd-error"><AlertCircle size={40} /><h2>Ops!</h2><p>{error}</p><button className="btn-primary" onClick={() => navigate('/fichas')}>Voltar</button></div>
+  );
 
   const isPaga = ficha.status === 'PAGA' || saldoDevedor <= 0;
 
   return (
-    <div className="ficha-details-container">
-      {/* HEADER */}
-      <div className="details-header">
-        <button className="btn-icon" onClick={() => navigate('/fichas')} title="Voltar">
-          <ArrowLeft size={24} />
-        </button>
-        <div className="client-info">
-          <User size={28} color="#3b82f6" />
-          <h1>{ficha.clienteNome}</h1>
-          <span className={`status-badge ${isPaga ? 'badge-paga' : 'badge-aberta'}`}>
-            {isPaga ? 'PAGA' : 'ABERTA'}
-          </span>
+    <div className="fd-container">
+      {/* HEADER SUPERIOR */}
+      <div className="fd-header">
+        <div className="fd-header-left">
+          <button className="btn-back" onClick={() => navigate('/fichas')} title="Voltar">
+            <ArrowLeft size={22} />
+          </button>
+          <div className="fd-avatar">
+            <User size={24} color="#2563eb" />
+          </div>
+          <div className="fd-title-group">
+            <h1>{ficha.clienteNome}</h1>
+            <span className={`fd-badge ${isPaga ? 'fd-badge-paga' : 'fd-badge-aberta'}`}>
+              {isPaga ? 'CONTA PAGA' : 'CONTA ABERTA'}
+            </span>
+          </div>
         </div>
-        <button 
-          className="btn-delete-header" 
-          onClick={() => setShowDeleteConfirm(true)}
-        >
-          <Trash2 size={20} /> Excluir Ficha
+        <button className="btn-delete" onClick={() => setShowDeleteConfirm(true)}>
+          <Trash2 size={18} /> <span>Excluir Ficha</span>
         </button>
       </div>
 
-      {/* CONFIRMAÇÃO DE EXCLUSÃO */}
+      {/* CONFIRMAÇÃO DE EXCLUSÃO ESTILO ALERT INLINE */}
       {showDeleteConfirm && (
-        <div className="delete-alert">
-          <AlertCircle size={24} color="#ef4444" />
-          <div className="delete-text">
-            <strong>Excluir ficha?</strong>
-            <p>Tem certeza que deseja excluir a ficha de <b>{ficha.clienteNome}</b>? Essa ação não poderá ser desfeita.</p>
+        <div className="fd-alert-box">
+          <div className="fd-alert-icon"><AlertCircle size={24} /></div>
+          <div className="fd-alert-content">
+            <strong>Excluir conta definitivamente?</strong>
+            <p>A ficha de <b>{ficha.clienteNome}</b> será apagada permanentemente. Esta ação não tem volta.</p>
           </div>
-          <div className="delete-actions">
-            <button className="btn-cancelar" onClick={() => setShowDeleteConfirm(false)} disabled={isDeleting}>Cancelar</button>
-            <button className="btn-excluir" onClick={handleExcluirFicha} disabled={isDeleting}>
-              {isDeleting ? 'Excluindo...' : 'Sim, Excluir'}
+          <div className="fd-alert-actions">
+            <button className="btn-alert-cancel" onClick={() => setShowDeleteConfirm(false)} disabled={isDeleting}>Cancelar</button>
+            <button className="btn-alert-confirm" onClick={handleExcluirFicha} disabled={isDeleting}>
+              {isDeleting ? <Loader2 size={16} className="spinner" /> : 'Sim, excluir'}
             </button>
           </div>
         </div>
       )}
 
-      <div className="details-grid">
+      {/* CONTEÚDO PRINCIPAL EM GRID */}
+      <div className="fd-grid">
         
-        {/* LADO ESQUERDO: TABELAS */}
-        <div className="left-panel">
-          
-          <div className="card-section">
-            <h2>Histórico de Compras</h2>
-            {(!ficha.compras || ficha.compras.length === 0) ? (
-              <p className="text-muted">Nenhuma compra registrada.</p>
-            ) : (
-              <div className="table-wrapper">
-                <table className="history-table">
-                  <thead>
-                    <tr>
-                      <th>Data</th>
-                      <th>Resumo dos Itens</th>
-                      <th style={{ textAlign: 'right' }}>Valor</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {ficha.compras.map((compra, index) => (
-                      <tr key={index}>
-                        <td>{formatDate(compra.data)}</td>
-                        <td>{compra.resumoItens || 'Itens diversos'}</td>
-                        <td style={{ textAlign: 'right', fontWeight: '500' }}>{formatCurrency(compra.valor)}</td>
+        {/* COLUNA ESQUERDA: HISTÓRICO */}
+        <div className="fd-col-left">
+          <div className="fd-card">
+            <div className="fd-card-header">
+              <h2>Histórico de Compras</h2>
+            </div>
+            <div className="fd-card-body">
+              {(!ficha.compras || ficha.compras.length === 0) ? (
+                <div className="fd-empty-list">Nenhuma compra registrada.</div>
+              ) : (
+                <div className="fd-table-responsive">
+                  <table className="fd-table">
+                    <thead>
+                      <tr>
+                        <th>Data</th>
+                        <th>Resumo dos Itens</th>
+                        <th className="text-right">Valor</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
+                    </thead>
+                    <tbody>
+                      {ficha.compras.map((compra, index) => (
+                        <tr key={index}>
+                          <td>{formatDate(compra.data)}</td>
+                          <td>{compra.resumoItens || 'Itens diversos'}</td>
+                          <td className="text-right fw-bold">{formatCurrency(compra.valor)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
           </div>
 
-          <div className="card-section">
-            <h2>Histórico de Pagamentos</h2>
-            {(!ficha.pagamentos || ficha.pagamentos.length === 0) ? (
-              <p className="text-muted">Nenhum pagamento realizado.</p>
-            ) : (
-              <div className="table-wrapper">
-                <table className="history-table">
-                  <thead>
-                    <tr>
-                      <th>Data</th>
-                      <th>Forma</th>
-                      <th style={{ textAlign: 'right' }}>Valor Pago</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {ficha.pagamentos.map((pag, index) => (
-                      <tr key={index}>
-                        <td>{formatDate(pag.data)}</td>
-                        <td>{pag.forma}</td>
-                        <td style={{ textAlign: 'right', color: '#16a34a', fontWeight: 'bold' }}>
-                          + {formatCurrency(pag.valor)}
-                        </td>
+          <div className="fd-card">
+            <div className="fd-card-header">
+              <h2>Histórico de Pagamentos</h2>
+            </div>
+            <div className="fd-card-body">
+              {(!ficha.pagamentos || ficha.pagamentos.length === 0) ? (
+                <div className="fd-empty-list">Nenhum pagamento realizado ainda.</div>
+              ) : (
+                <div className="fd-table-responsive">
+                  <table className="fd-table">
+                    <thead>
+                      <tr>
+                        <th>Data</th>
+                        <th>Forma</th>
+                        <th className="text-right">Valor Pago</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
+                    </thead>
+                    <tbody>
+                      {ficha.pagamentos.map((pag, index) => (
+                        <tr key={index}>
+                          <td>{formatDate(pag.data)}</td>
+                          <td><span className="fd-tag">{pag.forma}</span></td>
+                          <td className="text-right fw-bold text-green">
+                            + {formatCurrency(pag.valor)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
           </div>
-
         </div>
 
-        {/* LADO DIREITO: ACERTO */}
-        <div className="right-panel">
-          <div className="payment-card">
-            <h2 className="payment-title">Acerto de Conta</h2>
-            
-            <div className="debt-display">
-              <span className="debt-label">Saldo Devedor Atual</span>
-              <div className={`debt-value ${isPaga ? 'success' : 'danger'}`}>
+        {/* COLUNA DIREITA: ACERTO FINANCEIRO */}
+        <div className="fd-col-right">
+          <div className="fd-card fd-payment-card">
+            <div className="fd-payment-header">
+              <Wallet size={24} className="text-blue" />
+              <h2>Acerto Financeiro</h2>
+            </div>
+
+            <div className="fd-balance-box">
+              <span className="fd-balance-label">Saldo Devedor Atual</span>
+              <div className={`fd-balance-value ${isPaga ? 'text-green' : 'text-red'}`}>
                 {formatCurrency(saldoDevedor > 0 ? saldoDevedor : 0)}
               </div>
             </div>
 
-            <div className="debt-summary">
-              <div className="summary-line">
-                <span>Total Comprado:</span>
+            <div className="fd-summary-list">
+              <div className="fd-summary-item">
+                <span>Total Comprado</span>
                 <strong>{formatCurrency(ficha.valorTotal)}</strong>
               </div>
-              <div className="summary-line">
-                <span>Total Pago:</span>
-                <strong className="success">{formatCurrency(ficha.valorPago)}</strong>
+              <div className="fd-summary-item">
+                <span>Total Pago</span>
+                <strong className="text-green">{formatCurrency(ficha.valorPago)}</strong>
               </div>
             </div>
 
             {!isPaga && (
-              <div className="payment-form">
-                <h3>Realizar Pagamento</h3>
+              <div className="fd-payment-form">
+                <h3>Registrar Pagamento</h3>
                 
-                <div className="payment-mode-toggles">
+                <div className="fd-segmented-control">
                   <button 
-                    className={`toggle-btn ${modoPagamento === 'INTEGRAL' ? 'active' : ''}`}
+                    className={`fd-segment ${modoPagamento === 'INTEGRAL' ? 'active' : ''}`}
                     onClick={() => setModoPagamento('INTEGRAL')}
                   >
                     Valor Integral
                   </button>
                   <button 
-                    className={`toggle-btn ${modoPagamento === 'PARCIAL' ? 'active' : ''}`}
+                    className={`fd-segment ${modoPagamento === 'PARCIAL' ? 'active' : ''}`}
                     onClick={() => setModoPagamento('PARCIAL')}
                   >
                     Valor Parcial
                   </button>
                 </div>
 
-                <div className="input-group">
+                <div className="fd-form-group">
                   <label>Valor a Pagar (R$)</label>
-                  <input 
-                    type="number" 
-                    step="0.01" 
-                    value={modoPagamento === 'INTEGRAL' ? saldoDevedor.toFixed(2) : valorDigitado}
-                    onChange={(e) => setValorDigitado(e.target.value)}
-                    disabled={modoPagamento === 'INTEGRAL' || isSubmitting}
-                    placeholder="0.00"
-                  />
+                  <div className="fd-input-prefix">
+                    <span>R$</span>
+                    <input 
+                      type="number" 
+                      step="0.01" 
+                      value={modoPagamento === 'INTEGRAL' ? saldoDevedor.toFixed(2) : valorDigitado}
+                      onChange={(e) => setValorDigitado(e.target.value)}
+                      disabled={modoPagamento === 'INTEGRAL' || isSubmitting}
+                      placeholder="0.00"
+                    />
+                  </div>
                 </div>
 
-                <div className="input-group">
-                  <label>Forma de Recebimento</label>
+                <div className="fd-form-group">
+                  <label>Forma de Pagamento</label>
                   <select 
+                    className="fd-select"
                     value={formaPagamento} 
                     onChange={(e) => setFormaPagamento(e.target.value as FormaPagamento)}
                     disabled={isSubmitting}
@@ -316,21 +315,21 @@ export function FichaDetalhes() {
                 </div>
 
                 <button 
-                  className="btn-confirm-payment" 
+                  className="fd-btn-submit" 
                   onClick={handleEfetuarPagamento}
                   disabled={isSubmitting}
                 >
-                  {isSubmitting ? <Loader2 size={24} className="spinner" /> : <DollarSign size={24} />}
+                  {isSubmitting ? <Loader2 size={20} className="spinner" /> : <DollarSign size={20} />}
                   Confirmar Pagamento
                 </button>
               </div>
             )}
 
             {isPaga && (
-              <div className="paid-success-message">
-                <CheckCircle size={48} color="#16a34a" />
-                <h3>Conta Quitada</h3>
-                <p>Não há pendências financeiras para este cliente no momento.</p>
+              <div className="fd-paid-state">
+                <div className="fd-paid-icon"><CheckCircle size={40} /></div>
+                <h3>Tudo Certo!</h3>
+                <p>Não há saldo devedor pendente para este cliente no momento.</p>
               </div>
             )}
           </div>

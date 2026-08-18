@@ -1,0 +1,145 @@
+/* =========================================
+   Layout Base - Padrão PDV
+   ========================================= */
+.relatorios-container {
+  display: flex;
+  gap: 24px;
+  height: calc(100vh - 70px); /* Ajustado para a mesma altura do PDV */
+  padding: 24px;
+  background-color: #f1f5f9; /* Fundo base igual ao do PDV */
+  color: #334155; /* Texto padrão */
+  box-sizing: border-box;
+}
+
+/* Painéis laterais e principais usando o estilo dos cards do PDV */
+.neo-panel {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); /* Sombra exata do PDV */
+  box-sizing: border-box;
+}
+
+/* ==================================
+   MENU LATERAL (SIDEBAR)
+================================== */
+.relatorios-sidebar {
+  flex: 0 0 250px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e2e8f0; /* Linha sutil do tema claro */
+}
+
+.sidebar-header h2 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #334155;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+}
+
+.icon-glow {
+  color: #3b82f6; /* Azul primário do botão do PDV */
+  filter: drop-shadow(0 2px 4px rgba(59, 130, 246, 0.3)); /* Sombra mais sutil e clara */
+}
+
+.sidebar-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: #64748b; /* Cinza dos labels do PDV */
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.menu-item:hover {
+  background: #f8fafc;
+  color: #334155;
+}
+
+.menu-item.active {
+  background: #eff6ff; /* Fundo azul bem claro */
+  color: #2563eb; /* Azul escuro para destaque */
+  box-shadow: inset 4px 0 0 0 #3b82f6; /* Barra indicadora lateral com o azul do PDV */
+}
+
+/* ==================================
+   ÁREA PRINCIPAL DE CONTEÚDO
+================================== */
+.relatorios-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.content-header {
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 16px;
+}
+
+.content-header h2 {
+  margin: 0 0 8px 0;
+  color: #334155;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.content-header p {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.95rem;
+}
+
+/* Placeholder para o futuro componente (usando o estilo do formulário de adicionar item) */
+.report-placeholder {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed #cbd5e1; /* Cor da borda dos inputs do PDV */
+  border-radius: 8px;
+  background: #f8fafc; /* Fundo igual ao formulário superior do PDV */
+}
+
+.placeholder-content {
+  text-align: center;
+  color: #64748b;
+}
+
+.placeholder-icon {
+  margin-bottom: 16px;
+  color: #94a3b8;
+}
+
+.placeholder-content p {
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.placeholder-content strong {
+  color: #3b82f6; /* Cor primária */
+  font-weight: 600;
+}

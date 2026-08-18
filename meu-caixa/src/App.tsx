@@ -4,6 +4,7 @@ import { Pdv } from './components/Pdv';
 import { FichasList } from './components/FichasList';
 import { FichaDetalhes } from './components/FichaDetalhes';
 import { Mercadorias } from './components/mercadorias/Mercadorias';
+import { Relatorios } from './components/Relatorios'; // Adicionada a importação dos Relatórios
 import './App.css';
 import './components/Header.css'; 
 
@@ -34,6 +35,11 @@ function App() {
 
     if (abaAtiva === 'mercadorias') {
       return <Mercadorias />;
+    }
+
+    // Renderiza o módulo de Relatórios quando selecionado no Header
+    if (abaAtiva === 'relatorios') {
+      return <Relatorios />;
     }
 
     return <div style={{padding: 24}}><h1>Módulo em desenvolvimento...</h1></div>;

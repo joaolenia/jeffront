@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { CheckCircle, Trash2, Plus, DollarSign, CreditCard } from 'lucide-react';
+import { CheckCircle, Trash2, Plus, DollarSign, CreditCard, BookOpen, Loader2 } from 'lucide-react';
 import { CupomFiscal } from './CupomFiscal';
 import api from '../api';
 import './Pdv.css';
+import { CrediarioForm } from './CrediarioForm';
+import type { Ficha } from './CrediarioForm';
 
 interface ItemCaixa {
   id: number;
@@ -11,15 +13,18 @@ interface ItemCaixa {
   preco: number;
 }
 
+type FormaPagamento = 'Dinheiro' | 'Cartão' | 'Pix' | 'Crediário';
+
 export function Pdv() {
   const [itensCaixa, setItensCaixa] = useState<ItemCaixa[]>([]);
   const [nomeProduto, setNomeProduto] = useState('');
   const [preco, setPreco] = useState('');
   const [qtd, setQtd] = useState('1');
   
-  const [formaPagamento, setFormaPagamento] = useState('Dinheiro');
+  const [formaPagamento, setFormaPagamento] = useState<FormaPagamento>('Dinheiro');
   const [valorRecebido, setValorRecebido] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showCrediarioModal, setShowCrediarioModal] = useState(false);
 
   const precoInputRef = useRef<HTMLInputElement>(null);
 
@@ -61,40 +66,87 @@ export function Pdv() {
     setItensCaixa(itensCaixa.filter(item => item.id !== id));
   };
 
-  const handleFinalizar = async () => {
+  // Botão de Finalizar Venda foi clicado
+  const handleFinalizarClick = () => {
     if (itensCaixa.length === 0) return;
+    
     if (formaPagamento === 'Dinheiro' && valorRecebidoNum < totalVenda) {
       alert('Valor recebido é menor que o total.');
       return;
     }
     
-    if (loading) return; // Previne múltiplos envios
+    // Se for Crediário, interceptamos abrindo o Modal. Caso contrário, finaliza direto.
+    if (formaPagamento === 'Crediário') {
+      setShowCrediarioModal(true);
+    } else {
+      processarVenda(null);
+    }
+  };
+
+  // Método que unifica a Venda e a Ficha (se existir)
+  const processarVenda = async (fichaCrediario: Ficha | null) => {
+    if (loading) return; 
     setLoading(true);
 
-    const payload = {
+    const isCrediario = formaPagamento === 'Crediário';
+
+    // O payload exato esperado pela entidade Venda no backend
+    // Se for crediário, o valor recebido e o troco no caixa são 0
+    const payloadVenda = {
       itens: itensCaixa,
       total: totalVenda,
-      valorRecebido: valorRecebidoNum,
-      troco: troco,
+      valorRecebido: isCrediario ? 0 : valorRecebidoNum,
+      troco: isCrediario ? 0 : troco,
       formaPagamento: formaPagamento
     };
 
     try {
-      const response = await api.post('/vendas', payload);
+      // 1. POST para salvar a venda no Caixa
+      const responseVenda = await api.post('/vendas', payloadVenda);
       
-      if (response.status === 201) {
+      // 2. PATCH para salvar na Ficha do Cliente (se for Crediário)
+      if (isCrediario && fichaCrediario) {
+        const resumoItens = itensCaixa.map(i => `${i.qtd}x ${i.nome}`).join(', ');
+        
+        const novaCompra = {
+          idVenda: responseVenda.data?.id || Date.now(), // Fallback
+          data: new Date().toISOString(),
+          resumoItens: resumoItens,
+          valor: totalVenda
+        };
+
+        await api.patch(`/fichas/${fichaCrediario.id}`, {
+          valorTotal: Number(fichaCrediario.valorTotal) + totalVenda,
+          compras: [...(fichaCrediario.compras || []), novaCompra]
+        });
+
+        setShowCrediarioModal(false);
+      }
+
+      // Axios considera status 2xx como sucesso (NestJS retorna 201 Created por padrão no POST)
+      if (responseVenda.status === 201 || responseVenda.status === 200) {
         // Abre a tela de impressão ANTES de limpar os dados da tela
         window.print();
         
         // Limpa a tela após a impressão
-        alert('Venda finalizada com sucesso!');
+        alert(`Venda finalizada com sucesso! (${formaPagamento})`);
         setItensCaixa([]);
         setValorRecebido('');
         setFormaPagamento('Dinheiro');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao salvar a venda:', error);
-      alert('Ocorreu um erro ao finalizar a venda. Verifique o console ou conexão com a API.');
+      
+      if (error.response) {
+        console.error('Dados do erro do servidor:', error.response.data);
+        alert(`Erro do Servidor: ${error.response.data.message || 'Verifique o console.'}`);
+      } else if (error.request) {
+        console.error('Sem resposta do servidor (Possível erro de CORS ou API offline).');
+        alert('Erro de rede: O servidor não respondeu. A API está rodando corretamente?');
+      } else {
+        alert('Ocorreu um erro ao montar a requisição.');
+      }
+      throw error; // Repassa erro pro Modal não fechar se houver falha
     } finally {
       setLoading(false);
     }
@@ -103,14 +155,15 @@ export function Pdv() {
   // Escuta o atalho de teclado F2
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'F2') {
+      // Impede o atalho de agir se o modal de crediário estiver aberto
+      if (e.key === 'F2' && !showCrediarioModal) {
         e.preventDefault();
-        handleFinalizar();
+        handleFinalizarClick();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [itensCaixa, formaPagamento, valorRecebido, totalVenda, loading]);
+  }, [itensCaixa, formaPagamento, valorRecebido, totalVenda, loading, showCrediarioModal]);
 
   return (
     <div className="pdv-container">
@@ -118,8 +171,8 @@ export function Pdv() {
         itens={itensCaixa} 
         total={totalVenda} 
         formaPagamento={formaPagamento}
-        valorRecebido={valorRecebidoNum}
-        troco={troco}
+        valorRecebido={formaPagamento === 'Crediário' ? 0 : valorRecebidoNum}
+        troco={formaPagamento === 'Crediário' ? 0 : troco}
       />
 
       <div className="pdv-layout hide-on-print">
@@ -133,6 +186,7 @@ export function Pdv() {
                 placeholder="Ex: Pão Francês" 
                 value={nomeProduto} 
                 onChange={(e) => setNomeProduto(e.target.value)} 
+                disabled={loading}
               />
             </div>
             <div className="input-group">
@@ -142,6 +196,7 @@ export function Pdv() {
                 min="1"
                 value={qtd} 
                 onChange={(e) => setQtd(e.target.value)} 
+                disabled={loading}
               />
             </div>
             <div className="input-group">
@@ -156,9 +211,10 @@ export function Pdv() {
                 onChange={(e) => setPreco(e.target.value)} 
                 autoFocus
                 required
+                disabled={loading}
               />
             </div>
-            <button type="submit" className="btn-add">
+            <button type="submit" className="btn-add" disabled={loading}>
               <Plus size={24} />
             </button>
           </form>
@@ -184,7 +240,7 @@ export function Pdv() {
                     <td>{formatCurrency(item.preco)}</td>
                     <td>{formatCurrency(item.qtd * item.preco)}</td>
                     <td>
-                      <button className="btn-icon-danger" onClick={() => handleRemoverItem(item.id)}>
+                      <button className="btn-icon-danger" onClick={() => handleRemoverItem(item.id)} disabled={loading}>
                         <Trash2 size={18} />
                       </button>
                     </td>
@@ -215,6 +271,10 @@ export function Pdv() {
                   className={`btn-pay ${formaPagamento === 'Pix' ? 'active' : ''}`}
                   onClick={() => setFormaPagamento('Pix')}
                 >Pix</button>
+                <button 
+                  className={`btn-pay crediario-btn ${formaPagamento === 'Crediário' ? 'active' : ''}`}
+                  onClick={() => setFormaPagamento('Crediário')}
+                ><BookOpen size={18}/> Crediário</button>
               </div>
 
               {formaPagamento === 'Dinheiro' && (
@@ -237,20 +297,27 @@ export function Pdv() {
             </div>
 
             <div className="action-buttons">
-              {/* Botão único e direto, sem o bloco separado de atalhos e sem o botão isolado de imprimir */}
               <button 
                 className="btn-action btn-success" 
-                onClick={handleFinalizar}
+                onClick={handleFinalizarClick}
                 disabled={loading || itensCaixa.length === 0}
               >
-                <CheckCircle size={24} /> 
-                {loading ? 'Processando...' : 'Finalizar Venda [F2]'}
+                {loading && !showCrediarioModal ? <Loader2 size={24} className="loading-spinner"/> : <CheckCircle size={24} />} 
+                {loading && !showCrediarioModal ? 'Processando...' : 'Finalizar Venda [F2]'}
               </button>
             </div>
             
           </div>
         </div>
       </div>
+
+      {showCrediarioModal && (
+        <CrediarioForm
+          totalVenda={totalVenda}
+          onConfirm={processarVenda}
+          onClose={() => setShowCrediarioModal(false)}
+        />
+      )}
     </div>
   );
 }

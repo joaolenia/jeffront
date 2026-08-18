@@ -1,21 +1,24 @@
 import React from 'react';
-import { Monitor, ShoppingCart, Package, Lock, BarChart3 } from 'lucide-react';
+import { Monitor, User, LogOut } from 'lucide-react';
 import './Header.css';
 
-export function Header() {
+export const Header: React.FC = () => {
   return (
-    <header className="main-header">
-      <div className="logo-container">
+    <header className="hi-tech-header">
+      <div className="header-logo">
         <Monitor className="logo-icon" size={28} />
-        <h1>Mercado <span>Bom Jesus</span></h1>
+        <h1>MEU CAIXA <span>v2.0</span></h1>
       </div>
-      <nav className="nav-menu">
-        <button className="nav-item active"><ShoppingCart size={18} /> Caixa</button>
-        <button className="nav-item"><Package size={18} /> Fichas</button>
-        <button className="nav-item"><Package size={18} /> Mercadorias</button>
-        <button className="nav-item"><Lock size={18} /> Cofre</button>
-        <button className="nav-item"><BarChart3 size={18} /> Relatórios</button>
-      </nav>
+      <div className="header-actions">
+        <div className="user-info">
+          <User className="user-icon" size={20} />
+          <span>Operador 01</span>
+        </div>
+        <button className="logout-btn">
+          <LogOut size={18} />
+          <span>Sair</span>
+        </button>
+      </div>
     </header>
   );
-}
+};

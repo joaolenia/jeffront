@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Printer, CheckCircle, Trash2, Plus, DollarSign, CreditCard } from 'lucide-react';
+import { CheckCircle, Trash2, Plus, DollarSign, CreditCard } from 'lucide-react';
 import { CupomFiscal } from './CupomFiscal';
+import api from '../api';
 import './Pdv.css';
 
 interface ItemCaixa {
@@ -18,6 +19,7 @@ export function Pdv() {
   
   const [formaPagamento, setFormaPagamento] = useState('Dinheiro');
   const [valorRecebido, setValorRecebido] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const precoInputRef = useRef<HTMLInputElement>(null);
 
@@ -52,48 +54,66 @@ export function Pdv() {
     setNomeProduto('');
     setPreco('');
     setQtd('1');
-    precoInputRef.current?.focus(); // Mantém o foco no preço para facilitar lançamentos rápidos
+    precoInputRef.current?.focus();
   };
 
   const handleRemoverItem = (id: number) => {
     setItensCaixa(itensCaixa.filter(item => item.id !== id));
   };
 
-  const handleFinalizar = () => {
+  const handleFinalizar = async () => {
     if (itensCaixa.length === 0) return;
     if (formaPagamento === 'Dinheiro' && valorRecebidoNum < totalVenda) {
       alert('Valor recebido é menor que o total.');
       return;
     }
-    alert('Venda finalizada!');
-    setItensCaixa([]);
-    setValorRecebido('');
-    setFormaPagamento('Dinheiro');
+    
+    if (loading) return; // Previne múltiplos envios
+    setLoading(true);
+
+    const payload = {
+      itens: itensCaixa,
+      total: totalVenda,
+      valorRecebido: valorRecebidoNum,
+      troco: troco,
+      formaPagamento: formaPagamento
+    };
+
+    try {
+      const response = await api.post('/vendas', payload);
+      
+      if (response.status === 201) {
+        // Abre a tela de impressão ANTES de limpar os dados da tela
+        window.print();
+        
+        // Limpa a tela após a impressão
+        alert('Venda finalizada com sucesso!');
+        setItensCaixa([]);
+        setValorRecebido('');
+        setFormaPagamento('Dinheiro');
+      }
+    } catch (error) {
+      console.error('Erro ao salvar a venda:', error);
+      alert('Ocorreu um erro ao finalizar a venda. Verifique o console ou conexão com a API.');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleImprimir = () => {
-    if (itensCaixa.length === 0) return;
-    window.print();
-  };
-
-  // Atalhos de teclado
+  // Escuta o atalho de teclado F2
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'F2') {
         e.preventDefault();
         handleFinalizar();
-      } else if (e.key === 'F4') {
-        e.preventDefault();
-        handleImprimir();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [itensCaixa, formaPagamento, valorRecebido, totalVenda]);
+  }, [itensCaixa, formaPagamento, valorRecebido, totalVenda, loading]);
 
   return (
     <div className="pdv-container">
-      {/* Bobina de Impressão (Oculta na tela) */}
       <CupomFiscal 
         itens={itensCaixa} 
         total={totalVenda} 
@@ -102,12 +122,9 @@ export function Pdv() {
         troco={troco}
       />
 
-      {/* Interface do PDV */}
       <div className="pdv-layout hide-on-print">
         
-        {/* Lado Esquerdo */}
         <div className="pdv-left-panel">
-          {/* Lançamento Manual de Produto */}
           <form className="add-item-form" onSubmit={handleAdicionarItem}>
             <div className="input-group" style={{ flex: 2 }}>
               <label>Produto (Opcional)</label>
@@ -146,7 +163,6 @@ export function Pdv() {
             </button>
           </form>
 
-          {/* Lista de Itens */}
           <div className="cart-list">
             <table className="modern-table">
               <thead>
@@ -179,13 +195,11 @@ export function Pdv() {
           </div>
         </div>
 
-        {/* Lado Direito */}
         <div className="pdv-right-panel">
           <div className="summary-card">
             <h2>Total da Venda</h2>
             <div className="total-display">{formatCurrency(totalVenda)}</div>
 
-            {/* Formas de Pagamento */}
             <div className="payment-section">
               <h3>Forma de Pagamento</h3>
               <div className="payment-methods">
@@ -222,19 +236,18 @@ export function Pdv() {
               )}
             </div>
 
-            <div className="shortcuts-info">
-              <p><span>F2</span> Finalizar Venda</p>
-              <p><span>F4</span> Imprimir Cupom</p>
-            </div>
-
             <div className="action-buttons">
-              <button className="btn-action btn-success" onClick={handleFinalizar}>
-                <CheckCircle size={24} /> Finalizar (F2)
-              </button>
-              <button className="btn-action btn-primary" onClick={handleImprimir}>
-                <Printer size={24} /> Imprimir (F4)
+              {/* Botão único e direto, sem o bloco separado de atalhos e sem o botão isolado de imprimir */}
+              <button 
+                className="btn-action btn-success" 
+                onClick={handleFinalizar}
+                disabled={loading || itensCaixa.length === 0}
+              >
+                <CheckCircle size={24} /> 
+                {loading ? 'Processando...' : 'Finalizar Venda [F2]'}
               </button>
             </div>
+            
           </div>
         </div>
       </div>

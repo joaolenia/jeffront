@@ -1,160 +1,228 @@
-/* =========================================
-   ESTILOS: LISTAGEM DE FICHAS (FLAT DESIGN)
-   ========================================= */
-
-.fichas-list-container {
-  padding: 24px 32px;
-  height: calc(100vh - 70px);
-  overflow-y: auto;
-  background-color: #f8fafc; /* Fundo leve para contraste com os cards brancos */
-  box-sizing: border-box;
+.fichas-container {
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
-.fichas-list-header {
+.fichas-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 24px;
 }
 
-.fichas-list-title {
-  margin: 0;
-  color: #1e293b;
-  font-size: 1.6rem;
-  font-weight: 600;
-}
-
-.fichas-list-controls {
+.header-title {
   display: flex;
+  align-items: center;
   gap: 12px;
 }
 
-.fichas-list-search {
+.header-title h1 {
+  margin: 0;
+  font-size: 1.75rem;
+  color: #0f172a;
+}
+
+.fichas-filters {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  background: white;
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.search-wrapper {
+  flex: 1;
+  position: relative;
+  min-width: 250px;
+}
+
+.search-wrapper .search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+}
+
+.search-wrapper input {
+  width: 100%;
+  height: 44px;
+  padding: 0 16px 0 40px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 1rem;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.search-wrapper input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px #eff6ff;
+}
+
+.status-filter {
   display: flex;
   align-items: center;
-  background: #ffffff;
+  gap: 8px;
+}
+
+.status-filter label {
+  font-weight: 600;
+  color: #475569;
+}
+
+.status-filter select {
+  height: 44px;
+  padding: 0 16px;
   border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  padding: 0 12px;
-  height: 40px;
-  width: 300px;
-  transition: border-color 0.2s;
-}
-
-.fichas-list-search:focus-within {
-  border-color: #3b82f6;
-}
-
-.fichas-list-search input {
-  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
   outline: none;
-  margin-left: 8px;
-  width: 100%;
-  font-size: 0.95rem;
-  color: #334155;
-  background: transparent;
-}
-
-.fichas-list-filter {
-  height: 40px;
-  padding: 0 12px;
-  border-radius: 6px;
-  border: 1px solid #cbd5e1;
-  outline: none;
-  font-size: 0.95rem;
-  color: #334155;
-  background-color: #ffffff;
+  background: white;
   cursor: pointer;
 }
 
-.fichas-list-filter:focus {
-  border-color: #3b82f6;
-}
-
-.fichas-list-grid {
+/* Grid de Cards */
+.fichas-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
 }
 
-/* Cards sem animação exagerada, apenas borda no hover */
-.fichas-list-card {
-  background: #ffffff;
-  border-radius: 8px;
+.ficha-card {
+  background: white;
+  border-radius: 12px;
   padding: 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
   border: 1px solid #e2e8f0;
   cursor: pointer;
-  transition: border-color 0.2s;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
 }
 
-.fichas-list-card:hover {
-  border-color: #94a3b8;
+.ficha-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+  border-color: #cbd5e1;
 }
 
-.fichas-list-card-header {
+.card-top {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 16px;
 }
 
-.fichas-list-card-title {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+.card-top h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #1e293b;
+  word-break: break-word;
 }
 
-.fichas-list-avatar {
-  background: #f1f5f9;
-  padding: 8px;
-  border-radius: 6px;
+.status-badge {
   display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.badge-aberta {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.badge-paga {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.card-body {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px dashed #e2e8f0;
+}
+
+.info-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.info-group .label {
+  font-size: 0.8rem;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.info-group .value {
+  font-size: 1rem;
+  color: #334155;
+  font-weight: 500;
+}
+
+.info-group .value.success {
+  color: #16a34a;
+}
+
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: auto;
+}
+
+.saldo-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.saldo-group span {
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+.saldo-group strong {
+  font-size: 1.25rem;
+}
+
+.saldo-group strong.danger { color: #ef4444; }
+.saldo-group strong.success { color: #16a34a; }
+
+/* States */
+.loading-state, .error-state, .empty-state {
+  display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-}
-
-.fichas-list-card-title h3 {
-  margin: 0;
-  color: #334155;
-  font-size: 1.1rem;
-  font-weight: 600;
-}
-
-.fichas-list-badge {
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-}
-
-.fichas-list-badge.pendente { background: #fee2e2; color: #dc2626; }
-.fichas-list-badge.paga { background: #dcfce3; color: #16a34a; }
-
-.fichas-list-card-body p {
-  margin: 4px 0;
-  color: #64748b;
-  font-size: 0.9rem;
-}
-
-.fichas-list-card-body span {
-  color: #475569;
-}
-
-.fichas-list-total {
-  font-size: 1.4rem !important;
-  font-weight: 700 !important;
-  color: #0f172a !important;
-  margin-top: 12px !important;
-}
-
-.fichas-list-empty {
+  padding: 60px 20px;
   text-align: center;
-  color: #64748b;
-  margin-top: 60px;
-  font-size: 1rem;
   background: white;
-  padding: 32px;
-  border-radius: 8px;
-  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  color: #64748b;
 }
+
+.spinner { animation: spin 1s linear infinite; color: #3b82f6; margin-bottom: 16px;}
+.error-state { color: #ef4444; }
+.error-state button {
+  margin-top: 16px;
+  padding: 10px 20px;
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+@keyframes spin { 100% { transform: rotate(360deg); } }

@@ -1,137 +1,239 @@
-/* =========================================
-   ESTILOS: DETALHES DA FICHA (FLAT DESIGN)
-   ========================================= */
-
-.ficha-detalhes-container {
-  padding: 24px 32px;
-  height: calc(100vh - 70px);
-  overflow-y: auto;
-  background-color: #f8fafc;
-  box-sizing: border-box;
+.ficha-details-container {
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
-.ficha-detalhes-header {
+.ficha-details-container.center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 60vh;
+}
+
+.details-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.client-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 1;
+  margin-left: 16px;
+}
+
+.client-info h1 {
+  margin: 0;
+  font-size: 1.75rem;
+  color: #0f172a;
+}
+
+.btn-icon {
+  background: transparent;
+  border: 1px solid #e2e8f0;
+  padding: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  transition: 0.2s;
+}
+
+.btn-icon:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.btn-delete-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: white;
+  border: 1px solid #fee2e2;
+  color: #ef4444;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.btn-delete-header:hover {
+  background: #fee2e2;
+}
+
+/* Alerta de Exclusão */
+.delete-alert {
+  background: #fef2f2;
+  border: 1px solid #fca5a5;
+  border-radius: 12px;
+  padding: 16px 24px;
   display: flex;
   align-items: center;
   gap: 16px;
   margin-bottom: 24px;
 }
 
-.ficha-detalhes-btn-voltar {
+.delete-text { flex: 1; }
+.delete-text strong { color: #991b1b; font-size: 1.1rem; }
+.delete-text p { margin: 4px 0 0 0; color: #7f1d1d; font-size: 0.95rem; }
+
+.delete-actions {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  background: #ffffff;
-  border: 1px solid #cbd5e1;
-  padding: 8px 16px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 600;
-  color: #475569;
-  transition: background 0.2s;
-  font-size: 0.9rem;
+  gap: 12px;
 }
 
-.ficha-detalhes-btn-voltar:hover {
-  background: #f1f5f9;
+.btn-cancelar {
+  background: white; border: 1px solid #cbd5e1; color: #475569;
+  padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600;
 }
-
-.ficha-detalhes-title {
-  margin: 0;
-  color: #1e293b;
-  font-size: 1.6rem;
-  font-weight: 600;
+.btn-excluir {
+  background: #ef4444; border: none; color: white;
+  padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600;
 }
+.btn-excluir:hover { background: #dc2626; }
 
-.ficha-detalhes-title span {
-  color: #3b82f6; /* Azul padronizado */
-}
-
-.ficha-detalhes-layout {
+/* Grid Layout */
+.details-grid {
   display: grid;
   grid-template-columns: 2fr 1.2fr;
   gap: 24px;
 }
 
-/* Painéis sólidos sem sombras pesadas */
-.ficha-detalhes-historico,
-.ficha-detalhes-pagamento {
-  background: #ffffff;
-  border-radius: 8px;
+@media (max-width: 900px) {
+  .details-grid { grid-template-columns: 1fr; }
+}
+
+.card-section {
+  background: white;
+  border-radius: 12px;
   padding: 24px;
-  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  margin-bottom: 24px;
 }
 
-.ficha-detalhes-historico h3,
-.ficha-detalhes-pagamento h3 {
-  margin-top: 0;
-  color: #334155;
-  font-size: 1.15rem;
-  font-weight: 600;
-  margin-bottom: 20px;
+.card-section h2 {
+  margin: 0 0 16px 0;
+  font-size: 1.25rem;
+  color: #1e293b;
+  border-bottom: 2px solid #f1f5f9;
+  padding-bottom: 12px;
 }
 
-.ficha-detalhes-table {
+.text-muted { color: #64748b; font-style: italic; }
+
+/* Tabelas */
+.table-wrapper {
+  overflow-x: auto;
+}
+
+.history-table {
   width: 100%;
   border-collapse: collapse;
 }
 
-.ficha-detalhes-table th {
-  background-color: #f8fafc;
-  color: #475569;
-  font-weight: 600;
+.history-table th {
   text-align: left;
   padding: 12px;
-  border-top: 1px solid #e2e8f0;
-  border-bottom: 2px solid #e2e8f0;
-  font-size: 0.9rem;
+  background: #f8fafc;
+  color: #475569;
+  font-weight: 600;
+  border-bottom: 1px solid #e2e8f0;
 }
 
-.ficha-detalhes-table td {
+.history-table td {
   padding: 12px;
   border-bottom: 1px solid #f1f5f9;
+  color: #334155;
+}
+
+/* Painel de Pagamento (Direita) */
+.payment-card {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  border-top: 4px solid #3b82f6;
+}
+
+.payment-title {
+  margin: 0 0 20px 0;
+  font-size: 1.25rem;
+  color: #0f172a;
+}
+
+.debt-display {
+  background: #f8fafc;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+  margin-bottom: 20px;
+  border: 1px solid #e2e8f0;
+}
+
+.debt-label {
+  display: block;
+  font-size: 0.9rem;
+  color: #64748b;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.debt-value {
+  font-size: 2.5rem;
+  font-weight: 800;
+}
+.debt-value.danger { color: #ef4444; }
+.debt-value.success { color: #16a34a; }
+
+.debt-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 24px;
+  padding: 0 8px;
+}
+
+.summary-line {
+  display: flex;
+  justify-content: space-between;
   color: #475569;
   font-size: 0.95rem;
 }
+.summary-line strong { color: #0f172a; }
+.summary-line strong.success { color: #16a34a; }
 
-.ficha-detalhes-table .align-right { text-align: right; }
-.ficha-detalhes-table .bold-text { font-weight: 600; color: #1e293b; }
-
-/* Painel de Pagamento (Lateral Direita) */
-.ficha-detalhes-pagamento {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+.payment-form {
+  border-top: 1px solid #e2e8f0;
+  padding-top: 20px;
 }
 
-/* Card de Dívida Sóbrio */
-.ficha-detalhes-total {
-  font-size: 2.2rem;
-  font-weight: 700;
-  color: #dc2626; /* Vermelho padrão do Tailwind */
-  text-align: center;
-  padding: 20px;
-  background: #fef2f2;
-  border-radius: 6px;
-  border: 1px solid #fecaca;
-  display: flex;
-  flex-direction: column;
+.payment-form h3 {
+  margin: 0 0 16px 0;
+  font-size: 1.1rem;
+  color: #1e293b;
 }
 
-.ficha-detalhes-total p {
-  margin: 0 0 4px 0;
-  font-size: 0.85rem;
-  color: #991b1b;
-  font-weight: 600;
-  text-transform: uppercase;
-}
-
-.ficha-detalhes-tipo-pgto {
+.payment-mode-toggles {
   display: flex;
   gap: 8px;
+  margin-bottom: 16px;
 }
 
-.ficha-detalhes-btn-tipo {
+.toggle-btn {
   flex: 1;
   padding: 10px;
   border: 1px solid #cbd5e1;
@@ -140,91 +242,76 @@
   cursor: pointer;
   font-weight: 600;
   color: #64748b;
-  font-size: 0.9rem;
+  transition: 0.2s;
 }
 
-.ficha-detalhes-btn-tipo.active {
-  background: #f1f5f9;
-  color: #0f172a;
-  border-color: #94a3b8;
+.toggle-btn.active {
+  background: #eff6ff;
+  border-color: #3b82f6;
+  color: #2563eb;
 }
 
-.ficha-detalhes-input-group {
+.input-group {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  margin-bottom: 16px;
 }
 
-.ficha-detalhes-input-group label {
+.input-group label {
+  font-size: 0.85rem;
   font-weight: 600;
   color: #475569;
-  font-size: 0.85rem;
 }
 
-.ficha-detalhes-input-group input {
-  padding: 12px;
-  border-radius: 6px;
+.input-group input, .input-group select {
+  height: 44px;
   border: 1px solid #cbd5e1;
-  font-size: 1.1rem;
+  border-radius: 6px;
+  padding: 0 12px;
+  font-size: 1rem;
   outline: none;
+  font-family: inherit;
 }
 
-.ficha-detalhes-input-group input:focus {
-  border-color: #3b82f6;
-}
+.input-group input:disabled { background: #f8fafc; color: #94a3b8; }
+.input-group input:focus, .input-group select:focus { border-color: #3b82f6; }
 
-.ficha-detalhes-metodos-container label {
-  font-weight: 600;
-  color: #475569;
-  font-size: 0.85rem;
-  display: block;
-  margin-bottom: 6px;
-}
-
-.ficha-detalhes-metodos {
-  display: flex;
-  gap: 8px;
-}
-
-.ficha-detalhes-btn-metodo {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 10px 0;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  background: white;
-  cursor: pointer;
-  font-weight: 600;
-  color: #64748b;
-  font-size: 0.9rem;
-}
-
-.ficha-detalhes-btn-metodo.active {
-  background: #f1f5f9;
-  color: #0f172a;
-  border-color: #94a3b8;
-}
-
-/* Botão Confirmar Sólido e Direto */
-.ficha-detalhes-btn-confirmar {
-  background: #16a34a; /* Verde padrão */
+.btn-confirm-payment {
+  width: 100%;
+  height: 50px;
+  background: #10b981;
   color: white;
   border: none;
-  padding: 16px;
-  border-radius: 6px;
-  font-size: 1rem;
+  border-radius: 8px;
+  font-size: 1.1rem;
   font-weight: 600;
   cursor: pointer;
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   gap: 8px;
-  margin-top: auto;
+  transition: 0.2s;
+  margin-top: 24px;
 }
 
-.ficha-detalhes-btn-confirmar:hover {
-  background: #15803d;
-} 
+.btn-confirm-payment:hover:not(:disabled) { background: #059669; }
+.btn-confirm-payment:disabled { opacity: 0.7; cursor: not-allowed; }
+
+.paid-success-message {
+  text-align: center;
+  padding: 32px 0;
+  color: #16a34a;
+}
+.paid-success-message h3 { margin: 16px 0 8px 0; }
+.paid-success-message p { color: #64748b; font-size: 0.9rem; }
+
+.btn-back {
+  margin-top: 16px;
+  padding: 10px 20px;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}

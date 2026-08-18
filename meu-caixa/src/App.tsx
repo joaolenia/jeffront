@@ -1,48 +1,23 @@
-import { useState } from 'react';
+import { BrowserRouter, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { Monitor, ShoppingCart, Ticket, Package, Lock, BarChart3 } from 'lucide-react';
 import { Pdv } from './components/Pdv';
 import { FichasList } from './components/FichasList';
 import { FichaDetalhes } from './components/FichaDetalhes';
 import { Mercadorias } from './components/mercadorias/Mercadorias';
-import { Relatorios } from './components/Relatorios'; // Adicionada a importação dos Relatórios
+import { Relatorios } from './components/Relatorios';
 import './App.css';
 import './components/Header.css'; 
 
-function App() {
-  // Controla qual aba está ativa ('caixa', 'fichas', 'mercadorias', etc)
-  const [abaAtiva, setAbaAtiva] = useState('caixa');
-  
-  // Se for null, mostra a lista. Se tiver um número, mostra os detalhes da ficha
-  const [fichaSelecionadaId, setFichaSelecionadaId] = useState<number | null>(null);
+// Componente interno para podermos usar os hooks (useNavigate, useLocation)
+function AppContent() {
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  // Renderiza a tela correta com base no estado
-  const renderContent = () => {
-    if (abaAtiva === 'caixa') {
-      return <Pdv />;
-    }
-    
-    if (abaAtiva === 'fichas') {
-      if (fichaSelecionadaId !== null) {
-        return (
-          <FichaDetalhes 
-            fichaId={fichaSelecionadaId} 
-            onVoltar={() => setFichaSelecionadaId(null)} 
-          />
-        );
-      }
-      return <FichasList onSelectFicha={(id) => setFichaSelecionadaId(id)} />;
-    }
-
-    if (abaAtiva === 'mercadorias') {
-      return <Mercadorias />;
-    }
-
-    // Renderiza o módulo de Relatórios quando selecionado no Header
-    if (abaAtiva === 'relatorios') {
-      return <Relatorios />;
-    }
-
-    return <div style={{padding: 24}}><h1>Módulo em desenvolvimento...</h1></div>;
+  // Função para verificar se a rota atual corresponde ao botão do menu para ativá-lo
+  const isActive = (path: string) => {
+    if (path === '/' && location.pathname === '/') return true;
+    if (path !== '/' && location.pathname.startsWith(path)) return true;
+    return false;
   };
 
   return (
@@ -55,49 +30,61 @@ function App() {
         </div>
         <nav className="nav-menu">
           <button 
-            className={`nav-item ${abaAtiva === 'caixa' ? 'active' : ''}`}
-            onClick={() => setAbaAtiva('caixa')}
+            className={`nav-item ${isActive('/') ? 'active' : ''}`}
+            onClick={() => navigate('/')}
           >
             <ShoppingCart size={18} /> Caixa
           </button>
           
           <button 
-            className={`nav-item ${abaAtiva === 'fichas' ? 'active' : ''}`}
-            onClick={() => {
-              setAbaAtiva('fichas');
-              setFichaSelecionadaId(null); // Reseta para a lista ao clicar no menu
-            }}
+            className={`nav-item ${isActive('/fichas') ? 'active' : ''}`}
+            onClick={() => navigate('/fichas')}
           >
             <Ticket size={18} /> Fichas
           </button>
           
           <button 
-            className={`nav-item ${abaAtiva === 'mercadorias' ? 'active' : ''}`} 
-            onClick={() => setAbaAtiva('mercadorias')}
+            className={`nav-item ${isActive('/mercadorias') ? 'active' : ''}`} 
+            onClick={() => navigate('/mercadorias')}
           >
             <Package size={18} /> Mercadorias
           </button>
           
           <button 
-            className={`nav-item ${abaAtiva === 'cofre' ? 'active' : ''}`} 
-            onClick={() => setAbaAtiva('cofre')}
+            className={`nav-item ${isActive('/cofre') ? 'active' : ''}`} 
+            onClick={() => navigate('/cofre')}
           >
             <Lock size={18} /> Cofre
           </button>
           
           <button 
-            className={`nav-item ${abaAtiva === 'relatorios' ? 'active' : ''}`} 
-            onClick={() => setAbaAtiva('relatorios')}
+            className={`nav-item ${isActive('/relatorios') ? 'active' : ''}`} 
+            onClick={() => navigate('/relatorios')}
           >
             <BarChart3 size={18} /> Relatórios
           </button>
         </nav>
       </header>
 
-      {/* Conteúdo Principal */}
-      {renderContent()}
+      {/* Conteúdo Principal gerenciado pelo React Router */}
+      <Routes>
+        <Route path="/" element={<Pdv />} />
+        <Route path="/fichas" element={<FichasList />} />
+        <Route path="/fichas/:id" element={<FichaDetalhes />} />
+        <Route path="/mercadorias" element={<Mercadorias />} />
+        <Route path="/relatorios" element={<Relatorios />} />
+        <Route path="/cofre" element={<div style={{padding: 24}}><h1>Módulo em desenvolvimento...</h1></div>} />
+      </Routes>
     </div>
   );
 }
 
-export default App;
+// O componente raiz envolve a aplicação no provedor de rotas
+// AQUI ESTÁ A CORREÇÃO: "export function" compatível com o seu main.tsx
+export function App() {
+  return (
+    <BrowserRouter>
+      <AppContent />
+    </BrowserRouter>
+  );
+}

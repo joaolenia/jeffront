@@ -1,84 +1,155 @@
-import  { useState } from 'react';
-import { Search, User } from 'lucide-react';
+import  { useState, useEffect } from 'react';
+import { Search, FileText, CheckCircle, Clock, ChevronRight, AlertCircle, Loader2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import api from '../api';
 import './FichasList.css';
 
-const DADOS_FICHAS = [
-  { id: 1, nome: 'João Silva', telefone: '(42) 99999-1111', totalDevido: 150.50, status: 'pendente' },
-  { id: 2, nome: 'Maria Oliveira', telefone: '(42) 98888-2222', totalDevido: 0, status: 'paga' },
-  { id: 3, nome: 'Carlos Souza', telefone: '(42) 97777-3333', totalDevido: 45.00, status: 'pendente' },
-  { id: 4, nome: 'Ana Costa', telefone: '(42) 96666-4444', totalDevido: 320.00, status: 'pendente' },
-];
-
-interface FichasListProps {
-  onSelectFicha: (id: number) => void;
+export interface Ficha {
+  id: number;
+  clienteNome: string;
+  compras: any[];
+  pagamentos: any[];
+  valorTotal: number;
+  valorPago: number;
+  status: string;
+  dataCriacao?: string;
+  dataAtualizacao?: string;
 }
 
-export function FichasList({ onSelectFicha }: FichasListProps) {
-  const [busca, setBusca] = useState('');
-  const [filtroStatus, setFiltroStatus] = useState('todas');
+export function FichasList() {
+  const [fichas, setFichas] = useState<Ficha[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'TODOS' | 'ABERTA' | 'PAGA'>('TODOS');
+  
+  const navigate = useNavigate();
 
-  const formatCurrency = (value: number) => 
-    new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+  useEffect(() => {
+    fetchFichas();
+  }, []);
 
-  const fichasFiltradas = DADOS_FICHAS.filter(ficha => {
-    const matchBusca = ficha.nome.toLowerCase().includes(busca.toLowerCase());
-    const matchStatus = filtroStatus === 'todas' || ficha.status === filtroStatus;
-    return matchBusca && matchStatus;
+  const fetchFichas = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await api.get('/fichas');
+      setFichas(response.data);
+    } catch (err) {
+      console.error('Erro ao buscar fichas:', err);
+      setError('Não foi possível carregar a lista de fichas. Verifique a conexão com o servidor.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(value) || 0);
+  };
+
+  // Aplica os filtros de pesquisa e status
+  const fichasFiltradas = fichas.filter(ficha => {
+    const matchesSearch = ficha.clienteNome?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === 'TODOS' || ficha.status === statusFilter;
+    return matchesSearch && matchesStatus;
   });
 
   return (
-    <div className="fichas-list-container">
-      <div className="fichas-list-header">
-        <h2 className="fichas-list-title">Fichas de Clientes</h2>
-        <div className="fichas-list-controls">
-          <div className="fichas-list-search">
-            <Search size={20} color="#94a3b8" />
-            <input 
-              type="text" 
-              placeholder="Pesquisar cliente..." 
-              value={busca}
-              onChange={(e) => setBusca(e.target.value)}
-            />
-          </div>
-          <select 
-            className="fichas-list-filter"
-            value={filtroStatus}
-            onChange={(e) => setFiltroStatus(e.target.value)}
-          >
-            <option value="todas">Status: Todos</option>
-            <option value="pendente">Pendentes</option>
-            <option value="paga">Pagas</option>
+    <div className="fichas-container">
+      <div className="fichas-header">
+        <div className="header-title">
+          <FileText size={28} color="#3b82f6" />
+          <h1>Contas de Clientes (Crediário)</h1>
+        </div>
+      </div>
+
+      <div className="fichas-filters">
+        <div className="search-wrapper">
+          <Search size={20} className="search-icon" />
+          <input 
+            type="text" 
+            placeholder="Pesquisar cliente..." 
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+        
+        <div className="status-filter">
+          <label>Status:</label>
+          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as any)}>
+            <option value="TODOS">Todos</option>
+            <option value="ABERTA">Abertas</option>
+            <option value="PAGA">Pagas</option>
           </select>
         </div>
       </div>
 
-      <div className="fichas-list-grid">
-        {fichasFiltradas.map(ficha => (
-          <div key={ficha.id} className="fichas-list-card" onClick={() => onSelectFicha(ficha.id)}>
-            <div className="fichas-list-card-header">
-              <div className="fichas-list-card-title">
-                <div className="fichas-list-avatar">
-                  <User size={20} color="#3b82f6" />
+      {loading && (
+        <div className="loading-state">
+          <Loader2 size={40} className="spinner" />
+          <p>Carregando fichas...</p>
+        </div>
+      )}
+
+      {error && !loading && (
+        <div className="error-state">
+          <AlertCircle size={40} />
+          <p>{error}</p>
+          <button onClick={fetchFichas}>Tentar Novamente</button>
+        </div>
+      )}
+
+      {!loading && !error && fichasFiltradas.length === 0 && (
+        <div className="empty-state">
+          <FileText size={48} />
+          <p>Nenhuma ficha encontrada.</p>
+        </div>
+      )}
+
+      {!loading && !error && fichasFiltradas.length > 0 && (
+        <div className="fichas-grid">
+          {fichasFiltradas.map(ficha => {
+            const saldoDevedor = Number(ficha.valorTotal) - Number(ficha.valorPago);
+            const isPaga = ficha.status === 'PAGA' || saldoDevedor <= 0;
+
+            return (
+              <div 
+                key={ficha.id} 
+                className={`ficha-card ${isPaga ? 'paga' : 'aberta'}`}
+                onClick={() => navigate(`/fichas/${ficha.id}`)}
+              >
+                <div className="card-top">
+                  <h3>{ficha.clienteNome}</h3>
+                  <span className={`status-badge ${isPaga ? 'badge-paga' : 'badge-aberta'}`}>
+                    {isPaga ? <CheckCircle size={14} /> : <Clock size={14} />}
+                    {isPaga ? 'PAGA' : 'ABERTA'}
+                  </span>
                 </div>
-                <h3>{ficha.nome}</h3>
+                
+                <div className="card-body">
+                  <div className="info-group">
+                    <span className="label">Total Comprado</span>
+                    <span className="value">{formatCurrency(ficha.valorTotal)}</span>
+                  </div>
+                  <div className="info-group">
+                    <span className="label">Total Pago</span>
+                    <span className="value success">{formatCurrency(ficha.valorPago)}</span>
+                  </div>
+                </div>
+
+                <div className="card-footer">
+                  <div className="saldo-group">
+                    <span>Saldo Devedor</span>
+                    <strong className={isPaga ? 'success' : 'danger'}>
+                      {formatCurrency(saldoDevedor > 0 ? saldoDevedor : 0)}
+                    </strong>
+                  </div>
+                  <ChevronRight size={20} color="#94a3b8" />
+                </div>
               </div>
-              <span className={`fichas-list-badge ${ficha.status === 'pendente' ? 'pendente' : 'paga'}`}>
-                {ficha.status}
-              </span>
-            </div>
-            <div className="fichas-list-card-body">
-              <p>Contato: <span>{ficha.telefone}</span></p>
-              <p className="fichas-list-total">
-                {ficha.totalDevido > 0 ? formatCurrency(ficha.totalDevido) : 'Quitado'}
-              </p>
-            </div>
-          </div>
-        ))}
-      </div>
-      
-      {fichasFiltradas.length === 0 && (
-        <div className="fichas-list-empty">
-          <p>Nenhum cliente encontrado com os filtros atuais.</p>
+            );
+          })}
         </div>
       )}
     </div>

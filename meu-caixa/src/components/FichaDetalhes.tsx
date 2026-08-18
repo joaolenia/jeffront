@@ -1,142 +1,341 @@
-import  { useState } from 'react';
-import { ArrowLeft, CheckCircle, CreditCard, DollarSign } from 'lucide-react';
+import  { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { ArrowLeft, User, DollarSign, AlertCircle, Loader2, CheckCircle, Trash2 } from 'lucide-react';
+import api from '../api';
 import './FichaDetalhes.css';
+import type { Ficha } from './FichasList';
 
-const VENDAS_MOCK = [
-  { id: 101, data: '10/08/2026', descricao: 'Pão, Leite, Manteiga', valor: 25.50 },
-  { id: 102, data: '12/08/2026', descricao: 'Carne, Refrigerante', valor: 75.00 },
-  { id: 103, data: '15/08/2026', descricao: 'Arroz, Feijão', valor: 50.00 },
-];
+type ModoPagamento = 'INTEGRAL' | 'PARCIAL';
+type FormaPagamento = 'Dinheiro' | 'Cartão' | 'Pix';
 
-interface FichaDetalhesProps {
-  fichaId: number;
-  onVoltar: () => void;
-}
+export function FichaDetalhes() {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
 
-export function FichaDetalhes({  onVoltar }: FichaDetalhesProps) {
-  const nomeCliente = "João Silva"; 
-  const totalDevidoOriginal = 150.50;
+  const [ficha, setFicha] = useState<Ficha | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  // Estados de Pagamento
+  const [modoPagamento, setModoPagamento] = useState<ModoPagamento>('INTEGRAL');
+  const [valorDigitado, setValorDigitado] = useState<string>('');
+  const [formaPagamento, setFormaPagamento] = useState<FormaPagamento>('Dinheiro');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [tipoPagamento, setTipoPagamento] = useState<'integral' | 'parcial'>('integral');
-  const [valorParcial, setValorParcial] = useState('');
-  const [formaPagamento, setFormaPagamento] = useState('Dinheiro');
+  // Estados de Exclusão
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
-  const formatCurrency = (value: number) => 
-    new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+  useEffect(() => {
+    if (id) fetchFicha(id);
+  }, [id]);
 
-  const handlePagar = () => {
-    let valorPago = totalDevidoOriginal;
-    
-    if (tipoPagamento === 'parcial') {
-      valorPago = parseFloat(valorParcial.replace(',', '.'));
-      if (isNaN(valorPago) || valorPago <= 0 || valorPago > totalDevidoOriginal) {
-        alert('Informe um valor válido e menor ou igual ao total da dívida.');
-        return;
-      }
+  const fetchFicha = async (fichaId: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await api.get(`/fichas/${fichaId}`);
+      setFicha(response.data);
+    } catch (err) {
+      console.error('Erro ao buscar ficha:', err);
+      setError('Ficha não encontrada ou erro no servidor.');
+    } finally {
+      setLoading(false);
     }
-
-    alert(`Sucesso! Pagamento de ${formatCurrency(valorPago)} via ${formaPagamento} registrado para ${nomeCliente}.`);
-    onVoltar();
   };
 
+  const saldoDevedor = ficha ? Number(ficha.valorTotal) - Number(ficha.valorPago) : 0;
+
+  const handleEfetuarPagamento = async () => {
+    if (!ficha || isSubmitting) return;
+
+    let valorParaPagar = 0;
+    
+    if (modoPagamento === 'INTEGRAL') {
+      valorParaPagar = saldoDevedor;
+    } else {
+      valorParaPagar = parseFloat(valorDigitado.replace(',', '.'));
+    }
+
+    if (isNaN(valorParaPagar) || valorParaPagar <= 0) {
+      alert('Informe um valor de pagamento válido.');
+      return;
+    }
+
+    if (valorParaPagar > saldoDevedor) {
+      alert('O valor do pagamento não pode ser maior que o saldo devedor.');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    const novoPagamento = {
+      data: new Date().toISOString(),
+      forma: formaPagamento,
+      valor: valorParaPagar
+    };
+
+    const novoValorPago = Number(ficha.valorPago) + valorParaPagar;
+    const novoStatus = novoValorPago >= Number(ficha.valorTotal) ? 'PAGA' : 'ABERTA';
+
+    try {
+      await api.patch(`/fichas/${ficha.id}`, {
+        pagamentos: [...(ficha.pagamentos || []), novoPagamento],
+        valorPago: novoValorPago,
+        status: novoStatus
+      });
+
+      alert('Pagamento registrado com sucesso!');
+      setValorDigitado('');
+      fetchFicha(ficha.id.toString()); // Recarrega os dados
+    } catch (err) {
+      console.error('Erro ao registrar pagamento:', err);
+      alert('Erro ao registrar pagamento. Tente novamente.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleExcluirFicha = async () => {
+    if (!ficha) return;
+    setIsDeleting(true);
+    try {
+      await api.delete(`/fichas/${ficha.id}`);
+      alert('Ficha excluída com sucesso.');
+      navigate('/fichas');
+    } catch (err) {
+      console.error('Erro ao excluir ficha:', err);
+      alert('Erro ao excluir ficha. Verifique se existem restrições no backend.');
+      setIsDeleting(false);
+      setShowDeleteConfirm(false);
+    }
+  };
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(value) || 0);
+  };
+
+  const formatDate = (isoString: string) => {
+    if (!isoString) return '-';
+    return new Date(isoString).toLocaleDateString('pt-BR', {
+      day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
+    });
+  };
+
+  if (loading) {
+    return (
+      <div className="ficha-details-container center">
+        <Loader2 size={40} className="spinner" />
+        <p>Carregando dados da ficha...</p>
+      </div>
+    );
+  }
+
+  if (error || !ficha) {
+    return (
+      <div className="ficha-details-container center error-state">
+        <AlertCircle size={40} />
+        <h2>Ops!</h2>
+        <p>{error}</p>
+        <button className="btn-back" onClick={() => navigate('/fichas')}>Voltar para Lista</button>
+      </div>
+    );
+  }
+
+  const isPaga = ficha.status === 'PAGA' || saldoDevedor <= 0;
+
   return (
-    <div className="ficha-detalhes-container">
-      <div className="ficha-detalhes-header">
-        <button className="ficha-detalhes-btn-voltar" onClick={onVoltar}>
-          <ArrowLeft size={20} /> Voltar
+    <div className="ficha-details-container">
+      {/* HEADER */}
+      <div className="details-header">
+        <button className="btn-icon" onClick={() => navigate('/fichas')} title="Voltar">
+          <ArrowLeft size={24} />
         </button>
-        <h2 className="ficha-detalhes-title">
-          Acerto de Conta: <span>{nomeCliente}</span>
-        </h2>
+        <div className="client-info">
+          <User size={28} color="#3b82f6" />
+          <h1>{ficha.clienteNome}</h1>
+          <span className={`status-badge ${isPaga ? 'badge-paga' : 'badge-aberta'}`}>
+            {isPaga ? 'PAGA' : 'ABERTA'}
+          </span>
+        </div>
+        <button 
+          className="btn-delete-header" 
+          onClick={() => setShowDeleteConfirm(true)}
+        >
+          <Trash2 size={20} /> Excluir Ficha
+        </button>
       </div>
 
-      <div className="ficha-detalhes-layout">
-        {/* Painel Esquerdo: Lista de vendas */}
-        <div className="ficha-detalhes-historico">
-          <h3>Histórico de Compras em Aberto</h3>
-          <table className="ficha-detalhes-table">
-            <thead>
-              <tr>
-                <th>Data</th>
-                <th>Resumo dos Itens</th>
-                <th className="align-right">Valor</th>
-              </tr>
-            </thead>
-            <tbody>
-              {VENDAS_MOCK.map(venda => (
-                <tr key={venda.id}>
-                  <td>{venda.data}</td>
-                  <td>{venda.descricao}</td>
-                  <td className="align-right bold-text">{formatCurrency(venda.valor)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      {/* CONFIRMAÇÃO DE EXCLUSÃO */}
+      {showDeleteConfirm && (
+        <div className="delete-alert">
+          <AlertCircle size={24} color="#ef4444" />
+          <div className="delete-text">
+            <strong>Excluir ficha?</strong>
+            <p>Tem certeza que deseja excluir a ficha de <b>{ficha.clienteNome}</b>? Essa ação não poderá ser desfeita.</p>
+          </div>
+          <div className="delete-actions">
+            <button className="btn-cancelar" onClick={() => setShowDeleteConfirm(false)} disabled={isDeleting}>Cancelar</button>
+            <button className="btn-excluir" onClick={handleExcluirFicha} disabled={isDeleting}>
+              {isDeleting ? 'Excluindo...' : 'Sim, Excluir'}
+            </button>
+          </div>
         </div>
+      )}
 
-        {/* Painel Direito: Ações */}
-        <div className="ficha-detalhes-pagamento">
-          <h3>Detalhes do Pagamento</h3>
+      <div className="details-grid">
+        
+        {/* LADO ESQUERDO: TABELAS */}
+        <div className="left-panel">
           
-          <div className="ficha-detalhes-total">
-            <p>Dívida Total</p>
-            {formatCurrency(totalDevidoOriginal)}
+          <div className="card-section">
+            <h2>Histórico de Compras</h2>
+            {(!ficha.compras || ficha.compras.length === 0) ? (
+              <p className="text-muted">Nenhuma compra registrada.</p>
+            ) : (
+              <div className="table-wrapper">
+                <table className="history-table">
+                  <thead>
+                    <tr>
+                      <th>Data</th>
+                      <th>Resumo dos Itens</th>
+                      <th style={{ textAlign: 'right' }}>Valor</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {ficha.compras.map((compra, index) => (
+                      <tr key={index}>
+                        <td>{formatDate(compra.data)}</td>
+                        <td>{compra.resumoItens || 'Itens diversos'}</td>
+                        <td style={{ textAlign: 'right', fontWeight: '500' }}>{formatCurrency(compra.valor)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
 
-          <div className="ficha-detalhes-tipo-pgto">
-            <button 
-              className={`ficha-detalhes-btn-tipo ${tipoPagamento === 'integral' ? 'active' : ''}`}
-              onClick={() => setTipoPagamento('integral')}
-            >
-              Valor Integral
-            </button>
-            <button 
-              className={`ficha-detalhes-btn-tipo ${tipoPagamento === 'parcial' ? 'active' : ''}`}
-              onClick={() => {
-                setTipoPagamento('parcial');
-                setValorParcial('');
-              }}
-            >
-              Valor Parcial
-            </button>
+          <div className="card-section">
+            <h2>Histórico de Pagamentos</h2>
+            {(!ficha.pagamentos || ficha.pagamentos.length === 0) ? (
+              <p className="text-muted">Nenhum pagamento realizado.</p>
+            ) : (
+              <div className="table-wrapper">
+                <table className="history-table">
+                  <thead>
+                    <tr>
+                      <th>Data</th>
+                      <th>Forma</th>
+                      <th style={{ textAlign: 'right' }}>Valor Pago</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {ficha.pagamentos.map((pag, index) => (
+                      <tr key={index}>
+                        <td>{formatDate(pag.data)}</td>
+                        <td>{pag.forma}</td>
+                        <td style={{ textAlign: 'right', color: '#16a34a', fontWeight: 'bold' }}>
+                          + {formatCurrency(pag.valor)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
 
-          {tipoPagamento === 'parcial' && (
-            <div className="ficha-detalhes-input-group">
-              <label>Valor que será pago agora (R$)</label>
-              <input 
-                type="number" 
-                step="0.01"
-                placeholder="Ex: 50.00" 
-                value={valorParcial}
-                onChange={(e) => setValorParcial(e.target.value)}
-                autoFocus
-              />
-            </div>
-          )}
-
-          <div className="ficha-detalhes-metodos-container">
-            <label>Forma de Recebimento</label>
-            <div className="ficha-detalhes-metodos">
-              <button 
-                className={`ficha-detalhes-btn-metodo ${formaPagamento === 'Dinheiro' ? 'active' : ''}`}
-                onClick={() => setFormaPagamento('Dinheiro')}
-              ><DollarSign size={18}/> Dinheiro</button>
-              <button 
-                className={`ficha-detalhes-btn-metodo ${formaPagamento === 'Cartão' ? 'active' : ''}`}
-                onClick={() => setFormaPagamento('Cartão')}
-              ><CreditCard size={18}/> Cartão</button>
-              <button 
-                className={`ficha-detalhes-btn-metodo ${formaPagamento === 'Pix' ? 'active' : ''}`}
-                onClick={() => setFormaPagamento('Pix')}
-              >Pix</button>
-            </div>
-          </div>
-
-          <button className="ficha-detalhes-btn-confirmar" onClick={handlePagar}>
-            <CheckCircle size={22} /> Confirmar Pagamento
-          </button>
         </div>
+
+        {/* LADO DIREITO: ACERTO */}
+        <div className="right-panel">
+          <div className="payment-card">
+            <h2 className="payment-title">Acerto de Conta</h2>
+            
+            <div className="debt-display">
+              <span className="debt-label">Saldo Devedor Atual</span>
+              <div className={`debt-value ${isPaga ? 'success' : 'danger'}`}>
+                {formatCurrency(saldoDevedor > 0 ? saldoDevedor : 0)}
+              </div>
+            </div>
+
+            <div className="debt-summary">
+              <div className="summary-line">
+                <span>Total Comprado:</span>
+                <strong>{formatCurrency(ficha.valorTotal)}</strong>
+              </div>
+              <div className="summary-line">
+                <span>Total Pago:</span>
+                <strong className="success">{formatCurrency(ficha.valorPago)}</strong>
+              </div>
+            </div>
+
+            {!isPaga && (
+              <div className="payment-form">
+                <h3>Realizar Pagamento</h3>
+                
+                <div className="payment-mode-toggles">
+                  <button 
+                    className={`toggle-btn ${modoPagamento === 'INTEGRAL' ? 'active' : ''}`}
+                    onClick={() => setModoPagamento('INTEGRAL')}
+                  >
+                    Valor Integral
+                  </button>
+                  <button 
+                    className={`toggle-btn ${modoPagamento === 'PARCIAL' ? 'active' : ''}`}
+                    onClick={() => setModoPagamento('PARCIAL')}
+                  >
+                    Valor Parcial
+                  </button>
+                </div>
+
+                <div className="input-group">
+                  <label>Valor a Pagar (R$)</label>
+                  <input 
+                    type="number" 
+                    step="0.01" 
+                    value={modoPagamento === 'INTEGRAL' ? saldoDevedor.toFixed(2) : valorDigitado}
+                    onChange={(e) => setValorDigitado(e.target.value)}
+                    disabled={modoPagamento === 'INTEGRAL' || isSubmitting}
+                    placeholder="0.00"
+                  />
+                </div>
+
+                <div className="input-group">
+                  <label>Forma de Recebimento</label>
+                  <select 
+                    value={formaPagamento} 
+                    onChange={(e) => setFormaPagamento(e.target.value as FormaPagamento)}
+                    disabled={isSubmitting}
+                  >
+                    <option value="Dinheiro">Dinheiro</option>
+                    <option value="Cartão">Cartão</option>
+                    <option value="Pix">Pix</option>
+                  </select>
+                </div>
+
+                <button 
+                  className="btn-confirm-payment" 
+                  onClick={handleEfetuarPagamento}
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? <Loader2 size={24} className="spinner" /> : <DollarSign size={24} />}
+                  Confirmar Pagamento
+                </button>
+              </div>
+            )}
+
+            {isPaga && (
+              <div className="paid-success-message">
+                <CheckCircle size={48} color="#16a34a" />
+                <h3>Conta Quitada</h3>
+                <p>Não há pendências financeiras para este cliente no momento.</p>
+              </div>
+            )}
+          </div>
+        </div>
+
       </div>
     </div>
   );

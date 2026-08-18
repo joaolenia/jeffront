@@ -8,6 +8,7 @@ import {
   FileText 
 } from 'lucide-react';
 import './Relatorios.css';
+import { RelatorioVendas } from './relatorios/RelatorioVendas'; // <-- NOVA IMPORTAÇÃO
 
 type ReportType = 'vendas' | 'entradas' | 'saidas' | 'crediario' | 'mercadorias';
 
@@ -23,6 +24,25 @@ export function Relatorios() {
   ];
 
   const activeLabel = menuItems.find(item => item.id === activeReport)?.label;
+
+  // Função para renderizar o componente dinâmico com base na aba
+  const renderReportContent = () => {
+    switch(activeReport) {
+      case 'vendas':
+        return <RelatorioVendas />;
+      // Aqui entrarão os próximos no futuro:
+      // case 'entradas': return <RelatorioEntradas />;
+      default:
+        return (
+          <div className="report-placeholder">
+            <div className="placeholder-content">
+              <FileText size={48} className="placeholder-icon" />
+              <p>O relatório de <strong>{activeLabel}</strong> está em desenvolvimento.</p>
+            </div>
+          </div>
+        );
+    }
+  };
 
   return (
     <div className="relatorios-container">
@@ -53,14 +73,9 @@ export function Relatorios() {
           <p>Utilize os filtros abaixo para analisar os dados de {activeLabel?.toLowerCase()}.</p>
         </header>
         
-        <div className="report-placeholder">
-          <div className="placeholder-content">
-            <FileText size={48} className="placeholder-icon" />
-            <p>
-              O componente do relatório de <strong>{activeLabel}</strong> será renderizado neste espaço.
-            </p>
-          </div>
-        </div>
+        {/* Renderiza o conteúdo do relatório ativo */}
+        {renderReportContent()}
+        
       </main>
 
     </div>

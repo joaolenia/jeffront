@@ -1,0 +1,377 @@
+/* =========================================
+   Relatório de Vendas - Estilos PDV
+   ========================================= */
+
+.relatorio-vendas {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  animation: fadeIn 0.3s ease;
+  height: 100%;
+  overflow-y: auto;
+  padding-right: 8px; /* Espaço para scroll */
+}
+
+/* Scrollbar personalizada */
+.relatorio-vendas::-webkit-scrollbar { width: 8px; }
+.relatorio-vendas::-webkit-scrollbar-track { background: transparent; }
+.relatorio-vendas::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+.relatorio-vendas::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+/* Barra de Filtros */
+.filter-bar {
+  background: white;
+  border-radius: 12px;
+  padding: 16px 24px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 20px;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.filter-group label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.filter-group select,
+.filter-group input {
+  height: 40px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 0 12px;
+  font-size: 0.95rem;
+  color: #334155;
+  background-color: #f8fafc;
+  outline: none;
+  min-width: 180px;
+}
+
+.filter-group select:focus,
+.filter-group input:focus {
+  border-color: #38bdf8;
+  box-shadow: 0 0 0 2px #bae6fd;
+}
+
+.filter-results-info {
+  margin-left: auto;
+  background: #eff6ff;
+  color: #2563eb;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+/* Indicadores Globais */
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+}
+
+.summary-card-metric {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+.summary-card-metric.highlight {
+  background: #0f172a;
+  border-color: #0f172a;
+  color: white;
+}
+
+.summary-card-metric.highlight .metric-title,
+.summary-card-metric.highlight .metric-subtitle {
+  color: #94a3b8;
+}
+
+.metric-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  color: #64748b;
+}
+
+.metric-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.metric-value {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 8px;
+}
+
+.summary-card-metric.highlight .metric-value {
+  color: #38bdf8;
+}
+
+.metric-subtitle {
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+/* Detalhamento Pagamentos */
+.section-title {
+  font-size: 1.2rem;
+  color: #334155;
+  margin: 10px 0 0 0;
+  font-weight: 700;
+}
+
+.payment-breakdown-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.payment-card {
+  background: white;
+  border-radius: 10px;
+  padding: 16px;
+  border: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  transition: transform 0.2s ease;
+}
+
+.payment-card.prazo {
+  border-left: 4px solid #f97316;
+  background: #fffaf5;
+}
+
+.payment-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+}
+
+.pay-icon-box {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.bg-teal { background-color: #14b8a6; }
+.bg-blue { background-color: #3b82f6; }
+.bg-green { background-color: #22c55e; }
+.bg-orange { background-color: #f97316; }
+
+.pay-details h4 {
+  margin: 0 0 4px 0;
+  font-size: 0.9rem;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.pay-value {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 4px;
+}
+
+.pay-stats {
+  display: flex;
+  gap: 12px;
+  font-size: 0.8rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.pay-pct {
+  color: #3b82f6;
+  font-weight: 700;
+}
+
+/* Lista de Vendas (Cards) */
+.sales-list-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.badge-count {
+  background: #e2e8f0;
+  color: #475569;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.sales-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  padding-bottom: 24px;
+}
+
+.sale-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sale-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px dashed #cbd5e1;
+  padding-bottom: 12px;
+}
+
+.sale-id {
+  font-weight: 700;
+  color: #3b82f6;
+  background: #eff6ff;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
+
+.sale-datetime {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-size: 0.8rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.sale-datetime .time {
+  font-weight: 700;
+  color: #475569;
+}
+
+.sale-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sale-total {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #0f172a;
+  text-align: right;
+  margin-bottom: 8px;
+}
+
+.sale-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+}
+
+.info-label {
+  color: #64748b;
+  font-weight: 500;
+}
+
+.info-val {
+  color: #334155;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.method-badge {
+  background: #f1f5f9;
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+}
+
+/* Estados e Utilitários */
+.report-status-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.report-status-container h3 {
+  margin: 16px 0 8px 0;
+  color: #334155;
+}
+
+.report-status-container p {
+  color: #64748b;
+  margin: 0 0 20px 0;
+}
+
+.text-blue { color: #3b82f6; }
+.text-red { color: #ef4444; }
+.text-slate { color: #cbd5e1; }
+
+.icon-spin {
+  animation: spin 1s linear infinite;
+}
+
+.btn-retry {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-retry:hover {
+  background: #2563eb;
+}
+
+@keyframes spin { 100% { transform: rotate(360deg); } }
+
+/* Responsividade Mínima */
+@media (max-width: 768px) {
+  .filter-bar { flex-direction: column; align-items: stretch; }
+  .filter-results-info { margin-left: 0; text-align: center; }
+}

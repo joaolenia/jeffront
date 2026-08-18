@@ -75,6 +75,7 @@
   transition: 0.2s;
 }
 .btn-add:hover { background-color: #2563eb; }
+.btn-add:disabled { opacity: 0.6; cursor: not-allowed; }
 
 /* Tabela Moderna */
 .cart-list { flex: 1; overflow-y: auto; }
@@ -98,14 +99,15 @@
 }
 
 .payment-section h3 { margin: 0 0 12px 0; font-size: 1.1rem; color: #334155; }
-.payment-methods { display: flex; gap: 8px; margin-bottom: 16px; }
+.payment-methods { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
 
 .btn-pay {
-  flex: 1; display: flex; align-items: center; justify-content: center;
+  flex: 1; min-width: 100px; display: flex; align-items: center; justify-content: center;
   gap: 6px; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px;
   background: white; cursor: pointer; font-weight: 600; color: #475569;
 }
 .btn-pay.active { background: #38bdf8; color: #0f172a; border-color: #38bdf8; }
+.btn-pay.active.crediario { background: #f97316; color: white; border-color: #f97316; }
 
 .cash-inputs { background: #f8fafc; padding: 16px; border-radius: 8px; margin-bottom: 16px;}
 .change-display { margin-top: 12px; font-size: 1.2rem; font-weight: 600; color: #0f172a; }
@@ -122,9 +124,10 @@
   font-weight: 600; cursor: pointer; color: white;
 }
 .btn-success { background-color: #22c55e; }
-.btn-success:hover { background-color: #16a34a; }
+.btn-success:hover:not(:disabled) { background-color: #16a34a; }
+.btn-success:disabled { opacity: 0.6; cursor: not-allowed; }
 .btn-primary { background-color: #3b82f6; }
-.btn-primary:hover { background-color: #2563eb; }
+.btn-primary:hover:not(:disabled) { background-color: #2563eb; }
 
 /* =========================================
    CONFIGURAÇÃO DE IMPRESSÃO (CUPOM 80MM)

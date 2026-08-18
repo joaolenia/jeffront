@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
+import React from 'react';
+import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { Monitor, ShoppingCart, Ticket, Package, Lock, BarChart3 } from 'lucide-react';
 import { Pdv } from './components/Pdv';
 import { FichasList } from './components/FichasList';
@@ -79,12 +80,8 @@ function AppContent() {
   );
 }
 
-// O componente raiz envolve a aplicação no provedor de rotas
-// AQUI ESTÁ A CORREÇÃO: "export function" compatível com o seu main.tsx
+// O componente raiz agora apenas exporta o AppContent, 
+// pois o BrowserRouter já está lá no main.tsx
 export function App() {
-  return (
-    <BrowserRouter>
-      <AppContent />
-    </BrowserRouter>
-  );
+  return <AppContent />;
 }

@@ -6,7 +6,6 @@ import './CrediarioForm.css';
 export interface Ficha {
   id: number;
   clienteNome: string;
-  telefone?: string;
   compras: any[];
   pagamentos: any[];
   valorTotal: number;
@@ -20,7 +19,8 @@ interface CrediarioFormProps {
   onClose: () => void;
 }
 
-type Step = 'SEARCH' | 'CONFIRM';
+// Adicionada a etapa 'CREATE'
+type Step = 'SEARCH' | 'CREATE' | 'CONFIRM';
 
 export function CrediarioForm({ totalVenda, onConfirm, onClose }: CrediarioFormProps) {
   const [step, setStep] = useState<Step>('SEARCH');
@@ -28,16 +28,21 @@ export function CrediarioForm({ totalVenda, onConfirm, onClose }: CrediarioFormP
   const [searchResults, setSearchResults] = useState<Ficha[]>([]);
   const [selectedFicha, setSelectedFicha] = useState<Ficha | null>(null);
   
+  // Estados para o novo cadastro
+  const [novoNome, setNovoNome] = useState('');
+
   const [loading, setLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searched, setSearched] = useState(false);
 
-  // Foca no input ao abrir
   useEffect(() => {
-    const input = document.getElementById('search-cliente');
-    if (input) input.focus();
-  }, []);
+    if (step === 'SEARCH') {
+      document.getElementById('search-cliente')?.focus();
+    } else if (step === 'CREATE') {
+      document.getElementById('input-novo-nome')?.focus();
+    }
+  }, [step]);
 
   const handleSearch = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -58,14 +63,25 @@ export function CrediarioForm({ totalVenda, onConfirm, onClose }: CrediarioFormP
     }
   };
 
-  const handleCreateFicha = async () => {
-    if (!searchQuery.trim()) return;
+  const openCreateForm = () => {
+    // Pré-preenche o nome com o que o usuário já havia digitado na busca
+    setNovoNome(searchQuery);
+    setError(null);
+    setStep('CREATE');
+  };
+
+  const handleCreateFicha = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!novoNome.trim()) {
+      setError('O nome do cliente é obrigatório.');
+      return;
+    }
     
     setLoading(true);
     setError(null);
     try {
       const novaFicha = {
-        clienteNome: searchQuery.trim(),
+        clienteNome: novoNome.trim(),
         compras: [],
         pagamentos: [],
         valorTotal: 0,
@@ -76,12 +92,11 @@ export function CrediarioForm({ totalVenda, onConfirm, onClose }: CrediarioFormP
       const response = await api.post('/fichas', novaFicha);
       const fichaCriada = response.data;
       
-      // Seleciona automaticamente e vai para confirmação
       setSelectedFicha(fichaCriada);
       setStep('CONFIRM');
     } catch (err) {
       console.error('Erro ao criar ficha', err);
-      setError('Não foi possível criar a ficha. Tente novamente.');
+      setError('Não foi possível cadastrar o cliente. Verifique a conexão.');
     } finally {
       setLoading(false);
     }
@@ -98,11 +113,10 @@ export function CrediarioForm({ totalVenda, onConfirm, onClose }: CrediarioFormP
     setIsSubmitting(true);
     setError(null);
     try {
-      // Chama o callback do PDV passando a ficha, ele cuidará de salvar a venda e atualizar a ficha
       await onConfirm(selectedFicha);
     } catch (err) {
       setError('Erro ao processar venda no crediário.');
-      setIsSubmitting(false); // Só libera se deu erro, sucesso vai fechar o modal
+      setIsSubmitting(false);
     }
   };
 
@@ -123,7 +137,7 @@ export function CrediarioForm({ totalVenda, onConfirm, onClose }: CrediarioFormP
 
         <div className="crediario-modal-body">
           {error && (
-            <div style={{ padding: '12px', background: '#fee2e2', color: '#ef4444', borderRadius: '8px', display: 'flex', gap: '8px' }}>
+            <div className="error-message">
               <AlertCircle size={20} /> {error}
             </div>
           )}
@@ -134,7 +148,7 @@ export function CrediarioForm({ totalVenda, onConfirm, onClose }: CrediarioFormP
                 <input
                   id="search-cliente"
                   type="text"
-                  placeholder="Digite o nome do cliente..."
+                  placeholder="Buscar cliente por nome..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   disabled={loading}
@@ -148,34 +162,34 @@ export function CrediarioForm({ totalVenda, onConfirm, onClose }: CrediarioFormP
               {searched && !loading && searchResults.length === 0 && (
                 <div className="empty-state">
                   <User size={48} opacity={0.3} />
-                  <p>Nenhum cliente encontrado com o nome <strong>"{searchQuery}"</strong>.</p>
-                  <button className="btn-create-ficha" onClick={handleCreateFicha} type="button">
-                    <Plus size={20} /> Criar nova ficha
+                  <p>Nenhuma ficha encontrada para <strong>"{searchQuery}"</strong>.</p>
+                  <button className="btn-create-ficha" onClick={openCreateForm} type="button">
+                    <Plus size={20} /> Cadastrar Cliente
                   </button>
                 </div>
               )}
 
               {searched && !loading && searchResults.length > 0 && (
                 <div className="fichas-list">
-                  <p style={{ margin: '0 0 8px 0', fontSize: '0.9rem', color: '#64748b' }}>Clientes encontrados:</p>
+                  <p className="results-title">Clientes encontrados:</p>
                   {searchResults.map(ficha => (
                     <div key={ficha.id} className="ficha-card" onClick={() => handleSelectFicha(ficha)}>
                       <div className="ficha-info">
                         <h4>{ficha.clienteNome}</h4>
                         <p>ID da Ficha: #{ficha.id}</p>
                       </div>
-                      <div style={{ textAlign: 'right' }}>
-                        <span style={{ fontSize: '0.85rem', color: '#64748b' }}>Saldo Devedor</span>
-                        <div style={{ fontWeight: 'bold', color: '#ef4444' }}>
+                      <div className="ficha-saldo">
+                        <span>Saldo Devedor</span>
+                        <div className="valor">
                           {formatCurrency(Number(ficha.valorTotal) - Number(ficha.valorPago))}
                         </div>
                       </div>
                     </div>
                   ))}
-                  <div style={{ marginTop: '16px', textAlign: 'center' }}>
-                     <p style={{ fontSize: '0.85rem', color: '#64748b', marginBottom: '8px' }}>O cliente não está na lista?</p>
-                     <button className="btn-create-ficha" style={{ margin: '0 auto' }} onClick={handleCreateFicha} type="button">
-                       <Plus size={18} /> Criar "{searchQuery}"
+                  <div className="create-alternative">
+                     <p>O cliente não está na lista?</p>
+                     <button className="btn-create-ficha outline" onClick={openCreateForm} type="button">
+                       <Plus size={18} /> Novo Cadastro
                      </button>
                   </div>
                 </div>
@@ -183,12 +197,54 @@ export function CrediarioForm({ totalVenda, onConfirm, onClose }: CrediarioFormP
             </>
           )}
 
+          {step === 'CREATE' && (
+            <div className="create-step">
+              <h3 style={{ margin: '0 0 8px 0', color: '#0f172a' }}>Novo Cadastro de Cliente</h3>
+              <form onSubmit={handleCreateFicha} className="create-form">
+                
+                <div className="form-group">
+                  <label htmlFor="input-novo-nome">Nome Completo *</label>
+                  <input 
+                    id="input-novo-nome"
+                    type="text" 
+                    value={novoNome}
+                    onChange={(e) => setNovoNome(e.target.value)}
+                    placeholder="Digite o nome do cliente"
+                    disabled={loading}
+                    required
+                  />
+                </div>
+
+
+                <div className="modal-actions" style={{ marginTop: '12px' }}>
+                  <button 
+                    type="button"
+                    className="btn-modal btn-cancel" 
+                    onClick={() => setStep('SEARCH')}
+                    disabled={loading}
+                  >
+                    Voltar
+                  </button>
+                  <button 
+                    type="submit"
+                    className="btn-modal btn-confirm" 
+                    style={{ background: '#10b981' }}
+                    disabled={loading || !novoNome.trim()}
+                  >
+                    {loading ? <Loader2 size={20} className="loading-spinner"/> : <Plus size={20}/>}
+                    Salvar e Continuar
+                  </button>
+                </div>
+
+              </form>
+            </div>
+          )}
+
           {step === 'CONFIRM' && selectedFicha && (
             <div className="confirm-step">
               <div className="selected-client-card">
-                <CheckCircle size={40} color="#10b981" style={{ marginBottom: '12px' }} />
-                <h3>{selectedFicha.clienteNome}</h3>
-                
+                <CheckCircle size={40} color="#10b981" className="success-icon" />
+                <h3>{selectedFicha.clienteNome}</h3>                
                 <div className="financial-summary">
                   <div className="summary-row">
                     <span>Saldo em aberto atual:</span>
@@ -196,9 +252,9 @@ export function CrediarioForm({ totalVenda, onConfirm, onClose }: CrediarioFormP
                       {formatCurrency(Number(selectedFicha.valorTotal) - Number(selectedFicha.valorPago))}
                     </span>
                   </div>
-                  <div className="summary-row">
+                  <div className="summary-row highlight">
                     <span>Valor desta compra:</span>
-                    <span className="value" style={{ color: '#3b82f6', fontWeight: 'bold' }}>
+                    <span className="value">
                       + {formatCurrency(totalVenda)}
                     </span>
                   </div>
@@ -217,7 +273,7 @@ export function CrediarioForm({ totalVenda, onConfirm, onClose }: CrediarioFormP
                   onClick={() => setStep('SEARCH')}
                   disabled={isSubmitting}
                 >
-                  Voltar
+                  Cancelar
                 </button>
                 <button 
                   className="btn-modal btn-confirm" 

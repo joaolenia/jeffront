@@ -71,6 +71,7 @@ export function Pdv() {
     if (loading) return; // Previne múltiplos envios
     setLoading(true);
 
+    // O payload exato esperado pela entidade Venda no backend
     const payload = {
       itens: itensCaixa,
       total: totalVenda,
@@ -80,9 +81,11 @@ export function Pdv() {
     };
 
     try {
+      // Faz o POST para o backend
       const response = await api.post('/vendas', payload);
       
-      if (response.status === 201) {
+      // Axios considera status 2xx como sucesso (NestJS retorna 201 Created por padrão no POST)
+      if (response.status === 201 || response.status === 200) {
         // Abre a tela de impressão ANTES de limpar os dados da tela
         window.print();
         
@@ -92,9 +95,21 @@ export function Pdv() {
         setValorRecebido('');
         setFormaPagamento('Dinheiro');
       }
-    } catch (error) {
+    } catch (error: any) {
+      // Log detalhado para te ajudar a ver o que deu errado
       console.error('Erro ao salvar a venda:', error);
-      alert('Ocorreu um erro ao finalizar a venda. Verifique o console ou conexão com a API.');
+      
+      if (error.response) {
+        // O servidor respondeu com um status de erro (ex: 400, 500)
+        console.error('Dados do erro do servidor:', error.response.data);
+        alert(`Erro do Servidor: ${error.response.data.message || 'Verifique o console.'}`);
+      } else if (error.request) {
+        // A requisição foi feita, mas não houve resposta (Erro de Rede / CORS)
+        console.error('Sem resposta do servidor (Possível erro de CORS ou API offline).');
+        alert('Erro de rede: O servidor não respondeu. A API está rodando na porta 3011 com CORS habilitado?');
+      } else {
+        alert('Ocorreu um erro ao montar a requisição.');
+      }
     } finally {
       setLoading(false);
     }
@@ -237,7 +252,6 @@ export function Pdv() {
             </div>
 
             <div className="action-buttons">
-              {/* Botão único e direto, sem o bloco separado de atalhos e sem o botão isolado de imprimir */}
               <button 
                 className="btn-action btn-success" 
                 onClick={handleFinalizar}

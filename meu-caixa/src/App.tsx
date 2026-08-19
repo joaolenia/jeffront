@@ -4,7 +4,7 @@ import { Monitor, ShoppingCart, Ticket, Package, Lock, BarChart3 } from 'lucide-
 import { Pdv } from './components/Pdv';
 import { FichasList } from './components/FichasList';
 import { FichaDetalhes } from './components/FichaDetalhes';
-import Mercadorias from './components/mercadorias/Mercadorias';
+import {Mercadorias} from './components/mercadorias/Mercadorias';
 import { Relatorios } from './components/Relatorios';
 import './App.css';
 import './components/Header.css'; 

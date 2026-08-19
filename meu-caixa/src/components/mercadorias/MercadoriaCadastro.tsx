@@ -1,15 +1,24 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
-import type { Mercadoria, Parcela } from './types';
+import api from '../../api';
 import './MercadoriaCadastro.css';
 
+interface ParcelaPayload {
+  numero: number;
+  valor: number;
+  vencimento: string;
+  status: string;
+  formaPagamento: string;
+}
+
 interface Props {
-  onSalvar: (m: Mercadoria) => void;
+  onSuccess: () => void;
   onCancelar: () => void;
 }
 
-export function MercadoriaCadastro({ onSalvar, onCancelar }: Props) {
+export function MercadoriaCadastro({ onSuccess, onCancelar }: Props) {
   const [fornecedor, setFornecedor] = useState('');
+  const [observacao, setObservacao] = useState(''); // Novo campo opcional
   const [valorTotal, setValorTotal] = useState('');
   
   const [usaCaixa, setUsaCaixa] = useState(false);
@@ -21,6 +30,8 @@ export function MercadoriaCadastro({ onSalvar, onCancelar }: Props) {
   
   const [parcelas, setParcelas] = useState('1');
   const [vencimento, setVencimento] = useState('');
+  
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const numTotal = parseFloat(valorTotal) || 0;
   const numCaixa = usaCaixa ? (parseFloat(valCaixa) || 0) : 0;
@@ -33,43 +44,60 @@ export function MercadoriaCadastro({ onSalvar, onCancelar }: Props) {
   const formatCurrency = (val: number) => 
     new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
 
-  const handleSubmit = () => {
-    const parcelasArray: Parcela[] = [];
+  const handleSubmit = async () => {
+    if (!isFormValid) return;
+
+    const parcelasArray: ParcelaPayload[] = [];
     if (usaBoleto && numBoleto > 0) {
       const qtd = parseInt(parcelas) || 1;
       const valorPorParcela = numBoleto / qtd;
       
-      let dataBase = vencimento ? new Date(vencimento) : new Date();
+      // Ajuste de fuso horário simples para evitar erro de dia anterior
+      let dataBase = vencimento ? new Date(`${vencimento}T12:00:00`) : new Date();
       
       for (let i = 1; i <= qtd; i++) {
-        // Incrementa 30 dias para cada parcela (lógica simplificada)
         const dataVenc = new Date(dataBase);
         dataVenc.setDate(dataVenc.getDate() + ((i - 1) * 30));
         
         parcelasArray.push({
           numero: i,
-          valor: valorPorParcela,
-          vencimento: dataVenc.toLocaleDateString('pt-BR'),
-          status: 'pendente'
+          valor: Number(valorPorParcela.toFixed(2)),
+          vencimento: dataVenc.toISOString().split('T')[0],
+          status: 'pendente',
+          formaPagamento: 'Boleto'
         });
       }
     }
 
-    onSalvar({
-      id: Date.now(),
-      fornecedor,
-      data: new Date().toLocaleDateString('pt-BR'),
-      valorTotal: numTotal,
-      status: (usaBoleto && numBoleto > 0) ? 'pendente' : 'paga',
-      pagamento: { caixa: numCaixa, cofre: numCofre, boleto: numBoleto },
-      parcelasBoleto: parcelasArray
-    });
+    const payload = {
+      fornecedorNome: fornecedor,
+      observacao: observacao || null, // Enviando o campo opcional conforme contrato
+      valorNota: numTotal,
+      valorPagoCaixa: numCaixa,
+      valorPagoCofre: numCofre,
+      valorPrazo: numBoleto,
+      statusGeral: (usaBoleto && numBoleto > 0) ? 'pendente' : 'concluido',
+      dataOperacao: new Date().toISOString(),
+      parcelas: parcelasArray
+    };
+
+    try {
+      setIsSubmitting(true);
+      await api.post('/mercadorias', payload);
+      alert('Mercadoria registrada com sucesso!');
+      onSuccess(); // Chama a função para atualizar a listagem e fechar
+    } catch (error) {
+      console.error('Erro ao salvar mercadoria:', error);
+      alert('Ocorreu um erro ao tentar salvar a operação.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <div className="mcad-container">
       <div className="mcad-header">
-        <button onClick={onCancelar} style={{background: 'none', border: 'none', cursor: 'pointer'}}>
+        <button onClick={onCancelar} style={{background: 'none', border: 'none', cursor: 'pointer'}} disabled={isSubmitting}>
           <ArrowLeft size={28} color="#64748b" />
         </button>
         <h2 style={{margin: 0, fontSize: '1.8rem', color: '#0f172a'}}>Registrar Mercadoria</h2>
@@ -77,13 +105,18 @@ export function MercadoriaCadastro({ onSalvar, onCancelar }: Props) {
 
       <div className="mcad-row">
         <div className="mcad-group">
-          <label>Nome do Fornecedor</label>
+          <label>Nome do Fornecedor *</label>
           <input className="mcad-input" value={fornecedor} onChange={e => setFornecedor(e.target.value)} placeholder="Ex: Coca-Cola, Ambev..." autoFocus />
         </div>
         <div className="mcad-group">
-          <label>Valor Total da Nota (R$)</label>
+          <label>Valor Total da Nota (R$) *</label>
           <input type="number" step="0.01" className="mcad-input" value={valorTotal} onChange={e => setValorTotal(e.target.value)} placeholder="0.00" />
         </div>
+      </div>
+
+      <div className="mcad-group" style={{ marginBottom: '24px' }}>
+        <label>Observação (Opcional)</label>
+        <input className="mcad-input" value={observacao} onChange={e => setObservacao(e.target.value)} placeholder="Ex: Material de limpeza, bebidas para o final de semana..." />
       </div>
 
       <div className="mcad-split-box">
@@ -93,21 +126,21 @@ export function MercadoriaCadastro({ onSalvar, onCancelar }: Props) {
           <label className="mcad-split-label">
             <input type="checkbox" checked={usaCaixa} onChange={e => setUsaCaixa(e.target.checked)}/> Dinheiro retirado do Caixa
           </label>
-          {usaCaixa && <input type="number" className="mcad-input" style={{width: 180}} value={valCaixa} onChange={e => setValCaixa(e.target.value)} placeholder="R$ 0,00"/>}
+          {usaCaixa && <input type="number" step="0.01" className="mcad-input" style={{width: 180}} value={valCaixa} onChange={e => setValCaixa(e.target.value)} placeholder="R$ 0,00"/>}
         </div>
 
         <div className="mcad-split-item">
           <label className="mcad-split-label">
             <input type="checkbox" checked={usaCofre} onChange={e => setUsaCofre(e.target.checked)}/> Dinheiro retirado do Cofre
           </label>
-          {usaCofre && <input type="number" className="mcad-input" style={{width: 180}} value={valCofre} onChange={e => setValCofre(e.target.value)} placeholder="R$ 0,00"/>}
+          {usaCofre && <input type="number" step="0.01" className="mcad-input" style={{width: 180}} value={valCofre} onChange={e => setValCofre(e.target.value)} placeholder="R$ 0,00"/>}
         </div>
 
         <div className="mcad-split-item" style={{border: 'none'}}>
           <label className="mcad-split-label">
             <input type="checkbox" checked={usaBoleto} onChange={e => setUsaBoleto(e.target.checked)}/> Faturado / Boleto a Prazo
           </label>
-          {usaBoleto && <input type="number" className="mcad-input" style={{width: 180}} value={valBoleto} onChange={e => setValBoleto(e.target.value)} placeholder="R$ 0,00"/>}
+          {usaBoleto && <input type="number" step="0.01" className="mcad-input" style={{width: 180}} value={valBoleto} onChange={e => setValBoleto(e.target.value)} placeholder="R$ 0,00"/>}
         </div>
 
         {usaBoleto && (
@@ -128,8 +161,12 @@ export function MercadoriaCadastro({ onSalvar, onCancelar }: Props) {
         <div style={{fontWeight: 700, fontSize: '1.1rem', color: restante === 0 ? '#16a34a' : '#ef4444'}}>
           {numTotal === 0 ? 'Informe o valor da nota' : restante === 0 ? '✔️ Divisão de valores exata' : `Falta alocar: ${formatCurrency(restante)}`}
         </div>
-        <button className="mcad-btn-salvar" disabled={!isFormValid} onClick={handleSubmit}>
-          Finalizar Registro
+        <button 
+          className="mcad-btn-salvar" 
+          disabled={!isFormValid || isSubmitting} 
+          onClick={handleSubmit}
+        >
+          {isSubmitting ? 'Salvando...' : 'Finalizar Registro'}
         </button>
       </div>
     </div>

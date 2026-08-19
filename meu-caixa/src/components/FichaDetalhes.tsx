@@ -1,6 +1,26 @@
-import  { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, User, DollarSign, AlertCircle, Loader2, CheckCircle, Trash2, Wallet } from 'lucide-react';
+import {
+  ArrowLeft,
+  User,
+  DollarSign,
+  AlertCircle,
+  Loader2,
+  CheckCircle,
+  Trash2,
+  Wallet,
+  ShoppingBag,
+  Receipt,
+  CalendarDays,
+  CreditCard,
+  Smartphone,
+  Banknote,
+  ChevronRight,
+  TrendingUp,
+  CircleDollarSign,
+  ShieldCheck,
+  X,
+} from 'lucide-react';
 import api from '../api';
 import './FichaDetalhes.css';
 import type { Ficha } from './FichasList';
@@ -15,14 +35,24 @@ export function FichaDetalhes() {
   const [ficha, setFicha] = useState<Ficha | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
-  const [modoPagamento, setModoPagamento] = useState<ModoPagamento>('INTEGRAL');
-  const [valorDigitado, setValorDigitado] = useState<string>('');
-  const [formaPagamento, setFormaPagamento] = useState<FormaPagamento>('Dinheiro');
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [modoPagamento, setModoPagamento] =
+    useState<ModoPagamento>('INTEGRAL');
+
+  const [valorDigitado, setValorDigitado] =
+    useState<string>('');
+
+  const [formaPagamento, setFormaPagamento] =
+    useState<FormaPagamento>('Dinheiro');
+
+  const [isSubmitting, setIsSubmitting] =
+    useState(false);
+
+  const [showDeleteConfirm, setShowDeleteConfirm] =
+    useState(false);
+
+  const [isDeleting, setIsDeleting] =
+    useState(false);
 
   useEffect(() => {
     if (id) fetchFicha(id);
@@ -31,6 +61,7 @@ export function FichaDetalhes() {
   const fetchFicha = async (fichaId: string) => {
     setLoading(true);
     setError(null);
+
     try {
       const response = await api.get(`/fichas/${fichaId}`);
       setFicha(response.data);
@@ -42,25 +73,51 @@ export function FichaDetalhes() {
     }
   };
 
-  const saldoDevedor = ficha ? Number(ficha.valorTotal) - Number(ficha.valorPago) : 0;
+  const saldoDevedor = ficha
+    ? Math.max(
+        Number(ficha.valorTotal) -
+          Number(ficha.valorPago),
+        0
+      )
+    : 0;
+
+  const percentualPago = ficha
+    ? Math.min(
+        (Number(ficha.valorPago) /
+          Number(ficha.valorTotal)) *
+          100,
+        100
+      )
+    : 0;
+
+  const totalCompras = ficha?.compras?.length || 0;
+  const totalPagamentos = ficha?.pagamentos?.length || 0;
 
   const handleEfetuarPagamento = async () => {
     if (!ficha || isSubmitting) return;
 
     let valorParaPagar = 0;
+
     if (modoPagamento === 'INTEGRAL') {
       valorParaPagar = saldoDevedor;
     } else {
-      valorParaPagar = parseFloat(valorDigitado.replace(',', '.'));
+      valorParaPagar = parseFloat(
+        valorDigitado.replace(',', '.')
+      );
     }
 
-    if (isNaN(valorParaPagar) || valorParaPagar <= 0) {
+    if (
+      isNaN(valorParaPagar) ||
+      valorParaPagar <= 0
+    ) {
       alert('Informe um valor de pagamento válido.');
       return;
     }
 
     if (valorParaPagar > saldoDevedor) {
-      alert('O valor do pagamento não pode ser maior que o saldo devedor.');
+      alert(
+        'O valor do pagamento não pode ser maior que o saldo devedor.'
+      );
       return;
     }
 
@@ -69,25 +126,42 @@ export function FichaDetalhes() {
     const novoPagamento = {
       data: new Date().toISOString(),
       forma: formaPagamento,
-      valor: valorParaPagar
+      valor: valorParaPagar,
     };
 
-    const novoValorPago = Number(ficha.valorPago) + valorParaPagar;
-    const novoStatus = novoValorPago >= Number(ficha.valorTotal) ? 'PAGA' : 'ABERTA';
+    const novoValorPago =
+      Number(ficha.valorPago) +
+      valorParaPagar;
+
+    const novoStatus =
+      novoValorPago >= Number(ficha.valorTotal)
+        ? 'PAGA'
+        : 'ABERTA';
 
     try {
       await api.patch(`/fichas/${ficha.id}`, {
-        pagamentos: [...(ficha.pagamentos || []), novoPagamento],
+        pagamentos: [
+          ...(ficha.pagamentos || []),
+          novoPagamento,
+        ],
         valorPago: novoValorPago,
-        status: novoStatus
+        status: novoStatus,
       });
 
       alert('Pagamento registrado com sucesso!');
+
       setValorDigitado('');
-      fetchFicha(ficha.id.toString());
+
+      await fetchFicha(ficha.id.toString());
     } catch (err) {
-      console.error('Erro ao registrar pagamento:', err);
-      alert('Erro ao registrar pagamento. Tente novamente.');
+      console.error(
+        'Erro ao registrar pagamento:',
+        err
+      );
+
+      alert(
+        'Erro ao registrar pagamento. Tente novamente.'
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -95,247 +169,979 @@ export function FichaDetalhes() {
 
   const handleExcluirFicha = async () => {
     if (!ficha) return;
+
     setIsDeleting(true);
+
     try {
       await api.delete(`/fichas/${ficha.id}`);
+
       navigate('/fichas');
     } catch (err) {
-      console.error('Erro ao excluir ficha:', err);
-      alert('Erro ao excluir ficha. Verifique se existem restrições no backend.');
+      console.error(
+        'Erro ao excluir ficha:',
+        err
+      );
+
+      alert(
+        'Erro ao excluir ficha. Verifique se existem restrições no backend.'
+      );
+
       setIsDeleting(false);
       setShowDeleteConfirm(false);
     }
   };
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(value) || 0);
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    }).format(Number(value) || 0);
   };
 
   const formatDate = (isoString: string) => {
     if (!isoString) return '-';
-    return new Date(isoString).toLocaleDateString('pt-BR', {
-      day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
-    });
+
+    return new Date(isoString).toLocaleDateString(
+      'pt-BR',
+      {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      }
+    );
   };
 
-  if (loading) return (
-    <div className="fd-centered-state"><Loader2 size={40} className="spinner" /><p>Carregando dados da ficha...</p></div>
-  );
+  const getPaymentIcon = (
+    forma: FormaPagamento | string
+  ) => {
+    if (forma === 'Pix') {
+      return <Smartphone size={15} />;
+    }
 
-  if (error || !ficha) return (
-    <div className="fd-centered-state fd-error"><AlertCircle size={40} /><h2>Ops!</h2><p>{error}</p><button className="btn-primary" onClick={() => navigate('/fichas')}>Voltar</button></div>
-  );
+    if (forma === 'Cartão') {
+      return <CreditCard size={15} />;
+    }
 
-  const isPaga = ficha.status === 'PAGA' || saldoDevedor <= 0;
+    return <Banknote size={15} />;
+  };
+
+  if (loading) {
+    return (
+      <div className="fd-centered-state">
+        <div className="fd-loading-icon">
+          <Loader2 size={32} />
+        </div>
+
+        <strong>Carregando ficha</strong>
+
+        <p>
+          Buscando informações financeiras...
+        </p>
+      </div>
+    );
+  }
+
+  if (error || !ficha) {
+    return (
+      <div className="fd-centered-state fd-error">
+        <div className="fd-error-icon">
+          <AlertCircle size={32} />
+        </div>
+
+        <h2>Ficha não encontrada</h2>
+
+        <p>{error}</p>
+
+        <button
+          className="fd-btn-primary"
+          onClick={() => navigate('/fichas')}
+        >
+          <ArrowLeft size={16} />
+          Voltar para fichas
+        </button>
+      </div>
+    );
+  }
+
+  const isPaga =
+    ficha.status === 'PAGA' ||
+    saldoDevedor <= 0;
 
   return (
     <div className="fd-container">
-      {/* HEADER SUPERIOR */}
-      <div className="fd-header">
-        <div className="fd-header-left">
-          <button className="btn-back" onClick={() => navigate('/fichas')} title="Voltar">
-            <ArrowLeft size={22} />
-          </button>
-          <div className="fd-avatar">
-            <User size={24} color="#2563eb" />
-          </div>
-          <div className="fd-title-group">
-            <h1>{ficha.clienteNome}</h1>
-            <span className={`fd-badge ${isPaga ? 'fd-badge-paga' : 'fd-badge-aberta'}`}>
-              {isPaga ? 'CONTA PAGA' : 'CONTA ABERTA'}
-            </span>
-          </div>
-        </div>
-        <button className="btn-delete" onClick={() => setShowDeleteConfirm(true)}>
-          <Trash2 size={18} /> <span>Excluir Ficha</span>
+
+      {/* =====================================================
+          TOPBAR
+      ====================================================== */}
+
+      <div className="fd-topbar">
+
+        <button
+          className="fd-back"
+          onClick={() => navigate('/fichas')}
+        >
+          <ArrowLeft size={17} />
+          Fichas
         </button>
+
+        <span className="fd-breadcrumb-separator">
+          /
+        </span>
+
+        <span className="fd-breadcrumb-current">
+          Detalhes da conta
+        </span>
+
       </div>
 
-      {/* CONFIRMAÇÃO DE EXCLUSÃO ESTILO ALERT INLINE */}
+      {/* =====================================================
+          HEADER
+      ====================================================== */}
+
+      <header className="fd-header">
+
+        <div className="fd-header-left">
+
+          <div className="fd-avatar">
+            <User size={24} />
+          </div>
+
+          <div className="fd-title-group">
+
+            <div className="fd-title-meta">
+              <span>
+                CONTA DE CLIENTE
+              </span>
+
+              <span className="fd-code">
+                #{String(ficha.id).padStart(5, '0')}
+              </span>
+            </div>
+
+            <h1>{ficha.clienteNome}</h1>
+
+            <div className="fd-status-row">
+
+              <span
+                className={`fd-status ${
+                  isPaga
+                    ? 'fd-status-paid'
+                    : 'fd-status-open'
+                }`}
+              >
+                <span className="fd-status-dot" />
+
+                {isPaga
+                  ? 'Conta paga'
+                  : 'Conta aberta'}
+              </span>
+
+              <span className="fd-created">
+                <CalendarDays size={13} />
+                Cadastro ativo
+              </span>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        <button
+          className="btn-delete"
+          onClick={() =>
+            setShowDeleteConfirm(true)
+          }
+        >
+          <Trash2 size={16} />
+          <span>Excluir ficha</span>
+        </button>
+
+      </header>
+
+      {/* =====================================================
+          DELETE ALERT
+      ====================================================== */}
+
       {showDeleteConfirm && (
         <div className="fd-alert-box">
-          <div className="fd-alert-icon"><AlertCircle size={24} /></div>
+
+          <div className="fd-alert-icon">
+            <AlertCircle size={21} />
+          </div>
+
           <div className="fd-alert-content">
-            <strong>Excluir conta definitivamente?</strong>
-            <p>A ficha de <b>{ficha.clienteNome}</b> será apagada permanentemente. Esta ação não tem volta.</p>
+
+            <strong>
+              Excluir esta ficha?
+            </strong>
+
+            <p>
+              A conta de{' '}
+              <b>{ficha.clienteNome}</b>{' '}
+              será apagada permanentemente.
+              Essa ação não poderá ser desfeita.
+            </p>
+
           </div>
+
           <div className="fd-alert-actions">
-            <button className="btn-alert-cancel" onClick={() => setShowDeleteConfirm(false)} disabled={isDeleting}>Cancelar</button>
-            <button className="btn-alert-confirm" onClick={handleExcluirFicha} disabled={isDeleting}>
-              {isDeleting ? <Loader2 size={16} className="spinner" /> : 'Sim, excluir'}
+
+            <button
+              className="btn-alert-cancel"
+              onClick={() =>
+                setShowDeleteConfirm(false)
+              }
+              disabled={isDeleting}
+            >
+              Cancelar
             </button>
+
+            <button
+              className="btn-alert-confirm"
+              onClick={handleExcluirFicha}
+              disabled={isDeleting}
+            >
+              {isDeleting ? (
+                <Loader2
+                  size={16}
+                  className="spinner"
+                />
+              ) : (
+                <>
+                  <Trash2 size={15} />
+                  Excluir
+                </>
+              )}
+            </button>
+
           </div>
+
         </div>
       )}
 
-      {/* CONTEÚDO PRINCIPAL EM GRID */}
+      {/* =====================================================
+          KPI CARDS
+      ====================================================== */}
+
+      <section className="fd-kpi-grid">
+
+        <div className="fd-kpi-card">
+
+          <div className="fd-kpi-icon blue">
+            <ShoppingBag size={19} />
+          </div>
+
+          <div>
+            <span>Total comprado</span>
+            <strong>
+              {formatCurrency(
+                ficha.valorTotal
+              )}
+            </strong>
+          </div>
+
+        </div>
+
+        <div className="fd-kpi-card">
+
+          <div className="fd-kpi-icon green">
+            <CircleDollarSign size={19} />
+          </div>
+
+          <div>
+            <span>Total pago</span>
+            <strong>
+              {formatCurrency(
+                ficha.valorPago
+              )}
+            </strong>
+          </div>
+
+        </div>
+
+        <div className="fd-kpi-card">
+
+          <div className="fd-kpi-icon red">
+            <TrendingUp size={19} />
+          </div>
+
+          <div>
+            <span>Saldo devedor</span>
+            <strong>
+              {formatCurrency(
+                saldoDevedor
+              )}
+            </strong>
+          </div>
+
+        </div>
+
+        <div className="fd-kpi-card">
+
+          <div className="fd-kpi-icon purple">
+            <Receipt size={19} />
+          </div>
+
+          <div>
+            <span>Movimentações</span>
+            <strong>
+              {totalCompras +
+                totalPagamentos}
+            </strong>
+          </div>
+
+        </div>
+
+      </section>
+
+      {/* =====================================================
+          PAYMENT PROGRESS
+      ====================================================== */}
+
+      <section className="fd-progress-card">
+
+        <div className="fd-progress-info">
+
+          <div className="fd-progress-icon">
+            <ShieldCheck size={20} />
+          </div>
+
+          <div>
+            <span>
+              PROGRESSO FINANCEIRO
+            </span>
+
+            <strong>
+              {isPaga
+                ? 'Conta totalmente quitada'
+                : `${Math.round(
+                    percentualPago
+                  )}% da conta já foi pago`}
+            </strong>
+          </div>
+
+        </div>
+
+        <div className="fd-progress-area">
+
+          <div className="fd-progress-values">
+            <span>
+              Pago{' '}
+              <b>
+                {formatCurrency(
+                  ficha.valorPago
+                )}
+              </b>
+            </span>
+
+            <span>
+              Total{' '}
+              <b>
+                {formatCurrency(
+                  ficha.valorTotal
+                )}
+              </b>
+            </span>
+          </div>
+
+          <div className="fd-progress-track">
+            <div
+              className="fd-progress-fill"
+              style={{
+                width: `${percentualPago}%`,
+              }}
+            />
+          </div>
+
+        </div>
+
+      </section>
+
+      {/* =====================================================
+          MAIN GRID
+      ====================================================== */}
+
       <div className="fd-grid">
-        
-        {/* COLUNA ESQUERDA: HISTÓRICO */}
+
+        {/* =================================================
+            LEFT
+        ================================================== */}
+
         <div className="fd-col-left">
-          <div className="fd-card">
+
+          {/* COMPRAS */}
+
+          <section className="fd-card">
+
             <div className="fd-card-header">
-              <h2>Histórico de Compras</h2>
+
+              <div>
+                <span className="fd-card-eyebrow">
+                  MOVIMENTAÇÃO
+                </span>
+
+                <h2>
+                  Histórico de compras
+                </h2>
+
+                <p>
+                  Registro dos produtos
+                  adquiridos pelo cliente.
+                </p>
+              </div>
+
+              <div className="fd-card-count">
+                {totalCompras}
+              </div>
+
             </div>
+
             <div className="fd-card-body">
-              {(!ficha.compras || ficha.compras.length === 0) ? (
-                <div className="fd-empty-list">Nenhuma compra registrada.</div>
+
+              {totalCompras === 0 ? (
+                <div className="fd-empty-list">
+                  <div className="fd-empty-icon">
+                    <ShoppingBag size={22} />
+                  </div>
+
+                  <strong>
+                    Nenhuma compra registrada
+                  </strong>
+
+                  <span>
+                    Ainda não existem compras
+                    vinculadas a esta ficha.
+                  </span>
+                </div>
               ) : (
+
                 <div className="fd-table-responsive">
+
                   <table className="fd-table">
+
                     <thead>
                       <tr>
                         <th>Data</th>
-                        <th>Resumo dos Itens</th>
-                        <th className="text-right">Valor</th>
+                        <th>Descrição</th>
+                        <th className="text-right">
+                          Valor
+                        </th>
                       </tr>
                     </thead>
-                    <tbody>
-                      {ficha.compras.map((compra, index) => (
-                        <tr key={index}>
-                          <td>{formatDate(compra.data)}</td>
-                          <td>{compra.resumoItens || 'Itens diversos'}</td>
-                          <td className="text-right fw-bold">{formatCurrency(compra.valor)}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
-          </div>
 
-          <div className="fd-card">
-            <div className="fd-card-header">
-              <h2>Histórico de Pagamentos</h2>
+                    <tbody>
+
+                      {ficha.compras.map(
+                        (compra, index) => (
+                          <tr key={index}>
+
+                            <td>
+                              <div className="fd-date-cell">
+                                <CalendarDays
+                                  size={14}
+                                />
+
+                                <span>
+                                  {formatDate(
+                                    compra.data
+                                  )}
+                                </span>
+                              </div>
+                            </td>
+
+                            <td>
+                              <div className="fd-item-cell">
+
+                                <div className="fd-item-icon">
+                                  <ShoppingBag
+                                    size={15}
+                                  />
+                                </div>
+
+                                <span>
+                                  {compra.resumoItens ||
+                                    'Itens diversos'}
+                                </span>
+
+                              </div>
+                            </td>
+
+                            <td className="text-right">
+                              <strong className="fd-table-value">
+                                {formatCurrency(
+                                  compra.valor
+                                )}
+                              </strong>
+                            </td>
+
+                          </tr>
+                        )
+                      )}
+
+                    </tbody>
+
+                  </table>
+
+                </div>
+
+              )}
+
             </div>
+
+          </section>
+
+          {/* PAGAMENTOS */}
+
+          <section className="fd-card">
+
+            <div className="fd-card-header">
+
+              <div>
+                <span className="fd-card-eyebrow">
+                  FINANCEIRO
+                </span>
+
+                <h2>
+                  Histórico de pagamentos
+                </h2>
+
+                <p>
+                  Todos os pagamentos
+                  registrados nesta conta.
+                </p>
+              </div>
+
+              <div className="fd-card-count green">
+                {totalPagamentos}
+              </div>
+
+            </div>
+
             <div className="fd-card-body">
-              {(!ficha.pagamentos || ficha.pagamentos.length === 0) ? (
-                <div className="fd-empty-list">Nenhum pagamento realizado ainda.</div>
+
+              {totalPagamentos === 0 ? (
+                <div className="fd-empty-list">
+                  <div className="fd-empty-icon">
+                    <Wallet size={22} />
+                  </div>
+
+                  <strong>
+                    Nenhum pagamento realizado
+                  </strong>
+
+                  <span>
+                    O cliente ainda não possui
+                    pagamentos registrados.
+                  </span>
+                </div>
               ) : (
+
                 <div className="fd-table-responsive">
+
                   <table className="fd-table">
+
                     <thead>
                       <tr>
                         <th>Data</th>
                         <th>Forma</th>
-                        <th className="text-right">Valor Pago</th>
+                        <th className="text-right">
+                          Valor pago
+                        </th>
                       </tr>
                     </thead>
+
                     <tbody>
-                      {ficha.pagamentos.map((pag, index) => (
-                        <tr key={index}>
-                          <td>{formatDate(pag.data)}</td>
-                          <td><span className="fd-tag">{pag.forma}</span></td>
-                          <td className="text-right fw-bold text-green">
-                            + {formatCurrency(pag.valor)}
-                          </td>
-                        </tr>
-                      ))}
+
+                      {ficha.pagamentos.map(
+                        (pag, index) => (
+                          <tr key={index}>
+
+                            <td>
+                              <div className="fd-date-cell">
+                                <CalendarDays
+                                  size={14}
+                                />
+
+                                <span>
+                                  {formatDate(
+                                    pag.data
+                                  )}
+                                </span>
+                              </div>
+                            </td>
+
+                            <td>
+                              <span className="fd-payment-tag">
+                                {getPaymentIcon(
+                                  pag.forma
+                                )}
+
+                                {pag.forma}
+                              </span>
+                            </td>
+
+                            <td className="text-right">
+                              <strong className="fd-table-value text-green">
+                                +{' '}
+                                {formatCurrency(
+                                  pag.valor
+                                )}
+                              </strong>
+                            </td>
+
+                          </tr>
+                        )
+                      )}
+
                     </tbody>
+
                   </table>
+
                 </div>
+
               )}
+
             </div>
-          </div>
+
+          </section>
+
         </div>
 
-        {/* COLUNA DIREITA: ACERTO FINANCEIRO */}
-        <div className="fd-col-right">
-          <div className="fd-card fd-payment-card">
+        {/* =================================================
+            RIGHT
+        ================================================== */}
+
+        <aside className="fd-col-right">
+
+          <section className="fd-card fd-payment-card">
+
             <div className="fd-payment-header">
-              <Wallet size={24} className="text-blue" />
-              <h2>Acerto Financeiro</h2>
+
+              <div className="fd-payment-icon">
+                <Wallet size={20} />
+              </div>
+
+              <div>
+                <span>
+                  FINANCEIRO
+                </span>
+
+                <h2>
+                  Acerto financeiro
+                </h2>
+              </div>
+
             </div>
+
+            {/* SALDO */}
 
             <div className="fd-balance-box">
-              <span className="fd-balance-label">Saldo Devedor Atual</span>
-              <div className={`fd-balance-value ${isPaga ? 'text-green' : 'text-red'}`}>
-                {formatCurrency(saldoDevedor > 0 ? saldoDevedor : 0)}
+
+              <span className="fd-balance-label">
+                Saldo devedor atual
+              </span>
+
+              <div
+                className={`fd-balance-value ${
+                  isPaga
+                    ? 'text-green'
+                    : 'text-red'
+                }`}
+              >
+                {formatCurrency(
+                  saldoDevedor
+                )}
               </div>
+
+              <div className="fd-balance-status">
+                {isPaga ? (
+                  <>
+                    <CheckCircle size={14} />
+                    Nenhum saldo pendente
+                  </>
+                ) : (
+                  <>
+                    <AlertCircle size={14} />
+                    Pagamento pendente
+                  </>
+                )}
+              </div>
+
             </div>
 
+            {/* RESUMO */}
+
             <div className="fd-summary-list">
+
               <div className="fd-summary-item">
-                <span>Total Comprado</span>
-                <strong>{formatCurrency(ficha.valorTotal)}</strong>
+                <span>
+                  Total da conta
+                </span>
+
+                <strong>
+                  {formatCurrency(
+                    ficha.valorTotal
+                  )}
+                </strong>
               </div>
+
               <div className="fd-summary-item">
-                <span>Total Pago</span>
-                <strong className="text-green">{formatCurrency(ficha.valorPago)}</strong>
+                <span>
+                  Total já pago
+                </span>
+
+                <strong className="text-green">
+                  {formatCurrency(
+                    ficha.valorPago
+                  )}
+                </strong>
               </div>
+
+              <div className="fd-summary-item final">
+                <span>
+                  Restante
+                </span>
+
+                <strong
+                  className={
+                    isPaga
+                      ? 'text-green'
+                      : 'text-red'
+                  }
+                >
+                  {formatCurrency(
+                    saldoDevedor
+                  )}
+                </strong>
+              </div>
+
             </div>
+
+            {/* PAGAMENTO */}
 
             {!isPaga && (
               <div className="fd-payment-form">
-                <h3>Registrar Pagamento</h3>
-                
-                <div className="fd-segmented-control">
-                  <button 
-                    className={`fd-segment ${modoPagamento === 'INTEGRAL' ? 'active' : ''}`}
-                    onClick={() => setModoPagamento('INTEGRAL')}
-                  >
-                    Valor Integral
-                  </button>
-                  <button 
-                    className={`fd-segment ${modoPagamento === 'PARCIAL' ? 'active' : ''}`}
-                    onClick={() => setModoPagamento('PARCIAL')}
-                  >
-                    Valor Parcial
-                  </button>
-                </div>
 
-                <div className="fd-form-group">
-                  <label>Valor a Pagar (R$)</label>
-                  <div className="fd-input-prefix">
-                    <span>R$</span>
-                    <input 
-                      type="number" 
-                      step="0.01" 
-                      value={modoPagamento === 'INTEGRAL' ? saldoDevedor.toFixed(2) : valorDigitado}
-                      onChange={(e) => setValorDigitado(e.target.value)}
-                      disabled={modoPagamento === 'INTEGRAL' || isSubmitting}
-                      placeholder="0.00"
-                    />
+                <div className="fd-section-title">
+                  <div>
+                    <span>
+                      NOVA MOVIMENTAÇÃO
+                    </span>
+
+                    <h3>
+                      Registrar pagamento
+                    </h3>
                   </div>
+
+                  <DollarSign size={18} />
                 </div>
+
+                {/* MODO */}
+
+                <div className="fd-segmented-control">
+
+                  <button
+                    className={`fd-segment ${
+                      modoPagamento ===
+                      'INTEGRAL'
+                        ? 'active'
+                        : ''
+                    }`}
+                    onClick={() =>
+                      setModoPagamento(
+                        'INTEGRAL'
+                      )
+                    }
+                  >
+                    Integral
+                  </button>
+
+                  <button
+                    className={`fd-segment ${
+                      modoPagamento ===
+                      'PARCIAL'
+                        ? 'active'
+                        : ''
+                    }`}
+                    onClick={() =>
+                      setModoPagamento(
+                        'PARCIAL'
+                      )
+                    }
+                  >
+                    Parcial
+                  </button>
+
+                </div>
+
+                {/* VALOR */}
 
                 <div className="fd-form-group">
-                  <label>Forma de Pagamento</label>
-                  <select 
-                    className="fd-select"
-                    value={formaPagamento} 
-                    onChange={(e) => setFormaPagamento(e.target.value as FormaPagamento)}
-                    disabled={isSubmitting}
-                  >
-                    <option value="Dinheiro">Dinheiro</option>
-                    <option value="Cartão">Cartão</option>
-                    <option value="Pix">Pix</option>
-                  </select>
+
+                  <label>
+                    Valor do pagamento
+                  </label>
+
+                  <div className="fd-input-prefix">
+
+                    <span>R$</span>
+
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={
+                        modoPagamento ===
+                        'INTEGRAL'
+                          ? saldoDevedor.toFixed(
+                              2
+                            )
+                          : valorDigitado
+                      }
+                      onChange={(e) =>
+                        setValorDigitado(
+                          e.target.value
+                        )
+                      }
+                      disabled={
+                        modoPagamento ===
+                          'INTEGRAL' ||
+                        isSubmitting
+                      }
+                      placeholder="0,00"
+                    />
+
+                  </div>
+
+                  {modoPagamento ===
+                    'PARCIAL' && (
+                    <small className="fd-input-help">
+                      Máximo disponível:{' '}
+                      {formatCurrency(
+                        saldoDevedor
+                      )}
+                    </small>
+                  )}
+
                 </div>
 
-                <button 
-                  className="fd-btn-submit" 
-                  onClick={handleEfetuarPagamento}
+                {/* FORMA */}
+
+                <div className="fd-form-group">
+
+                  <label>
+                    Forma de pagamento
+                  </label>
+
+                  <div className="fd-payment-options">
+
+                    {(
+                      [
+                        'Dinheiro',
+                        'Cartão',
+                        'Pix',
+                      ] as FormaPagamento[]
+                    ).map((forma) => (
+
+                      <button
+                        key={forma}
+                        type="button"
+                        className={`fd-payment-option ${
+                          formaPagamento ===
+                          forma
+                            ? 'active'
+                            : ''
+                        }`}
+                        onClick={() =>
+                          setFormaPagamento(
+                            forma
+                          )
+                        }
+                        disabled={isSubmitting}
+                      >
+                        {getPaymentIcon(
+                          forma
+                        )}
+
+                        <span>
+                          {forma}
+                        </span>
+                      </button>
+
+                    ))}
+
+                  </div>
+
+                </div>
+
+                <button
+                  className="fd-btn-submit"
+                  onClick={
+                    handleEfetuarPagamento
+                  }
                   disabled={isSubmitting}
                 >
-                  {isSubmitting ? <Loader2 size={20} className="spinner" /> : <DollarSign size={20} />}
-                  Confirmar Pagamento
+
+                  {isSubmitting ? (
+                    <Loader2
+                      size={19}
+                      className="spinner"
+                    />
+                  ) : (
+                    <CheckCircle
+                      size={19}
+                    />
+                  )}
+
+                  {isSubmitting
+                    ? 'Processando...'
+                    : 'Confirmar pagamento'}
+
+                  {!isSubmitting && (
+                    <ChevronRight
+                      size={17}
+                    />
+                  )}
+
                 </button>
+
               </div>
             )}
+
+            {/* PAGO */}
 
             {isPaga && (
               <div className="fd-paid-state">
-                <div className="fd-paid-icon"><CheckCircle size={40} /></div>
-                <h3>Tudo Certo!</h3>
-                <p>Não há saldo devedor pendente para este cliente no momento.</p>
+
+                <div className="fd-paid-icon">
+                  <CheckCircle size={36} />
+                </div>
+
+                <span>
+                  CONTA FINALIZADA
+                </span>
+
+                <h3>
+                  Tudo certo!
+                </h3>
+
+                <p>
+                  Esta conta não possui
+                  saldo devedor pendente.
+                </p>
+
               </div>
             )}
-          </div>
-        </div>
+
+          </section>
+
+        </aside>
 
       </div>
+
     </div>
   );
 }

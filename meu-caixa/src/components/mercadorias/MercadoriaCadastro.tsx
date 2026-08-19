@@ -18,7 +18,7 @@ interface Props {
 
 export function MercadoriaCadastro({ onSuccess, onCancelar }: Props) {
   const [fornecedor, setFornecedor] = useState('');
-  const [observacao, setObservacao] = useState(''); // Novo campo opcional
+  const [observacao, setObservacao] = useState('');
   const [valorTotal, setValorTotal] = useState('');
   
   const [usaCaixa, setUsaCaixa] = useState(false);
@@ -38,11 +38,22 @@ export function MercadoriaCadastro({ onSuccess, onCancelar }: Props) {
   const numCofre = usaCofre ? (parseFloat(valCofre) || 0) : 0;
   const numBoleto = usaBoleto ? (parseFloat(valBoleto) || 0) : 0;
   
-  const restante = numTotal - (numCaixa + numCofre + numBoleto);
+  // Utiliza toFixed para evitar pequenos bugs de precisão do JS (ex: 0.1 + 0.2)
+  const somaPagamentos = Number((numCaixa + numCofre + numBoleto).toFixed(2));
+  const restante = Number((numTotal - somaPagamentos).toFixed(2));
+  
   const isFormValid = numTotal > 0 && restante === 0 && fornecedor.trim() !== '';
 
   const formatCurrency = (val: number) => 
     new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
+
+  // Helper para gerar YYYY-MM-DD de forma segura usando timezone local
+  const formatDateLocal = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
 
   const handleSubmit = async () => {
     if (!isFormValid) return;
@@ -52,7 +63,7 @@ export function MercadoriaCadastro({ onSuccess, onCancelar }: Props) {
       const qtd = parseInt(parcelas) || 1;
       const valorPorParcela = numBoleto / qtd;
       
-      // Ajuste de fuso horário simples para evitar erro de dia anterior
+      // Adicionando T12:00:00 para forçar o meio do dia e evitar transição de data por fuso
       let dataBase = vencimento ? new Date(`${vencimento}T12:00:00`) : new Date();
       
       for (let i = 1; i <= qtd; i++) {
@@ -62,7 +73,7 @@ export function MercadoriaCadastro({ onSuccess, onCancelar }: Props) {
         parcelasArray.push({
           numero: i,
           valor: Number(valorPorParcela.toFixed(2)),
-          vencimento: dataVenc.toISOString().split('T')[0],
+          vencimento: formatDateLocal(dataVenc), // Gera 'YYYY-MM-DD'
           status: 'pendente',
           formaPagamento: 'Boleto'
         });
@@ -71,13 +82,13 @@ export function MercadoriaCadastro({ onSuccess, onCancelar }: Props) {
 
     const payload = {
       fornecedorNome: fornecedor,
-      observacao: observacao || null, // Enviando o campo opcional conforme contrato
+      observacao: observacao.trim() === '' ? null : observacao,
       valorNota: numTotal,
       valorPagoCaixa: numCaixa,
       valorPagoCofre: numCofre,
       valorPrazo: numBoleto,
       statusGeral: (usaBoleto && numBoleto > 0) ? 'pendente' : 'concluido',
-      dataOperacao: new Date().toISOString(),
+      dataOperacao: formatDateLocal(new Date()), // Gera 'YYYY-MM-DD' da data atual local
       parcelas: parcelasArray
     };
 
@@ -85,7 +96,7 @@ export function MercadoriaCadastro({ onSuccess, onCancelar }: Props) {
       setIsSubmitting(true);
       await api.post('/mercadorias', payload);
       alert('Mercadoria registrada com sucesso!');
-      onSuccess(); // Chama a função para atualizar a listagem e fechar
+      onSuccess(); 
     } catch (error) {
       console.error('Erro ao salvar mercadoria:', error);
       alert('Ocorreu um erro ao tentar salvar a operação.');

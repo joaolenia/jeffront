@@ -4,10 +4,10 @@
   border: 1px solid #e2e8f0;
   padding: 40px;
   max-width: 800px;
+  width: 100%;
   margin: 0 auto;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
   animation: fadeIn 0.3s ease;
-  /* Garante que ele fique acima de tudo se usado num overlay */
   position: relative;
   z-index: 1010;
 }
@@ -46,7 +46,12 @@
   background-color: #f8fafc;
   transition: all 0.2s;
 }
-.mcad-input:focus { border-color: #3b82f6; background-color: white; outline: none; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+.mcad-input:focus { 
+  border-color: #3b82f6; 
+  background-color: white; 
+  outline: none; 
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.1); 
+}
 
 .mcad-split-box {
   background: #f8fafc;
@@ -75,7 +80,11 @@
   font-size: 1.05rem;
 }
 
-.mcad-split-label input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; }
+.mcad-split-label input[type="checkbox"] { 
+  width: 18px; 
+  height: 18px; 
+  cursor: pointer; 
+}
 
 .mcad-boleto-config {
   background: #eff6ff;

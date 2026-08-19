@@ -1,10 +1,10 @@
-
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { Monitor, ShoppingCart, Ticket, Package, Lock, BarChart3 } from 'lucide-react';
 import { Pdv } from './components/Pdv';
 import { FichasList } from './components/FichasList';
 import { FichaDetalhes } from './components/FichaDetalhes';
-import {Mercadorias} from './components/mercadorias/Mercadorias';
+import { Mercadorias } from './components/mercadorias/Mercadorias';
+import MercadoriaDetalhes from './components/mercadorias/MercadoriaDetalhes'; // <-- Nova importação adicionada
 import { Relatorios } from './components/Relatorios';
 import './App.css';
 import './components/Header.css'; 
@@ -70,9 +70,16 @@ function AppContent() {
       {/* Conteúdo Principal gerenciado pelo React Router */}
       <Routes>
         <Route path="/" element={<Pdv />} />
+        
+        {/* Rotas de Fichas */}
         <Route path="/fichas" element={<FichasList />} />
         <Route path="/fichas/:id" element={<FichaDetalhes />} />
+        
+        {/* Rotas de Mercadorias */}
         <Route path="/mercadorias" element={<Mercadorias />} />
+        <Route path="/mercadorias/:id" element={<MercadoriaDetalhes />} /> {/* <-- Nova Rota Adicionada */}
+        
+        {/* Outras Rotas */}
         <Route path="/relatorios" element={<Relatorios />} />
         <Route path="/cofre" element={<div style={{padding: 24}}><h1>Módulo em desenvolvimento...</h1></div>} />
       </Routes>

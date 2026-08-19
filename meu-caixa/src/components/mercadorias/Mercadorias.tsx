@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../api';
-import { MercadoriaCadastro } from './MercadoriaCadastro'; // Certifique-se do caminho correto
+import { MercadoriaCadastro } from './MercadoriaCadastro';
 import './Mercadorias.css';
 
 interface Parcela {
@@ -35,7 +35,7 @@ export const Mercadorias: React.FC = () => {
       setMercadorias(response.data);
     } catch (error) {
       console.error('Erro ao buscar mercadorias', error);
-      alert('Erro ao carregar a listagem de mercadorias.');
+      alert('Erro ao carregar a listagem.');
     } finally {
       setLoading(false);
     }
@@ -51,19 +51,16 @@ export const Mercadorias: React.FC = () => {
 
   const handleSuccessCadastro = () => {
     setIsCadastroOpen(false);
-    fetchMercadorias(); // Recarrega a tabela imediatamente após salvar
+    fetchMercadorias();
   };
 
-  // Se a tela de cadastro estiver aberta, exibimos ela com um overlay escuro
   if (isCadastroOpen) {
     return (
-      <div className="mercadorias-container" style={{ position: 'relative' }}>
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.4)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <MercadoriaCadastro 
-            onSuccess={handleSuccessCadastro} 
-            onCancelar={() => setIsCadastroOpen(false)} 
-          />
-        </div>
+      <div className="mercadorias-overlay">
+        <MercadoriaCadastro 
+          onSuccess={handleSuccessCadastro} 
+          onCancelar={() => setIsCadastroOpen(false)} 
+        />
       </div>
     );
   }
@@ -71,56 +68,50 @@ export const Mercadorias: React.FC = () => {
   return (
     <div className="mercadorias-container">
       <div className="mercadorias-header">
-        <h1>Controle de Mercadorias / Notas</h1>
+        <div>
+          <h1>Mercadorias e Notas</h1>
+          <p>Gerencie as entradas e pagamentos a fornecedores</p>
+        </div>
         <button className="btn-novo" onClick={() => setIsCadastroOpen(true)}>
           + Nova Operação
         </button>
       </div>
 
       {loading ? (
-        <p>Carregando operações...</p>
+        <div className="loading-state">Carregando operações...</div>
       ) : mercadorias.length === 0 ? (
-        <div className="empty-state">Nenhuma operação cadastrada.</div>
+        <div className="empty-state">Nenhuma operação cadastrada ainda.</div>
       ) : (
-        <div className="mercadorias-table-container">
-          <table className="mercadorias-table">
-            <thead>
-              <tr>
-                <th>Fornecedor</th>
-                <th>Data</th>
-                <th>Valor Total</th>
-                <th>Status</th>
-                <th>Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              {mercadorias.map(merc => (
-                <tr key={merc.id}>
-                  <td>
-                    <strong>{merc.fornecedorNome}</strong>
-                    {merc.observacao && (
-                       <div style={{ fontSize: '0.85rem', color: '#666', marginTop: '4px' }}>{merc.observacao}</div>
-                    )}
-                  </td>
-                  <td>{new Date(merc.dataOperacao).toLocaleDateString('pt-BR')}</td>
-                  <td>{formatCurrency(merc.valorNota)}</td>
-                  <td>
-                    <span className={`status-badge ${merc.statusGeral}`}>
-                      {merc.statusGeral}
-                    </span>
-                  </td>
-                  <td>
-                    <button 
-                      className="btn-detalhes"
-                      onClick={() => navigate(`/mercadorias/${merc.id}`)}
-                    >
-                      Ver Detalhes
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="mercadorias-grid">
+          {mercadorias.map(merc => (
+            <div 
+              key={merc.id} 
+              className="mercadoria-card"
+              onClick={() => navigate(`/mercadorias/${merc.id}`)}
+            >
+              <div className="card-header">
+                <h3>{merc.fornecedorNome}</h3>
+                <span className={`status-badge ${merc.statusGeral.toLowerCase()}`}>
+                  {merc.statusGeral}
+                </span>
+              </div>
+              
+              {merc.observacao && (
+                <div className="card-obs">{merc.observacao}</div>
+              )}
+
+              <div className="card-body">
+                <div className="info-group">
+                  <label>Valor Total</label>
+                  <strong>{formatCurrency(merc.valorNota)}</strong>
+                </div>
+                <div className="info-group">
+                  <label>Data</label>
+                  <span>{new Date(merc.dataOperacao + 'T12:00:00').toLocaleDateString('pt-BR')}</span>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </div>

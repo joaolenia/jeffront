@@ -1,100 +1,162 @@
 .mercadorias-container {
-  padding: 20px;
+  padding: 24px;
   max-width: 1200px;
   margin: 0 auto;
+  animation: fadeIn 0.3s ease;
 }
 
 .mercadorias-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: 32px;
 }
 
 .mercadorias-header h1 {
-  font-size: 1.5rem;
-  color: #1a1a1a;
+  font-size: 1.8rem;
+  color: #0f172a;
+  margin: 0 0 4px 0;
+}
+
+.mercadorias-header p {
+  color: #64748b;
   margin: 0;
+  font-size: 0.95rem;
 }
 
 .btn-novo {
-  background-color: #007bff;
+  background-color: #2563eb;
   color: white;
   border: none;
-  padding: 10px 16px;
-  border-radius: 6px;
+  padding: 12px 24px;
+  border-radius: 8px;
   font-weight: 600;
+  font-size: 1rem;
   cursor: pointer;
   transition: background-color 0.2s;
+  box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
 }
 
 .btn-novo:hover {
-  background-color: #0056b3;
+  background-color: #1d4ed8;
 }
 
-.mercadorias-table-container {
+/* Grid de Cards */
+.mercadorias-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+.mercadoria-card {
   background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-  overflow-x: auto;
-}
-
-.mercadorias-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.mercadorias-table th, 
-.mercadorias-table td {
-  padding: 14px 16px;
-  text-align: left;
-  border-bottom: 1px solid #f0f0f0;
-}
-
-.mercadorias-table th {
-  font-weight: 600;
-  color: #666;
-  background-color: #fafafa;
-}
-
-.mercadorias-table tr:hover {
-  background-color: #f8f9fa;
-}
-
-.status-badge {
-  padding: 4px 8px;
+  border: 1px solid #e2e8f0;
   border-radius: 12px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+  display: flex;
+  flex-direction: column;
+}
+
+.mercadoria-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+  border-color: #cbd5e1;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.card-header h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #1e293b;
+}
+
+.card-obs {
   font-size: 0.85rem;
+  color: #64748b;
+  background: #f8fafc;
+  padding: 8px 12px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  font-style: italic;
+}
+
+.card-body {
+  display: flex;
+  justify-content: space-between;
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.info-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.info-group label {
+  font-size: 0.8rem;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.info-group strong {
+  color: #0f172a;
+  font-size: 1.1rem;
+}
+
+.info-group span {
+  color: #334155;
   font-weight: 500;
 }
 
+.status-badge {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
 .status-badge.pendente {
-  background-color: #fff0f0;
-  color: #d32f2f;
+  background-color: #fef2f2;
+  color: #ef4444;
 }
 
-.status-badge.concluido {
-  background-color: #e6f4ea;
-  color: #2e7d32;
+.status-badge.concluido, .status-badge.pago {
+  background-color: #f0fdf4;
+  color: #16a34a;
 }
 
-.btn-detalhes {
-  background-color: transparent;
-  color: #007bff;
-  border: 1px solid #007bff;
-  padding: 6px 12px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.btn-detalhes:hover {
-  background-color: #007bff;
-  color: white;
-}
-
-.empty-state {
+.loading-state, .empty-state {
   text-align: center;
-  padding: 40px;
-  color: #666;
+  padding: 60px 20px;
+  color: #64748b;
+  font-size: 1.1rem;
+  background: white;
+  border-radius: 12px;
+  border: 1px dashed #cbd5e1;
+}
+
+/* Overlay do Modal de Cadastro */
+.mercadorias-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(15, 23, 42, 0.6);
+  z-index: 1000;
+  display: flex;
+  align-items: flex-start; /* Alinha no topo para permitir rolagem natural */
+  justify-content: center;
+  padding: 40px 20px;
+  overflow-y: auto; /* Permite rolagem no fundo escuro se a tela for muito pequena */
 }

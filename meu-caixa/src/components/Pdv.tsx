@@ -103,14 +103,17 @@ export function Pdv() {
     try {
       // 1. POST para salvar a venda no Caixa
       const responseVenda = await api.post('/vendas', payloadVenda);
-      
-      // 2. PATCH para salvar na Ficha do Cliente (se for Crediário)
+
       if (isCrediario && fichaCrediario) {
         const resumoItens = itensCaixa.map(i => `${i.qtd}x ${i.nome}`).join(', ');
         
+        // --- CORREÇÃO DE FUSO HORÁRIO ---
+        const dataAtual = new Date();
+        const dataLocal = new Date(dataAtual.getTime() - (dataAtual.getTimezoneOffset() * 60000));
+        
         const novaCompra = {
           idVenda: responseVenda.data?.id || Date.now(), // Fallback
-          data: new Date().toISOString(),
+          data: dataLocal.toISOString(), // <-- AGORA COM O FUSO CORRETO
           resumoItens: resumoItens,
           valor: totalVenda
         };

@@ -19,7 +19,7 @@ import {
   TrendingUp,
   CircleDollarSign,
   ShieldCheck,
-  X,
+
 } from 'lucide-react';
 import api from '../api';
 import './FichaDetalhes.css';
@@ -123,8 +123,11 @@ export function FichaDetalhes() {
 
     setIsSubmitting(true);
 
+    const dataAtual = new Date();
+    const dataLocal = new Date(dataAtual.getTime() - (dataAtual.getTimezoneOffset() * 60000));
+
     const novoPagamento = {
-      data: new Date().toISOString(),
+      data: dataLocal.toISOString(),
       forma: formaPagamento,
       valor: valorParaPagar,
     };
@@ -198,19 +201,17 @@ export function FichaDetalhes() {
     }).format(Number(value) || 0);
   };
 
-  const formatDate = (isoString: string) => {
+const formatDate = (isoString: string) => {
     if (!isoString) return '-';
 
-    return new Date(isoString).toLocaleDateString(
-      'pt-BR',
-      {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      }
-    );
+    return new Date(isoString).toLocaleDateString('pt-BR', {
+      timeZone: 'UTC', // <-- ESTA LINHA RESOLVE O PROBLEMA
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
   };
 
   const getPaymentIcon = (

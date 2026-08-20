@@ -1,4 +1,4 @@
-import  { useState } from 'react';
+import { useState } from 'react';
 import { 
   PieChart, 
   TrendingUp, 
@@ -8,7 +8,8 @@ import {
   FileText 
 } from 'lucide-react';
 import './Relatorios.css';
-import { RelatorioVendas } from './relatorios/RelatorioVendas'; // <-- NOVA IMPORTAÇÃO
+import { RelatorioVendas } from './relatorios/RelatorioVendas';
+import RelatoriosEntrada from './relatorios/RelatoriosEntrada'; // <-- NOVA IMPORTAÇÃO ADICIONADA
 
 type ReportType = 'vendas' | 'entradas' | 'saidas' | 'crediario' | 'mercadorias';
 
@@ -30,8 +31,8 @@ export function Relatorios() {
     switch(activeReport) {
       case 'vendas':
         return <RelatorioVendas />;
-      // Aqui entrarão os próximos no futuro:
-      // case 'entradas': return <RelatorioEntradas />;
+      case 'entradas':
+        return <RelatoriosEntrada />; // <-- TELA DE ENTRADAS RENDERIZADA AQUI
       default:
         return (
           <div className="report-placeholder">

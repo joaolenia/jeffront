@@ -15,6 +15,7 @@ interface ParcelaMercadoria {
 
 interface MercadoriaOperacao {
   id?: number;
+  id_mercadoria?: number; // fallback
   fornecedorNome?: string;
   valorNota?: number;
   descricao?: string;
@@ -23,7 +24,7 @@ interface MercadoriaOperacao {
   valorPrazo?: number;
   statusGeral?: string;
   dataOperacao?: string | Date;
-  parcelas?: ParcelaMercadoria[];
+  parcelas?: ParcelaMercadoria[] | string;
   dataCriacao?: string | Date;
   dataAtualizacao?: string | Date;
 }
@@ -45,7 +46,7 @@ const calcularDataAnterior = (dias: number) => {
 };
 
 // Extração robusta da string YYYY-MM-DD ignorando conversões de fuso horário
-const extrairDataString = (dateInput: string | Date | undefined) => {
+const extrairDataString = (dateInput: string | Date | undefined | null) => {
   if (!dateInput) return '';
   const str = typeof dateInput === 'string' ? dateInput : dateInput.toISOString();
   return str.split('T')[0].split(' ')[0];
@@ -67,7 +68,6 @@ export default function RelatoriosSaida() {
     setLoading(true);
     setError(null);
     try {
-      // Busca todas as operações de mercadorias
       const response = await api.get('/mercadorias', { params: { dataInicial, dataFinal } });
       setMercadorias(response.data || []);
     } catch (err) {
@@ -105,12 +105,15 @@ export default function RelatoriosSaida() {
     let totalCaixa = 0;
     let totalCofre = 0;
 
-    // Set para garantir que NENHUMA mercadoria duplique caso a API envie itens repetidos num Join
-    const mercadoriasProcessadas = new Set<number>();
+    // Blindagem 1: Deduplicação de mercadorias. Se a API vier com um "JOIN" imperfeito 
+    // e enviar a mesma mercadoria duas vezes, bloqueamos pelo Set.
+    const mercadoriasProcessadas = new Set<string>();
 
     mercadorias.forEach(merc => {
-      if (merc.id && mercadoriasProcessadas.has(merc.id)) return;
-      if (merc.id) mercadoriasProcessadas.add(merc.id);
+      // Identificador único de fallback (caso falte a prop "id" ou venha mascarada)
+      const uniqueId = merc.id ? String(merc.id) : (merc.id_mercadoria ? String(merc.id_mercadoria) : JSON.stringify(merc));
+      if (mercadoriasProcessadas.has(uniqueId)) return;
+      mercadoriasProcessadas.add(uniqueId);
 
       const dataOpStr = extrairDataString(merc.dataOperacao);
       
@@ -120,26 +123,34 @@ export default function RelatoriosSaida() {
         totalCofre += Number(merc.valorPagoCofre) || 0;
       }
 
-      // 2. ANÁLISE DE PARCELAS PAGAS
-      if (merc.parcelas && Array.isArray(merc.parcelas)) {
-        
-        // Evita duplicação de parcelas caso o JSON esteja anômalo
-        const parcelasProcessadas = new Set<number>();
+      // Prepara o array de parcelas de forma robusta
+      let parcelasArray: ParcelaMercadoria[] = [];
+      if (typeof merc.parcelas === 'string') {
+        try { parcelasArray = JSON.parse(merc.parcelas); } catch (e) { console.error(e) }
+      } else if (Array.isArray(merc.parcelas)) {
+        parcelasArray = merc.parcelas;
+      }
 
-        merc.parcelas.forEach(parcela => {
-          if (parcelasProcessadas.has(parcela.numero)) return;
-          parcelasProcessadas.add(parcela.numero);
+      // 2. ANÁLISE DE PARCELAS PAGAS A PRAZO
+      if (parcelasArray.length > 0) {
+        // Blindagem 2: Evita contar duas parcelas com número idêntico se o JSON do BD estiver duplicado
+        const parcelasContadas = new Set<number>();
+
+        parcelasArray.forEach((parcela, index) => {
+          // Identificador da parcela
+          const pId = parcela.numero !== undefined ? parcela.numero : index;
+          if (parcelasContadas.has(pId)) return;
+          parcelasContadas.add(pId);
 
           if (parcela.status === 'pago') {
-            // Se houver dataPagamento, usa ela, senão recai para o vencimento ou operação.
+            // Se houver dataPagamento, usa ela, senão recai para o vencimento ou operação
             const dataPagStr = extrairDataString(parcela.dataPagamento || parcela.vencimento || merc.dataOperacao);
             
-            // Verifica se a parcela foi efetivamente paga dentro do período do filtro
+            // Somente contabiliza as pagas estritamente no dia/período solicitado
             if (dataPagStr >= dataInicial && dataPagStr <= dataFinal) {
               const valorParcela = Number(parcela.valor) || 0;
               const formaPagamento = (parcela.formaPagamento || '').toLowerCase();
               
-              // Se a forma de pagamento cita cofre, vai pro cofre, caso contrário, assume o fluxo normal do caixa
               if (formaPagamento.includes('cofre')) {
                 totalCofre += valorParcela;
               } else {
@@ -165,7 +176,7 @@ export default function RelatoriosSaida() {
       <div className="relatorio-header">
         <div>
           <h2>Relatório de Saídas</h2>
-          <p>Utilize os filtros abaixo para analisar os dados de saídas e despesas.</p>
+          <p>Utilize os filtros abaixo para analisar os dados de saídas.</p>
         </div>
         <button className="btn-atualizar" onClick={buscarDados} disabled={loading}>
           <RefreshCcw size={18} className={loading ? 'spin' : ''} />
@@ -218,12 +229,12 @@ export default function RelatoriosSaida() {
           <div className="summary-banner card highlight-saida">
             <div className="banner-icon"><TrendingDown size={40} /></div>
             <div className="banner-content">
-              <h3>TOTAL DE SAÍDAS (CUSTO)</h3>
+              <h3 className="banner-title">TOTAL DE SAÍDAS (CUSTO)</h3>
               <p className="total-value">{formatarMoeda(relatorio.totalGeral)}</p>
             </div>
           </div>
 
-          {/* SESSÃO DE ORIGENS (Centralizada) */}
+          {/* SESSÃO DE ORIGENS (Centralizada visualmente) */}
           <div className="summary-grid">
             <div className="summary-card card">
               <div className="card-header">

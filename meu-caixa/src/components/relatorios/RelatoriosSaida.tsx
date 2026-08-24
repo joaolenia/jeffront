@@ -3,29 +3,32 @@ import api from '../../api';
 import './RelatoriosSaida.css';
 import { RefreshCcw, Calendar, TrendingDown, AlertCircle } from 'lucide-react';
 
-interface Parcela {
-  numero: number;
-  vencimento: string;
-  valor: number;
-  status: 'pendente' | 'pago';
-  formaPagamento: string;
-  dataPagamento?: string;
+// ================= TIPAGENS =================
+interface ParcelaMercadoria {
+  numero: number;          
+  vencimento: string;      
+  valor: number;           
+  status: 'pendente' | 'pago'; 
+  formaPagamento: string;  
+  dataPagamento?: string;  
 }
 
-interface Mercadoria {
-  id: number;
+interface MercadoriaOperacao {
+  id?: number;
   fornecedorNome?: string;
-  fornecedor?: string;
   valorNota?: number;
-  valorTotal?: number;
+  descricao?: string;
+  valorPagoCaixa?: number;
+  valorPagoCofre?: number;
+  valorPrazo?: number;
   statusGeral?: string;
-  status?: string;
-  dataOperacao?: string;
-  data?: string;
-  parcelas?: Parcela[];
-  pagamento?: any; // Fallback para estrutura antiga
+  dataOperacao?: string | Date;
+  parcelas?: ParcelaMercadoria[];
+  dataCriacao?: string | Date;
+  dataAtualizacao?: string | Date;
 }
 
+// ================= FUNÇÕES UTILITÁRIAS =================
 const formatarMoeda = (valor: number) => {
   return (valor || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 };
@@ -41,10 +44,11 @@ const calcularDataAnterior = (dias: number) => {
   return getLocalISODate(data);
 };
 
-// Extração robusta ignorando TimeZone
-const extrairDataString = (isoString: string) => {
-  if (!isoString) return '';
-  return isoString.split('T')[0].split(' ')[0];
+// Extração robusta da string YYYY-MM-DD ignorando conversões de fuso horário
+const extrairDataString = (dateInput: string | Date | undefined) => {
+  if (!dateInput) return '';
+  const str = typeof dateInput === 'string' ? dateInput : dateInput.toISOString();
+  return str.split('T')[0].split(' ')[0];
 };
 
 export default function RelatoriosSaida() {
@@ -52,21 +56,23 @@ export default function RelatoriosSaida() {
   const [dataInicial, setDataInicial] = useState<string>(getLocalISODate(new Date()));
   const [dataFinal, setDataFinal] = useState<string>(getLocalISODate(new Date()));
 
-  const [mercadorias, setMercadorias] = useState<Mercadoria[]>([]);
+  const [mercadorias, setMercadorias] = useState<MercadoriaOperacao[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
+  // ================= EFEITO DE BUSCA =================
   const buscarDados = async () => {
     if (!dataInicial || !dataFinal) return;
     
     setLoading(true);
     setError(null);
     try {
+      // Busca todas as operações de mercadorias
       const response = await api.get('/mercadorias', { params: { dataInicial, dataFinal } });
       setMercadorias(response.data || []);
     } catch (err) {
       console.error(err);
-      setError('Erro ao buscar dados do relatório de saídas.');
+      setError('Erro ao buscar dados do relatório de saídas. Verifique a conexão com o servidor.');
     } finally {
       setLoading(false);
     }
@@ -77,6 +83,7 @@ export default function RelatoriosSaida() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dataInicial, dataFinal]);
 
+  // ================= CONTROLE DE PERÍODO =================
   const handlePeriodoChange = (novoPeriodo: string) => {
     setPeriodo(novoPeriodo);
     const hojeAtual = getLocalISODate(new Date());
@@ -93,79 +100,72 @@ export default function RelatoriosSaida() {
     }
   };
 
+  // ================= PROCESSAMENTO DE DADOS =================
   const relatorio = useMemo(() => {
     let totalCaixa = 0;
     let totalCofre = 0;
-    
-    let saidasDinheiro = 0;
-    let saidasPix = 0;
-    let saidasCartao = 0;
-    let saidasBoleto = 0;
+
+    // Set para garantir que NENHUMA mercadoria duplique caso a API envie itens repetidos num Join
+    const mercadoriasProcessadas = new Set<number>();
 
     mercadorias.forEach(merc => {
-      const dataOpStr = extrairDataString(merc.dataOperacao || merc.data || '');
-      
-      // Nova modelagem baseada nas "Parcelas"
-      if (merc.parcelas && Array.isArray(merc.parcelas)) {
-        merc.parcelas.forEach(p => {
-          if (p.status === 'pago') {
-            const dataPagStr = extrairDataString(p.dataPagamento || merc.dataOperacao || merc.data || '');
-            
-            if (dataPagStr >= dataInicial && dataPagStr <= dataFinal) {
-              const valor = Number(p.valor) || 0;
-              const forma = (p.formaPagamento || '').toLowerCase();
-              
-              if (forma.includes('cofre')) totalCofre += valor;
-              else totalCaixa += valor;
+      if (merc.id && mercadoriasProcessadas.has(merc.id)) return;
+      if (merc.id) mercadoriasProcessadas.add(merc.id);
 
-              if (forma.includes('dinheiro')) saidasDinheiro += valor;
-              else if (forma.includes('pix')) saidasPix += valor;
-              else if (forma.includes('cartão') || forma.includes('cartao')) saidasCartao += valor;
-              else if (forma.includes('boleto')) saidasBoleto += valor;
-              else saidasDinheiro += valor; // Fallback se não detectar na string
+      const dataOpStr = extrairDataString(merc.dataOperacao);
+      
+      // 1. ANÁLISE DOS VALORES PAGOS À VISTA (Na data da operação)
+      if (dataOpStr >= dataInicial && dataOpStr <= dataFinal) {
+        totalCaixa += Number(merc.valorPagoCaixa) || 0;
+        totalCofre += Number(merc.valorPagoCofre) || 0;
+      }
+
+      // 2. ANÁLISE DE PARCELAS PAGAS
+      if (merc.parcelas && Array.isArray(merc.parcelas)) {
+        
+        // Evita duplicação de parcelas caso o JSON esteja anômalo
+        const parcelasProcessadas = new Set<number>();
+
+        merc.parcelas.forEach(parcela => {
+          if (parcelasProcessadas.has(parcela.numero)) return;
+          parcelasProcessadas.add(parcela.numero);
+
+          if (parcela.status === 'pago') {
+            // Se houver dataPagamento, usa ela, senão recai para o vencimento ou operação.
+            const dataPagStr = extrairDataString(parcela.dataPagamento || parcela.vencimento || merc.dataOperacao);
+            
+            // Verifica se a parcela foi efetivamente paga dentro do período do filtro
+            if (dataPagStr >= dataInicial && dataPagStr <= dataFinal) {
+              const valorParcela = Number(parcela.valor) || 0;
+              const formaPagamento = (parcela.formaPagamento || '').toLowerCase();
+              
+              // Se a forma de pagamento cita cofre, vai pro cofre, caso contrário, assume o fluxo normal do caixa
+              if (formaPagamento.includes('cofre')) {
+                totalCofre += valorParcela;
+              } else {
+                totalCaixa += valorParcela; 
+              }
             }
           }
         });
-      } 
-      // Fallback pra banco de dados muito antigo sem parcelamento array 
-      else if (merc.pagamento && dataOpStr >= dataInicial && dataOpStr <= dataFinal) {
-        const pag = merc.pagamento;
-        const retirarDe = (pag.retirarDe || '').toLowerCase();
-        
-        const vDinheiro = Number(pag.dinheiro) || 0;
-        const vPix = Number(pag.pix) || 0;
-        const vCartao = Number(pag.cartao) || 0;
-        const vBoleto = Number(pag.boleto) || 0;
-        
-        const totalPagoNessaCompra = vDinheiro + vPix + vCartao + vBoleto;
-        
-        if (retirarDe === 'cofre') totalCofre += totalPagoNessaCompra;
-        else totalCaixa += totalPagoNessaCompra;
-
-        saidasDinheiro += vDinheiro;
-        saidasPix += vPix;
-        saidasCartao += vCartao;
-        saidasBoleto += vBoleto;
       }
     });
 
-    const totalOrigem = totalCaixa + totalCofre;
-    const totalFormas = saidasDinheiro + saidasPix + saidasCartao + saidasBoleto;
-
     return {
-      totalCaixa, totalCofre, 
-      saidasDinheiro, saidasPix, saidasCartao, saidasBoleto,
-      totalGeral: Math.max(totalOrigem, totalFormas) 
+      totalCaixa, 
+      totalCofre, 
+      totalGeral: totalCaixa + totalCofre
     };
   }, [mercadorias, dataInicial, dataFinal]);
 
+  // ================= RENDERIZAÇÃO =================
   return (
     <div className="relatorio-saidas-container">
       {/* HEADER */}
       <div className="relatorio-header">
         <div>
           <h2>Relatório de Saídas</h2>
-          <p>Despesas, compra de mercadorias e retiradas financeiras do caixa/cofre</p>
+          <p>Utilize os filtros abaixo para analisar os dados de saídas e despesas.</p>
         </div>
         <button className="btn-atualizar" onClick={buscarDados} disabled={loading}>
           <RefreshCcw size={18} className={loading ? 'spin' : ''} />
@@ -208,9 +208,9 @@ export default function RelatoriosSaida() {
         )}
       </div>
 
-      {/* ESTADOS */}
+      {/* ESTADOS DA TELA */}
       {error && <div className="state-message error"><AlertCircle /> {error}</div>}
-      {loading && <div className="state-message loading">Mapeando saídas...</div>}
+      {loading && <div className="state-message loading">Processando saídas...</div>}
 
       {!loading && !error && (
         <>
@@ -223,54 +223,25 @@ export default function RelatoriosSaida() {
             </div>
           </div>
 
+          {/* SESSÃO DE ORIGENS (Centralizada) */}
           <div className="summary-grid">
-            {/* ORIGEM DOS RECURSOS */}
             <div className="summary-card card">
               <div className="card-header">
                 <h4>SAÍDAS POR ORIGEM</h4>
               </div>
               <div className="card-body forms-grid">
                 <div className="forma-item">
-                  <span>Retirado do Caixa</span>
+                  <span>RETIRADO DO CAIXA</span>
                   <strong>{formatarMoeda(relatorio.totalCaixa)}</strong>
                 </div>
                 <div className="forma-item">
-                  <span>Retirado do Cofre</span>
+                  <span>RETIRADO DO COFRE</span>
                   <strong>{formatarMoeda(relatorio.totalCofre)}</strong>
                 </div>
               </div>
               <div className="card-footer">
                 <span>Total de origens:</span>
-                <strong className="subtotal">{formatarMoeda(relatorio.totalCaixa + relatorio.totalCofre)}</strong>
-              </div>
-            </div>
-
-            {/* FORMAS DE PAGAMENTO */}
-            <div className="summary-card card">
-              <div className="card-header">
-                <h4>SAÍDAS POR MEIO DE PAGAMENTO</h4>
-              </div>
-              <div className="card-body forms-grid">
-                <div className="forma-item">
-                  <span>Dinheiro</span>
-                  <strong>{formatarMoeda(relatorio.saidasDinheiro)}</strong>
-                </div>
-                <div className="forma-item">
-                  <span>Pix</span>
-                  <strong>{formatarMoeda(relatorio.saidasPix)}</strong>
-                </div>
-                <div className="forma-item">
-                  <span>Cartão</span>
-                  <strong>{formatarMoeda(relatorio.saidasCartao)}</strong>
-                </div>
-                <div className="forma-item">
-                  <span>Boleto Pago</span>
-                  <strong>{formatarMoeda(relatorio.saidasBoleto)}</strong>
-                </div>
-              </div>
-              <div className="card-footer">
-                <span>Total mapeado:</span>
-                <strong className="subtotal">{formatarMoeda(relatorio.saidasDinheiro + relatorio.saidasPix + relatorio.saidasCartao + relatorio.saidasBoleto)}</strong>
+                <strong className="subtotal">{formatarMoeda(relatorio.totalGeral)}</strong>
               </div>
             </div>
           </div>

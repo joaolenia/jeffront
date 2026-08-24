@@ -41,6 +41,12 @@ const calcularDataAnterior = (dias: number) => {
   return getLocalISODate(data);
 };
 
+// Extrai a porção da data 'YYYY-MM-DD' ignorando inteiramente a conversão do fuso
+const extrairDataString = (isoString: string) => {
+  if (!isoString) return '';
+  return isoString.split('T')[0].split(' ')[0];
+};
+
 export function RelatoriosEntrada() {
   const [periodo, setPeriodo] = useState<string>('hoje');
   const [dataInicial, setDataInicial] = useState<string>(getLocalISODate(new Date()));
@@ -60,6 +66,7 @@ export function RelatoriosEntrada() {
     setError(null);
     try {
       const [vendasRes, fichasRes] = await Promise.all([
+        // Mantemos a busca com parâmetros caso o backend também filtre
         api.get('/vendas', { params: { dataInicial, dataFinal } }),
         api.get('/fichas') 
       ]);
@@ -108,44 +115,35 @@ export function RelatoriosEntrada() {
 
     // Processar Vendas
     vendas.forEach(venda => {
-      const forma = (venda.formaPagamento || '').toUpperCase();
-      const valor = Number(venda.total) || 0;
+      const dataVendaStr = extrairDataString(venda.dataHora);
+      
+      // Aplicamos o filtro no frontend para garantir segurança blindada do range da data
+      if (dataVendaStr >= dataInicial && dataVendaStr <= dataFinal) {
+        const forma = (venda.formaPagamento || '').toUpperCase();
+        const valor = Number(venda.total) || 0;
 
-      if (forma === 'PRAZO' || forma === 'FIADO') return;
+        if (forma === 'PRAZO' || forma === 'FIADO') return;
 
-      if (forma.includes('DINHEIRO')) vendasDinheiro += valor;
-      else if (forma.includes('PIX')) vendasPix += valor;
-      else if (forma.includes('CARTAO') || forma.includes('CARTÃO')) vendasCartao += valor;
+        if (forma.includes('DINHEIRO')) vendasDinheiro += valor;
+        else if (forma.includes('PIX')) vendasPix += valor;
+        else if (forma.includes('CARTAO') || forma.includes('CARTÃO')) vendasCartao += valor;
+      }
     });
 
     // Processar Pagamentos de Fichas
-    // CORREÇÃO DE DATAS: Instancia os limites considerando meia-noite e 23:59 no FUSO LOCAL (evita pulo de dias)
-    let dataIniDate = new Date(0);
-    let dataFimDate = new Date();
-
-    if (dataInicial) {
-      const [anoIni, mesIni, diaIni] = dataInicial.split('-').map(Number);
-      dataIniDate = new Date(anoIni, mesIni - 1, diaIni, 0, 0, 0, 0);
-    }
-    
-    if (dataFinal) {
-      const [anoFim, mesFim, diaFim] = dataFinal.split('-').map(Number);
-      dataFimDate = new Date(anoFim, mesFim - 1, diaFim, 23, 59, 59, 999);
-    }
-
     fichas.forEach(ficha => {
       if (!ficha.pagamentos || !Array.isArray(ficha.pagamentos)) return;
       
       ficha.pagamentos.forEach(pag => {
-        // 'new Date()' em uma string ISO (2026-08-18T23:33:07.249Z) converte perfeitamente para a hora local
-        const dataPag = new Date(pag.data);
-        const valor = Number(pag.valor) || 0;
+        const dataPagStr = extrairDataString(pag.data);
         
-        if (dataPag >= dataIniDate && dataPag <= dataFimDate) {
+        // A comparação sendo feita usando string bypassa o problema do shift do Date.
+        if (dataPagStr >= dataInicial && dataPagStr <= dataFinal) {
           const forma = (pag.forma || '').toUpperCase();
+          const valor = Number(pag.valor) || 0;
 
           if (forma.includes('DINHEIRO')) fichasDinheiro += valor;
-          else if (forma.includes('PIX')) fichasPix += valor; // Adicionado tratamento para Pix
+          else if (forma.includes('PIX')) fichasPix += valor;
           else if (forma.includes('CARTAO') || forma.includes('CARTÃO')) fichasCartao += valor;
         }
       });

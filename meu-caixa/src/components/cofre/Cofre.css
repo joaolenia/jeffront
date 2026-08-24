@@ -1,0 +1,208 @@
+/* Layout Principal */
+.cofre-container {
+  padding: 24px;
+  max-width: 1300px;
+  margin: 0 auto;
+  font-family: inherit;
+  animation: fadeIn 0.3s ease;
+  color: #1e293b;
+}
+
+/* Cabeçalho */
+.cofre-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: white;
+  padding: 20px 24px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  margin-bottom: 24px;
+}
+
+.cofre-header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.cofre-btn-back {
+  background: #f1f5f9;
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #334155;
+  transition: all 0.2s;
+}
+.cofre-btn-back:hover { background: #e2e8f0; color: #0f172a; }
+.cofre-header h1 { margin: 0 0 4px 0; font-size: 1.5rem; color: #0f172a; }
+.cofre-subtitle { color: #64748b; font-size: 0.9rem; }
+
+/* Dashboard Cards */
+.cofre-dashboard {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.cofre-saldo-card {
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  color: white;
+  padding: 32px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
+}
+.saldo-icon {
+  background: rgba(255,255,255,0.1);
+  padding: 16px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+}
+.saldo-info span { font-size: 0.95rem; opacity: 0.8; text-transform: uppercase; letter-spacing: 0.5px;}
+.saldo-info h2 { margin: 8px 0 0 0; font-size: 2.8rem; letter-spacing: -1px; }
+
+.cofre-actions-card {
+  background: white;
+  padding: 24px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.cofre-actions-card h3 { margin: 0 0 8px 0; color: #0f172a; font-size: 1.15rem;}
+.cofre-actions-card p { margin: 0 0 20px 0; color: #64748b; font-size: 0.9rem; }
+
+.action-buttons {
+  display: flex;
+  gap: 12px;
+  flex-direction: column;
+}
+.action-buttons button {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: none;
+  transition: background 0.2s;
+}
+.btn-entrada { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0 !important; }
+.btn-entrada:hover { background: #dcfce7; }
+.btn-saida { background: #fef2f2; color: #ef4444; border: 1px solid #fecaca !important;}
+.btn-saida:hover { background: #fee2e2; }
+
+/* Grid de Históricos Separados */
+.cofre-history-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.cofre-history-card {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  overflow: hidden; /* Para respeitar as bordas da tabela */
+}
+
+.history-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 20px 24px;
+  border-bottom: 1px solid #e2e8f0;
+}
+.history-header.entrada { background: #f8fafc; color: #16a34a; }
+.history-header.saida { background: #f8fafc; color: #ef4444; }
+.history-header h3 { margin: 0; font-size: 1.15rem; color: #0f172a; }
+
+.cofre-table-wrapper { 
+  overflow-x: auto; 
+  max-height: 400px; /* Rolagem interna se houver muitos itens */
+  overflow-y: auto;
+}
+
+.cofre-table { width: 100%; border-collapse: collapse; text-align: left; }
+.cofre-table th { 
+  background: white; color: #64748b; font-weight: 600; 
+  padding: 12px 16px; font-size: 0.85rem; text-transform: uppercase; 
+  border-bottom: 1px solid #e2e8f0; 
+  position: sticky; top: 0; z-index: 10;
+}
+.cofre-table td { 
+  padding: 14px 16px; border-bottom: 1px solid #f1f5f9; 
+  color: #334155; font-size: 0.9rem; vertical-align: middle; 
+}
+.cofre-table tr:hover td { background: #f8fafc; }
+
+.data-col { color: #64748b; font-size: 0.85rem !important; }
+.text-capitalize { text-transform: capitalize; font-weight: 500;}
+.align-right { text-align: right; }
+.font-bold { font-weight: 600; font-size: 0.95rem !important;}
+.text-green { color: #16a34a; }
+.text-red { color: #ef4444; }
+
+.cofre-empty-state { text-align: center; padding: 48px !important; color: #94a3b8; }
+.cofre-empty-state p { margin-top: 12px; font-size: 0.95rem; }
+
+/* Modal */
+.cofre-modal-overlay {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(15, 23, 42, 0.6);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000; padding: 20px; animation: fadeIn 0.2s;
+}
+.cofre-modal {
+  background: white; width: 100%; max-width: 450px;
+  border-radius: 12px; padding: 24px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+}
+.modal-header h2 { margin: 0 0 20px 0; font-size: 1.3rem; color: #0f172a; }
+
+.form-group { display: flex; flex-direction: column; margin-bottom: 16px; }
+.form-group label { font-size: 0.9rem; font-weight: 600; color: #334155; margin-bottom: 6px; }
+.form-group input, .form-group select {
+  padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 1rem; outline: none;
+}
+.form-group input:focus, .form-group select:focus { border-color: #3b82f6; }
+
+.modal-alert.warning {
+  display: flex; align-items: center; gap: 8px;
+  background: #fffbeb; color: #b45309; padding: 12px; border-radius: 6px;
+  font-size: 0.85rem; font-weight: 500; margin-bottom: 20px;
+}
+
+.modal-footer { display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; }
+.modal-footer button { padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; border: none;}
+.btn-cancelar { background: #f1f5f9; color: #475569; }
+.btn-cancelar:hover { background: #e2e8f0; }
+.btn-confirmar.entrada { background: #16a34a; color: white; }
+.btn-confirmar.entrada:hover { background: #15803d; }
+.btn-confirmar.saida { background: #ef4444; color: white; }
+.btn-confirmar.saida:hover { background: #dc2626; }
+.modal-footer button:disabled { opacity: 0.6; cursor: not-allowed; }
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* Responsividade */
+@media (max-width: 900px) {
+  .cofre-history-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 768px) {
+  .cofre-dashboard { grid-template-columns: 1fr; }
+  .saldo-info h2 { font-size: 2.2rem; }
+}

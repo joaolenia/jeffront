@@ -29,18 +29,22 @@ const formatarMoeda = (valor: number) => {
   return (valor || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 };
 
+// Pega a data atual em formato YYYY-MM-DD respeitando o fuso horário local
+const getLocalISODate = (date: Date) => {
+  const offset = date.getTimezoneOffset() * 60000;
+  return new Date(date.getTime() - offset).toISOString().split('T')[0];
+};
+
 const calcularDataAnterior = (dias: number) => {
   const data = new Date();
   data.setDate(data.getDate() - dias);
-  return data.toISOString().split('T')[0];
+  return getLocalISODate(data);
 };
-
-const hoje = new Date().toISOString().split('T')[0];
 
 export function RelatoriosEntrada() {
   const [periodo, setPeriodo] = useState<string>('hoje');
-  const [dataInicial, setDataInicial] = useState<string>(hoje);
-  const [dataFinal, setDataFinal] = useState<string>(hoje);
+  const [dataInicial, setDataInicial] = useState<string>(getLocalISODate(new Date()));
+  const [dataFinal, setDataFinal] = useState<string>(getLocalISODate(new Date()));
 
   const [vendas, setVendas] = useState<Venda[]>([]);
   const [fichas, setFichas] = useState<Ficha[]>([]);
@@ -78,10 +82,11 @@ export function RelatoriosEntrada() {
   // ================= CONTROLE DE PERÍODO =================
   const handlePeriodoChange = (novoPeriodo: string) => {
     setPeriodo(novoPeriodo);
-    setDataFinal(hoje);
+    const hojeAtual = getLocalISODate(new Date());
+    setDataFinal(hojeAtual);
 
     switch (novoPeriodo) {
-      case 'hoje': setDataInicial(hoje); break;
+      case 'hoje': setDataInicial(hojeAtual); break;
       case '7': setDataInicial(calcularDataAnterior(7)); break;
       case '15': setDataInicial(calcularDataAnterior(15)); break;
       case '30': setDataInicial(calcularDataAnterior(30)); break;
@@ -96,7 +101,9 @@ export function RelatoriosEntrada() {
     let vendasDinheiro = 0;
     let vendasPix = 0;
     let vendasCartao = 0;
+    
     let fichasDinheiro = 0;
+    let fichasPix = 0;
     let fichasCartao = 0;
 
     // Processar Vendas
@@ -112,14 +119,25 @@ export function RelatoriosEntrada() {
     });
 
     // Processar Pagamentos de Fichas
-    // Adicionado o 'Z' no final para comparar o filtro em UTC, igual salvamos no banco
-    const dataIniDate = new Date(`${dataInicial}T00:00:00Z`);
-    const dataFimDate = new Date(`${dataFinal}T23:59:59.999Z`);
+    // CORREÇÃO DE DATAS: Instancia os limites considerando meia-noite e 23:59 no FUSO LOCAL (evita pulo de dias)
+    let dataIniDate = new Date(0);
+    let dataFimDate = new Date();
+
+    if (dataInicial) {
+      const [anoIni, mesIni, diaIni] = dataInicial.split('-').map(Number);
+      dataIniDate = new Date(anoIni, mesIni - 1, diaIni, 0, 0, 0, 0);
+    }
+    
+    if (dataFinal) {
+      const [anoFim, mesFim, diaFim] = dataFinal.split('-').map(Number);
+      dataFimDate = new Date(anoFim, mesFim - 1, diaFim, 23, 59, 59, 999);
+    }
 
     fichas.forEach(ficha => {
       if (!ficha.pagamentos || !Array.isArray(ficha.pagamentos)) return;
       
       ficha.pagamentos.forEach(pag => {
+        // 'new Date()' em uma string ISO (2026-08-18T23:33:07.249Z) converte perfeitamente para a hora local
         const dataPag = new Date(pag.data);
         const valor = Number(pag.valor) || 0;
         
@@ -127,18 +145,19 @@ export function RelatoriosEntrada() {
           const forma = (pag.forma || '').toUpperCase();
 
           if (forma.includes('DINHEIRO')) fichasDinheiro += valor;
+          else if (forma.includes('PIX')) fichasPix += valor; // Adicionado tratamento para Pix
           else if (forma.includes('CARTAO') || forma.includes('CARTÃO')) fichasCartao += valor;
         }
       });
     });
 
     const totalVendas = vendasDinheiro + vendasPix + vendasCartao;
-    const totalFichas = fichasDinheiro + fichasCartao;
+    const totalFichas = fichasDinheiro + fichasPix + fichasCartao;
     const totalGeral = totalVendas + totalFichas;
 
     return {
       vendasDinheiro, vendasPix, vendasCartao, totalVendas,
-      fichasDinheiro, fichasCartao, totalFichas,
+      fichasDinheiro, fichasPix, fichasCartao, totalFichas,
       totalGeral
     };
   }, [vendas, fichas, dataInicial, dataFinal]);
@@ -244,6 +263,11 @@ export function RelatoriosEntrada() {
                 <div className="forma-item">
                   <span>Dinheiro</span>
                   <strong>{formatarMoeda(relatorio.fichasDinheiro)}</strong>
+                </div>
+                {/* Adicionado forma-item do Pix */}
+                <div className="forma-item">
+                  <span>Pix</span>
+                  <strong>{formatarMoeda(relatorio.fichasPix)}</strong>
                 </div>
                 <div className="forma-item">
                   <span>Cartão</span>

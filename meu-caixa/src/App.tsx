@@ -1,11 +1,12 @@
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
-import { Monitor, ShoppingCart, Ticket, Package, Lock, BarChart3 } from 'lucide-react';
+import { Monitor, ShoppingCart, Ticket, Package, Lock, BarChart3, Building } from 'lucide-react';
 import { Pdv } from './components/Pdv';
 import { FichasList } from './components/FichasList';
 import { FichaDetalhes } from './components/FichaDetalhes';
 import { Mercadorias } from './components/mercadorias/Mercadorias';
-import MercadoriaDetalhes from './components/mercadorias/MercadoriaDetalhes'; // <-- Nova importação adicionada
+import MercadoriaDetalhes from './components/mercadorias/MercadoriaDetalhes'; 
 import { Relatorios } from './components/Relatorios';
+import Cofre from './components/cofre/Cofre'; // <-- Nova importação do Cofre
 import './App.css';
 import './components/Header.css'; 
 
@@ -64,6 +65,13 @@ function AppContent() {
           >
             <BarChart3 size={18} /> Relatórios
           </button>
+          
+          <button 
+            className={`nav-item ${isActive('/patrimonio') ? 'active' : ''}`} 
+            onClick={() => navigate('/patrimonio')}
+          >
+            <Building size={18} /> Patrimonio
+          </button>
         </nav>
       </header>
 
@@ -77,11 +85,12 @@ function AppContent() {
         
         {/* Rotas de Mercadorias */}
         <Route path="/mercadorias" element={<Mercadorias />} />
-        <Route path="/mercadorias/:id" element={<MercadoriaDetalhes />} /> {/* <-- Nova Rota Adicionada */}
+        <Route path="/mercadorias/:id" element={<MercadoriaDetalhes />} /> 
         
         {/* Outras Rotas */}
         <Route path="/relatorios" element={<Relatorios />} />
-        <Route path="/cofre" element={<div style={{padding: 24}}><h1>Módulo em desenvolvimento...</h1></div>} />
+        <Route path="/cofre" element={<Cofre />} /> {/* <-- Rota do Cofre atualizada */}
+        <Route path="/patrimonio" element={<div style={{padding: 24}}><h1>Módulo de Patrimônio em desenvolvimento...</h1></div>} />
       </Routes>
     </div>
   );

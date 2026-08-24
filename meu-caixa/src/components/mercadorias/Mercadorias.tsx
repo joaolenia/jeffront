@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Search } from 'lucide-react';
 import api from '../../api';
 import { MercadoriaCadastro } from './MercadoriaCadastro';
 import './Mercadorias.css';
@@ -26,6 +27,11 @@ export const Mercadorias: React.FC = () => {
   const [mercadorias, setMercadorias] = useState<Mercadoria[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCadastroOpen, setIsCadastroOpen] = useState(false);
+  
+  // Estados para busca e filtros
+  const [busca, setBusca] = useState('');
+  const [filtroStatus, setFiltroStatus] = useState('todas');
+  
   const navigate = useNavigate();
 
   const fetchMercadorias = async () => {
@@ -54,6 +60,13 @@ export const Mercadorias: React.FC = () => {
     fetchMercadorias();
   };
 
+  // Aplica os filtros na listagem exibida na tela
+  const mercadoriasFiltradas = mercadorias.filter(merc => {
+    const matchBusca = merc.fornecedorNome?.toLowerCase().includes(busca.toLowerCase());
+    const matchStatus = filtroStatus === 'todas' || merc.statusGeral?.toLowerCase() === filtroStatus;
+    return matchBusca && matchStatus;
+  });
+
   if (isCadastroOpen) {
     return (
       <div className="mercadorias-overlay">
@@ -72,18 +85,43 @@ export const Mercadorias: React.FC = () => {
           <h1>Mercadorias e Notas</h1>
           <p>Gerencie as entradas e pagamentos a fornecedores</p>
         </div>
-        <button className="btn-novo" onClick={() => setIsCadastroOpen(true)}>
-          + Nova Operação
-        </button>
+        
+        <div className="mercadorias-controls">
+          <div className="mercadorias-search">
+            <Search size={18} color="#94a3b8" />
+            <input 
+              type="text" 
+              placeholder="Buscar fornecedor..." 
+              value={busca}
+              onChange={(e) => setBusca(e.target.value)}
+            />
+          </div>
+          
+          <select 
+            className="mercadorias-select"
+            value={filtroStatus}
+            onChange={(e) => setFiltroStatus(e.target.value)}
+          >
+            <option value="todas">Status: Todas</option>
+            <option value="pendente">Pendentes</option>
+            <option value="concluido">Concluídas</option>
+          </select>
+          
+          <button className="btn-novo" onClick={() => setIsCadastroOpen(true)}>
+            + Nova Operação
+          </button>
+        </div>
       </div>
 
       {loading ? (
         <div className="loading-state">Carregando operações...</div>
       ) : mercadorias.length === 0 ? (
         <div className="empty-state">Nenhuma operação cadastrada ainda.</div>
+      ) : mercadoriasFiltradas.length === 0 ? (
+        <div className="empty-state">Nenhuma operação encontrada para os filtros aplicados.</div>
       ) : (
         <div className="mercadorias-grid">
-          {mercadorias.map(merc => (
+          {mercadoriasFiltradas.map(merc => (
             <div 
               key={merc.id} 
               className="mercadoria-card"
@@ -91,7 +129,7 @@ export const Mercadorias: React.FC = () => {
             >
               <div className="card-header">
                 <h3>{merc.fornecedorNome}</h3>
-                <span className={`status-badge ${merc.statusGeral.toLowerCase()}`}>
+                <span className={`status-badge ${merc.statusGeral?.toLowerCase()}`}>
                   {merc.statusGeral}
                 </span>
               </div>

@@ -10,6 +10,8 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 32px;
+  flex-wrap: wrap;
+  gap: 16px;
 }
 
 .mercadorias-header h1 {
@@ -24,17 +26,65 @@
   font-size: 0.95rem;
 }
 
+/* Novos Controles (Busca e Filtro) */
+.mercadorias-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.mercadorias-search {
+  display: flex;
+  align-items: center;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0 12px;
+  width: 250px;
+  height: 44px;
+  transition: border-color 0.2s;
+}
+
+.mercadorias-search:focus-within {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.mercadorias-search input {
+  border: none;
+  outline: none;
+  margin-left: 8px;
+  width: 100%;
+  font-size: 0.95rem;
+}
+
+.mercadorias-select {
+  height: 44px;
+  padding: 0 16px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  outline: none;
+  background: white;
+  color: #334155;
+  font-weight: 500;
+  cursor: pointer;
+}
+
 .btn-novo {
+  height: 44px;
   background-color: #2563eb;
   color: white;
   border: none;
-  padding: 12px 24px;
+  padding: 0 24px;
   border-radius: 8px;
   font-weight: 600;
   font-size: 1rem;
   cursor: pointer;
   transition: background-color 0.2s;
   box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+  display: flex;
+  align-items: center;
 }
 
 .btn-novo:hover {
@@ -155,8 +205,30 @@
   background: rgba(15, 23, 42, 0.6);
   z-index: 1000;
   display: flex;
-  align-items: flex-start; /* Alinha no topo para permitir rolagem natural */
+  align-items: flex-start;
   justify-content: center;
   padding: 40px 20px;
-  overflow-y: auto; /* Permite rolagem no fundo escuro se a tela for muito pequena */
+  overflow-y: auto;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media(max-width: 800px) {
+  .mercadorias-controls {
+    width: 100%;
+    margin-top: 10px;
+  }
+  .mercadorias-search {
+    width: 100%;
+  }
+  .mercadorias-select {
+    flex: 1;
+  }
+  .btn-novo {
+    flex: 1;
+    justify-content: center;
+  }
 }

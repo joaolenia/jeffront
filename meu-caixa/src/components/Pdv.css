@@ -129,6 +129,41 @@
 .btn-primary { background-color: #3b82f6; }
 .btn-primary:hover:not(:disabled) { background-color: #2563eb; }
 
+/* Botão de Sangria (Nova Funcionalidade) */
+.btn-sangria {
+  background-color: #fef2f2;
+  color: #ef4444;
+  border: 1px solid #fecaca;
+  margin-top: 8px;
+  padding: 14px;
+}
+.btn-sangria:hover:not(:disabled) { background-color: #fee2e2; }
+.btn-sangria:disabled { opacity: 0.5; cursor: not-allowed; background-color: #f1f5f9; color: #94a3b8; border-color: #e2e8f0;}
+
+/* Modal da Sangria (Reutilizando a identidade visual do Crediario/Cofre) */
+.pdv-modal-overlay {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(15, 23, 42, 0.6);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000; padding: 20px;
+}
+
+.pdv-modal {
+  background: white; width: 100%; max-width: 400px;
+  border-radius: 12px; padding: 24px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+}
+
+.pdv-modal .modal-header h2 { margin: 0 0 10px 0; font-size: 1.3rem; color: #0f172a; }
+.pdv-modal .modal-description { margin: 0 0 20px 0; color: #64748b; font-size: 0.95rem; }
+
+.modal-footer { display: flex; justify-content: flex-end; gap: 12px; margin-top: 16px; }
+.modal-footer button { padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; border: none;}
+.btn-cancelar { background: #f1f5f9; color: #475569; }
+.btn-cancelar:hover:not(:disabled) { background: #e2e8f0; }
+.btn-confirmar.sangria { background: #ef4444; color: white; }
+.btn-confirmar.sangria:hover:not(:disabled) { background: #dc2626; }
+.modal-footer button:disabled { opacity: 0.6; cursor: not-allowed; }
+
 /* =========================================
    CONFIGURAÇÃO DE IMPRESSÃO (CUPOM 80MM)
    ========================================= */

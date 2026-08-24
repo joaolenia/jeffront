@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { CheckCircle, Trash2, Plus, DollarSign, CreditCard, BookOpen, Loader2 } from 'lucide-react';
+import { CheckCircle, Trash2, Plus, DollarSign, CreditCard, BookOpen, Loader2, ArrowRightLeft } from 'lucide-react';
 import { CupomFiscal } from './CupomFiscal';
 import api from '../api';
 import './Pdv.css';
@@ -26,6 +26,11 @@ export function Pdv() {
   const [loading, setLoading] = useState(false);
   const [showCrediarioModal, setShowCrediarioModal] = useState(false);
 
+  // Estados da Sangria
+  const [showSangriaModal, setShowSangriaModal] = useState(false);
+  const [valorSangria, setValorSangria] = useState('');
+  const [sangriaLoading, setSangriaLoading] = useState(false);
+
   const precoInputRef = useRef<HTMLInputElement>(null);
 
   const totalVenda = itensCaixa.reduce((acc, item) => acc + (item.qtd * item.preco), 0);
@@ -39,8 +44,26 @@ export function Pdv() {
 
   const handleAdicionarItem = (e?: React.FormEvent) => {
     e?.preventDefault();
-    const precoNum = parseFloat(preco.replace(',', '.'));
-    const qtdNum = parseInt(qtd, 10);
+    
+    let inputVal = preco.trim();
+    let precoNum = 0;
+    let qtdNum = parseInt(qtd, 10);
+
+    // Lógica para separar Preço * Quantidade (Ex: 1,09*12)
+    if (inputVal.includes('*')) {
+      const parts = inputVal.split('*');
+      const pStr = parts[0].replace(',', '.');
+      const qStr = parts[1];
+      
+      precoNum = parseFloat(pStr);
+      const parsedQtd = parseInt(qStr, 10);
+      
+      if (!isNaN(parsedQtd) && parsedQtd > 0) {
+        qtdNum = parsedQtd;
+      }
+    } else {
+      precoNum = parseFloat(inputVal.replace(',', '.'));
+    }
 
     if (isNaN(precoNum) || precoNum <= 0) {
       alert('Informe um valor válido.');
@@ -155,18 +178,54 @@ export function Pdv() {
     }
   };
 
+  // Processa a Sangria do Caixa
+  const handleSalvarSangria = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const valorNum = parseFloat(valorSangria.replace(',', '.'));
+    
+    if (isNaN(valorNum) || valorNum <= 0) {
+      alert('Informe um valor válido para a sangria.');
+      return;
+    }
+
+    const formatado = formatCurrency(valorNum);
+    if (!window.confirm(`Deseja realmente enviar ${formatado} para o cofre?`)) {
+      return;
+    }
+
+    setSangriaLoading(true);
+
+    try {
+      await api.post('/cofre/movimentacao', {
+        tipo: 'entrada',
+        valor: valorNum,
+        descricao: 'Sangria de caixa',
+        origem: 'caixa'
+      });
+      
+      alert(`Sangria de ${formatado} realizada com sucesso! O valor já consta no cofre.`);
+      setShowSangriaModal(false);
+      setValorSangria('');
+    } catch (error: any) {
+      console.error('Erro ao realizar sangria:', error);
+      alert(error.response?.data?.message || 'Erro ao registrar sangria no cofre.');
+    } finally {
+      setSangriaLoading(false);
+    }
+  };
+
   // Escuta o atalho de teclado F2
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Impede o atalho de agir se o modal de crediário estiver aberto
-      if (e.key === 'F2' && !showCrediarioModal) {
+      // Impede o atalho de agir se algum modal estiver aberto
+      if (e.key === 'F2' && !showCrediarioModal && !showSangriaModal) {
         e.preventDefault();
         handleFinalizarClick();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [itensCaixa, formaPagamento, valorRecebido, totalVenda, loading, showCrediarioModal]);
+  }, [itensCaixa, formaPagamento, valorRecebido, totalVenda, loading, showCrediarioModal, showSangriaModal]);
 
   return (
     <div className="pdv-container">
@@ -203,13 +262,11 @@ export function Pdv() {
               />
             </div>
             <div className="input-group">
-              <label>Valor (R$)</label>
+              <label>Valor Unit. (R$) ou Val*Qtd</label>
               <input 
                 ref={precoInputRef}
-                type="number" 
-                step="0.01"
-                min="0.01"
-                placeholder="0,00" 
+                type="text" 
+                placeholder="Ex: 1,50 ou 1,50*12" 
                 value={preco} 
                 onChange={(e) => setPreco(e.target.value)} 
                 autoFocus
@@ -217,7 +274,7 @@ export function Pdv() {
                 disabled={loading}
               />
             </div>
-            <button type="submit" className="btn-add" disabled={loading}>
+            <button type="submit" className="btn-add" disabled={loading} title="Adicionar">
               <Plus size={24} />
             </button>
           </form>
@@ -308,6 +365,16 @@ export function Pdv() {
                 {loading && !showCrediarioModal ? <Loader2 size={24} className="loading-spinner"/> : <CheckCircle size={24} />} 
                 {loading && !showCrediarioModal ? 'Processando...' : 'Finalizar Venda [F2]'}
               </button>
+              
+              <button 
+                className="btn-action btn-sangria" 
+                onClick={() => setShowSangriaModal(true)}
+                disabled={loading || itensCaixa.length > 0} // Evita sangria durante uma venda em andamento
+                title={itensCaixa.length > 0 ? "Finalize a venda atual primeiro" : "Retirar dinheiro do caixa"}
+              >
+                <ArrowRightLeft size={20} />
+                Sangria de Caixa
+              </button>
             </div>
             
           </div>
@@ -320,6 +387,51 @@ export function Pdv() {
           onConfirm={processarVenda}
           onClose={() => setShowCrediarioModal(false)}
         />
+      )}
+
+      {/* MODAL DE SANGRIA */}
+      {showSangriaModal && (
+        <div className="pdv-modal-overlay">
+          <div className="pdv-modal">
+            <div className="modal-header">
+              <h2>Sangria de Caixa</h2>
+            </div>
+            <p className="modal-description">Retire o dinheiro do caixa e envie diretamente para o cofre da loja.</p>
+            <form onSubmit={handleSalvarSangria}>
+              <div className="input-group" style={{ marginBottom: '20px' }}>
+                <label>Valor da Sangria (R$)</label>
+                <input 
+                  type="number" 
+                  step="0.01" 
+                  min="0.01"
+                  required 
+                  autoFocus
+                  placeholder="0,00"
+                  value={valorSangria}
+                  onChange={(e) => setValorSangria(e.target.value)}
+                  disabled={sangriaLoading}
+                />
+              </div>
+              <div className="modal-footer">
+                <button 
+                  type="button" 
+                  className="btn-cancelar" 
+                  onClick={() => setShowSangriaModal(false)}
+                  disabled={sangriaLoading}
+                >
+                  Cancelar
+                </button>
+                <button 
+                  type="submit" 
+                  className="btn-confirmar sangria"
+                  disabled={sangriaLoading}
+                >
+                  {sangriaLoading ? 'Enviando...' : 'Confirmar Sangria'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
     </div>
   );

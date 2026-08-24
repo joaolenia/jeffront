@@ -4,7 +4,7 @@ import {
   Search, PlusCircle, MinusCircle, AlertCircle
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-// import api from '../../api'; // Descomente quando for integrar com o backend
+import api from '../../api'; // Conexão com o backend
 import './Cofre.css';
 
 interface MovimentacaoCofre {
@@ -31,30 +31,20 @@ export default function Cofre() {
   const [origemInput, setOrigemInput] = useState<'caixa' | 'externo'>('externo');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // BUSCA DE DADOS (Com Mocks temporários)
+  // Busca os dados reais da API
   const fetchDadosCofre = async () => {
     setLoading(true);
     try {
-      // EXEMPLO DE CHAMADA REAL:
-      // const response = await api.get('/cofre');
-      // setSaldoCofre(response.data.saldo);
-      // setMovimentacoes(response.data.movimentacoes);
-
-      // Mocks temporários
-      setTimeout(() => {
-        setSaldoCofre(2540.50);
-        setMovimentacoes([
-          { id: 4, dataHora: '2026-08-24T16:00:00Z', tipo: 'entrada', valor: 300, descricao: 'Troco final do dia', origem: 'caixa' },
-          { id: 3, dataHora: '2026-08-24T15:30:00Z', tipo: 'entrada', valor: 500, descricao: 'Sangria do Caixa 1', origem: 'caixa' },
-          { id: 2, dataHora: '2026-08-23T10:15:00Z', tipo: 'saida', valor: 250, descricao: 'Pagamento fornecedor água', origem: 'cofre' },
-          { id: 1, dataHora: '2026-08-20T09:00:00Z', tipo: 'entrada', valor: 2290.50, descricao: 'Depósito inicial', origem: 'externo' },
-          { id: 5, dataHora: '2026-08-19T14:20:00Z', tipo: 'saida', valor: 150, descricao: 'Compra de material de limpeza', origem: 'cofre' },
-        ]);
-        setLoading(false);
-      }, 800);
+      const response = await api.get('/cofre');
       
+      if (response.data) {
+        // Garante que o saldo seja tratado como número
+        setSaldoCofre(Number(response.data.saldo) || 0);
+        setMovimentacoes(response.data.movimentacoes || []);
+      }
     } catch (error) {
-      console.error('Erro ao buscar dados do cofre', error);
+      console.error('Erro ao buscar dados do cofre:', error);
+    } finally {
       setLoading(false);
     }
   };
@@ -90,46 +80,44 @@ export default function Cofre() {
 
     setIsSubmitting(true);
     
+    // O backend irá gerar a data e o ID
     const payload = {
       tipo: modalType,
       valor: valorNumerico,
       descricao: descricaoInput,
       origem: modalType === 'entrada' ? origemInput : 'cofre',
-      dataHora: new Date().toISOString()
     };
 
     try {
-      // EXEMPLO DE CHAMADA REAL:
-      // await api.post('/cofre/movimentacao', payload);
+      const response = await api.post('/cofre/movimentacao', payload);
       
-      // Simulação local (Mock)
-      setTimeout(() => {
-        const novaMov: MovimentacaoCofre = {
-          id: Math.random(),
-          ...payload
-        } as MovimentacaoCofre;
-
-        setMovimentacoes([novaMov, ...movimentacoes]);
-        setSaldoCofre(prev => modalType === 'entrada' ? prev + valorNumerico : prev - valorNumerico);
-        
-        setIsSubmitting(false);
-        setIsModalOpen(false);
-        alert(`${modalType === 'entrada' ? 'Entrada' : 'Saída'} registrada com sucesso!`);
-      }, 500);
-
-    } catch (error) {
-      console.error('Erro ao salvar movimentação', error);
-      alert('Erro ao registrar movimentação.');
+      // Atualiza o estado da tela com os dados validados e retornados pelo backend
+      if (response.data) {
+        setSaldoCofre(Number(response.data.saldo) || 0);
+        setMovimentacoes(response.data.movimentacoes || []);
+      }
+      
+      setIsModalOpen(false);
+      alert(`${modalType === 'entrada' ? 'Entrada' : 'Saída'} registrada com sucesso!`);
+    } catch (error: any) {
+      console.error('Erro ao salvar movimentação:', error);
+      // Exibe a mensagem de erro que vem do backend (ex: Saldo Insuficiente)
+      alert(error.response?.data?.message || 'Erro ao registrar movimentação.');
+    } finally {
       setIsSubmitting(false);
     }
   };
 
+  // Formatação de Moeda
   const formatCurrency = (val: number) => 
     new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
 
+  // Tratativa Segura de Data para evitar bugs de Fuso Horário
   const formatDate = (isoStr: string) => {
+    if (!isoStr) return '';
+    // A API envia em UTC (Z). O objeto Date converte automaticamente para o fuso local do navegador.
     const d = new Date(isoStr);
-    return d.toLocaleDateString('pt-BR') + ' às ' + d.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
+    return d.toLocaleDateString('pt-BR') + ' às ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
   };
 
   // Separação das movimentações para visualização

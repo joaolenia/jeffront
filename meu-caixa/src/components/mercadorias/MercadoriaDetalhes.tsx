@@ -100,6 +100,23 @@ const MercadoriaDetalhes: React.FC = () => {
     }
 
     try {
+      // 1. Integrar com o Cofre se a origem do pagamento for "Cofre"
+      if (origemDinheiro === 'Cofre') {
+        try {
+          await api.post('/cofre/movimentacao', {
+            tipo: 'saida',
+            valor: Number(parcelaSelecionada.valor),
+            descricao: `Pagamento de parcela - ${mercadoria.fornecedorNome}`,
+            origem: 'mercadoria'
+          });
+        } catch (error: any) {
+          console.error('Erro na movimentação do cofre:', error);
+          alert(error.response?.data?.message || 'Erro ao registrar saída no cofre. A parcela não foi baixada.');
+          return; // Interrompe o processo se não for possível retirar do cofre
+        }
+      }
+
+      // 2. Atualizar os dados da mercadoria e parcelas
       const parcelasAtualizadas = mercadoria.parcelas.map((parcela) =>
         parcela.numero === parcelaSelecionada.numero
           ? {

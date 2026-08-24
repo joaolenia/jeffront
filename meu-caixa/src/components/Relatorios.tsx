@@ -10,6 +10,7 @@ import {
 import './Relatorios.css';
 import { RelatorioVendas } from './relatorios/RelatorioVendas';
 import RelatoriosEntrada from './relatorios/RelatoriosEntrada'; // <-- NOVA IMPORTAÇÃO ADICIONADA
+import RelatoriosSaida from './relatorios/RelatoriosSaida'; // <-- NOVA IMPORTAÇÃO ADICIONADA
 
 type ReportType = 'vendas' | 'entradas' | 'saidas' | 'crediario' | 'mercadorias';
 
@@ -33,6 +34,8 @@ export function Relatorios() {
         return <RelatorioVendas />;
       case 'entradas':
         return <RelatoriosEntrada />; // <-- TELA DE ENTRADAS RENDERIZADA AQUI
+      case 'saidas':
+        return <RelatoriosSaida />; // <-- TELA DE SAÍDAS RENDERIZADA AQUI
       default:
         return (
           <div className="report-placeholder">

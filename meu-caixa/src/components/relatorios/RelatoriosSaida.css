@@ -1,0 +1,301 @@
+.relatorio-saidas-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  animation: fadeIn 0.3s ease;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.relatorio-saidas-container .card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+  padding: 24px;
+}
+
+.relatorio-saidas-container .relatorio-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.relatorio-saidas-container .relatorio-header h2 {
+  margin: 0 0 5px 0;
+  font-size: 1.6rem;
+  color: #0f172a;
+}
+
+.relatorio-saidas-container .relatorio-header p {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.95rem;
+}
+
+.relatorio-saidas-container .btn-atualizar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.relatorio-saidas-container .btn-atualizar:hover:not(:disabled) {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+}
+
+.relatorio-saidas-container .btn-atualizar:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.relatorio-saidas-container .spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  100% { transform: rotate(360deg); }
+}
+
+.relatorio-saidas-container .filter-section {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.relatorio-saidas-container .periodo-rapido {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.relatorio-saidas-container .filter-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  color: #475569;
+  margin-right: 8px;
+}
+
+.relatorio-saidas-container .btn-periodo {
+  background: #f1f5f9;
+  border: 1px solid transparent;
+  color: #475569;
+  padding: 8px 14px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.relatorio-saidas-container .btn-periodo:hover {
+  background: #e2e8f0;
+}
+
+.relatorio-saidas-container .btn-periodo.active {
+  background: #ef4444; /* Vermelho para identificar saídas */
+  color: white;
+  font-weight: 600;
+}
+
+.relatorio-saidas-container .periodo-custom {
+  display: flex;
+  gap: 20px;
+  padding-top: 15px;
+  border-top: 1px dashed #e2e8f0;
+  flex-wrap: wrap;
+}
+
+.relatorio-saidas-container .periodo-custom div {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.relatorio-saidas-container .periodo-custom label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.relatorio-saidas-container .periodo-custom input {
+  padding: 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  outline: none;
+  font-family: inherit;
+  color: #1e293b;
+}
+
+.relatorio-saidas-container .periodo-custom input:focus {
+  border-color: #ef4444;
+}
+
+.relatorio-saidas-container .state-message {
+  padding: 30px;
+  text-align: center;
+  border-radius: 12px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.relatorio-saidas-container .state-message.error {
+  background: #fef2f2;
+  color: #ef4444;
+  border: 1px solid #fecaca;
+}
+
+.relatorio-saidas-container .state-message.loading {
+  background: #f8fafc;
+  color: #64748b;
+  border: 1px dashed #cbd5e1;
+}
+
+.relatorio-saidas-container .summary-banner {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 30px;
+}
+
+.relatorio-saidas-container .summary-banner.highlight-saida {
+  background: linear-gradient(135deg, #fef2f2 0%, #fff 100%);
+  border-left: 5px solid #ef4444;
+}
+
+.relatorio-saidas-container .banner-icon {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.relatorio-saidas-container .banner-content h3 {
+  margin: 0 0 5px 0;
+  font-size: 1rem;
+  color: #64748b;
+  letter-spacing: 0.05em;
+}
+
+.relatorio-saidas-container .total-value {
+  margin: 0;
+  font-size: 2.4rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.03em;
+}
+
+.relatorio-saidas-container .summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+.relatorio-saidas-container .summary-card {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+}
+
+.relatorio-saidas-container .summary-card .card-header {
+  padding: 20px 24px;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.relatorio-saidas-container .summary-card .card-header h4 {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #334155;
+}
+
+.relatorio-saidas-container .summary-card .card-body {
+  padding: 24px;
+  flex: 1;
+}
+
+.relatorio-saidas-container .forms-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.relatorio-saidas-container .forma-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 16px;
+  border-bottom: 1px dashed #e2e8f0;
+}
+
+.relatorio-saidas-container .forma-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.relatorio-saidas-container .forma-item span {
+  color: #64748b;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.relatorio-saidas-container .forma-item strong {
+  color: #0f172a;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.relatorio-saidas-container .summary-card .card-footer {
+  padding: 20px 24px;
+  background: #fef2f2;
+  border-top: 1px solid #fee2e2;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.relatorio-saidas-container .summary-card .card-footer span {
+  color: #991b1b;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.relatorio-saidas-container .subtotal {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #7f1d1d;
+}
+
+@media (max-width: 600px) {
+  .relatorio-saidas-container .relatorio-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .relatorio-saidas-container .total-value {
+    font-size: 2rem;
+  }
+  .relatorio-saidas-container .periodo-custom {
+    flex-direction: column;
+  }
+}

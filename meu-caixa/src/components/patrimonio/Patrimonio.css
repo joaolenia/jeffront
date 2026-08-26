@@ -1,0 +1,193 @@
+
+.patrimonio-container {
+  padding: 24px;
+  max-width: 800px;
+  margin: 0 auto;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.patrimonio-header {
+  margin-bottom: 24px;
+}
+
+.saldo-card {
+  background: #1e293b;
+  color: white;
+  padding: 24px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.saldo-icon {
+  color: #38bdf8;
+}
+
+.saldo-card h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+  color: #94a3b8;
+}
+
+.saldo-valor {
+  margin: 4px 0 0 0;
+  font-size: 36px;
+  font-weight: bold;
+}
+
+.acoes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.btn-acao {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: white;
+}
+
+.btn-inserir { background-color: #10b981; }
+.btn-inserir:hover { background-color: #059669; }
+
+.btn-tirar { background-color: #ef4444; }
+.btn-tirar:hover { background-color: #dc2626; }
+
+.btn-sangrar { background-color: #3b82f6; }
+.btn-sangrar:hover { background-color: #2563eb; }
+
+.formulario-movimentacao {
+  background: #f8fafc;
+  padding: 24px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  margin-bottom: 32px;
+}
+
+.formulario-movimentacao h3 {
+  margin-top: 0;
+  color: #0f172a;
+}
+
+.input-group {
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.input-group label {
+  font-weight: 500;
+  color: #475569;
+}
+
+.input-group input {
+  padding: 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 16px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.btn-cancelar {
+  padding: 10px 20px;
+  background: transparent;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #475569;
+  font-weight: 500;
+}
+
+.btn-confirmar {
+  padding: 10px 20px;
+  background: #0f172a;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.historico-section h3 {
+  color: #0f172a;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 12px;
+}
+
+.historico-vazio {
+  color: #64748b;
+  text-align: center;
+  padding: 24px;
+}
+
+.historico-lista {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.historico-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.historico-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.historico-info div {
+  display: flex;
+  flex-direction: column;
+}
+
+.historico-info strong {
+  color: #1e293b;
+  font-size: 16px;
+}
+
+.historico-info span {
+  color: #64748b;
+  font-size: 14px;
+}
+
+.icon-entrada { color: #10b981; }
+.icon-saida { color: #ef4444; }
+
+.historico-valor {
+  font-weight: bold;
+  font-size: 18px;
+}
+
+.historico-item.entrada .historico-valor,
+.historico-item.sangria .historico-valor {
+  color: #10b981;
+}
+
+.historico-item.saida .historico-valor {
+  color: #ef4444;
+}

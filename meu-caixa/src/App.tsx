@@ -10,6 +10,7 @@ import Cofre from './components/cofre/Cofre'; // <-- Nova importação do Cofre
 import './App.css';
 import './components/Header.css'; 
 import { GlobalAlert } from './Alert';
+import { Patrimonio } from './components/patrimonio/Patrimonio';
 
 // Componente interno para podermos usar os hooks (useNavigate, useLocation)
 function AppContent() {
@@ -94,7 +95,7 @@ function AppContent() {
         {/* Outras Rotas */}
         <Route path="/relatorios" element={<Relatorios />} />
         <Route path="/cofre" element={<Cofre />} /> {/* <-- Rota do Cofre atualizada */}
-        <Route path="/patrimonio" element={<div style={{padding: 24}}><h1>Módulo de Patrimônio em desenvolvimento...</h1></div>} />
+        <Route path="/patrimonio" element={<Patrimonio/>} />
       </Routes>
     </div>
   );

@@ -1,21 +1,25 @@
-import { useState, useEffect, useMemo } from 'react';
+
+import { useEffect, useMemo, useState } from 'react';
+import {
+  AlertCircle,
+  Calendar,
+  RefreshCcw,
+  TrendingDown,
+} from 'lucide-react';
 import api from '../../api';
 import './RelatoriosSaida.css';
-import { RefreshCcw, Calendar, TrendingDown, AlertCircle } from 'lucide-react';
 
-// ================= TIPAGENS =================
 interface ParcelaMercadoria {
-  numero: number;          
-  vencimento: string;      
-  valor: number;           
-  status: 'pendente' | 'pago'; 
-  formaPagamento: string;  
-  dataPagamento?: string;  
+  numero?: number;
+  vencimento?: string;
+  valor?: number;
+  status?: 'pendente' | 'pago' | string;
+  formaPagamento?: string;
+  dataPagamento?: string;
 }
 
 interface MercadoriaOperacao {
   id?: number;
-  id_mercadoria?: number; // fallback
   fornecedorNome?: string;
   valorNota?: number;
   descricao?: string;
@@ -29,50 +33,150 @@ interface MercadoriaOperacao {
   dataAtualizacao?: string | Date;
 }
 
-// ================= FUNÇÕES UTILITÁRIAS =================
-const formatarMoeda = (valor: number) => {
-  return (valor || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-};
+interface TotaisRelatorio {
+  caixa: number;
+  cofre: number;
+  total: number;
+  parcelasPagas: number;
+  operacoes: number;
+}
 
-const getLocalISODate = (date: Date) => {
-  const offset = date.getTimezoneOffset() * 60000;
-  return new Date(date.getTime() - offset).toISOString().split('T')[0];
+const moeda = (valor: number) =>
+  Number(valor || 0).toLocaleString('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+  });
+
+const obterDataLocal = (data = new Date()) => {
+  const local = new Date(
+    data.getTime() - data.getTimezoneOffset() * 60000
+  );
+
+  return local.toISOString().slice(0, 10);
 };
 
 const calcularDataAnterior = (dias: number) => {
   const data = new Date();
   data.setDate(data.getDate() - dias);
-  return getLocalISODate(data);
+
+  return obterDataLocal(data);
 };
 
-// Extração robusta da string YYYY-MM-DD ignorando conversões de fuso horário
-const extrairDataString = (dateInput: string | Date | undefined | null) => {
-  if (!dateInput) return '';
-  const str = typeof dateInput === 'string' ? dateInput : dateInput.toISOString();
-  return str.split('T')[0].split(' ')[0];
+const extrairData = (
+  valor?: string | Date | null
+): string => {
+  if (!valor) return '';
+
+  if (valor instanceof Date) {
+    return obterDataLocal(valor);
+  }
+
+  const texto = String(valor);
+
+  if (texto.includes('T')) {
+    return texto.split('T')[0];
+  }
+
+  return texto.split(' ')[0];
+};
+
+const converterNumero = (valor: unknown) => {
+  const numero = Number(valor);
+
+  return Number.isFinite(numero) ? numero : 0;
+};
+
+const obterParcelas = (
+  parcelas?: ParcelaMercadoria[] | string
+): ParcelaMercadoria[] => {
+  if (!parcelas) {
+    return [];
+  }
+
+  if (Array.isArray(parcelas)) {
+    return parcelas;
+  }
+
+  try {
+    const resultado = JSON.parse(parcelas);
+
+    return Array.isArray(resultado)
+      ? resultado
+      : [];
+  } catch {
+    return [];
+  }
+};
+
+const pagamentoNoCofre = (formaPagamento?: string) => {
+  const forma = String(formaPagamento || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+
+  return forma.includes('cofre');
 };
 
 export default function RelatoriosSaida() {
-  const [periodo, setPeriodo] = useState<string>('hoje');
-  const [dataInicial, setDataInicial] = useState<string>(getLocalISODate(new Date()));
-  const [dataFinal, setDataFinal] = useState<string>(getLocalISODate(new Date()));
+  const hoje = obterDataLocal();
 
-  const [mercadorias, setMercadorias] = useState<MercadoriaOperacao[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
+  const [periodo, setPeriodo] = useState('hoje');
 
-  // ================= EFEITO DE BUSCA =================
+  const [dataInicial, setDataInicial] =
+    useState(hoje);
+
+  const [dataFinal, setDataFinal] =
+    useState(hoje);
+
+  const [mercadorias, setMercadorias] =
+    useState<MercadoriaOperacao[]>([]);
+
+  const [loading, setLoading] =
+    useState(false);
+
+  const [error, setError] =
+    useState<string | null>(null);
+
   const buscarDados = async () => {
-    if (!dataInicial || !dataFinal) return;
-    
+    if (!dataInicial || !dataFinal) {
+      return;
+    }
+
+    if (dataInicial > dataFinal) {
+      setError(
+        'A data inicial não pode ser maior que a data final.'
+      );
+
+      return;
+    }
+
     setLoading(true);
     setError(null);
+
     try {
-      const response = await api.get('/mercadorias', { params: { dataInicial, dataFinal } });
-      setMercadorias(response.data || []);
+      const response = await api.get('/mercadorias', {
+        params: {
+          dataInicial,
+          dataFinal,
+        },
+      });
+
+      const dados = Array.isArray(response.data)
+        ? response.data
+        : [];
+
+      setMercadorias(dados);
     } catch (err) {
-      console.error(err);
-      setError('Erro ao buscar dados do relatório de saídas. Verifique a conexão com o servidor.');
+      console.error(
+        'Erro ao buscar operações:',
+        err
+      );
+
+      setMercadorias([]);
+
+      setError(
+        'Não foi possível carregar os dados do relatório.'
+      );
     } finally {
       setLoading(false);
     }
@@ -80,184 +184,470 @@ export default function RelatoriosSaida() {
 
   useEffect(() => {
     buscarDados();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dataInicial, dataFinal]);
 
-  // ================= CONTROLE DE PERÍODO =================
-  const handlePeriodoChange = (novoPeriodo: string) => {
+  const alterarPeriodo = (
+    novoPeriodo: string
+  ) => {
     setPeriodo(novoPeriodo);
-    const hojeAtual = getLocalISODate(new Date());
-    setDataFinal(hojeAtual);
 
-    switch (novoPeriodo) {
-      case 'hoje': setDataInicial(hojeAtual); break;
-      case '7': setDataInicial(calcularDataAnterior(7)); break;
-      case '15': setDataInicial(calcularDataAnterior(15)); break;
-      case '30': setDataInicial(calcularDataAnterior(30)); break;
-      case '45': setDataInicial(calcularDataAnterior(45)); break;
-      case '60': setDataInicial(calcularDataAnterior(60)); break;
-      case 'custom': break; 
+    if (novoPeriodo === 'custom') {
+      return;
     }
+
+    const fim = obterDataLocal();
+
+    setDataFinal(fim);
+
+    if (novoPeriodo === 'hoje') {
+      setDataInicial(fim);
+      return;
+    }
+
+    setDataInicial(
+      calcularDataAnterior(
+        Number(novoPeriodo)
+      )
+    );
   };
 
-  // ================= PROCESSAMENTO DE DADOS =================
-  const relatorio = useMemo(() => {
-    let totalCaixa = 0;
-    let totalCofre = 0;
+  const relatorio = useMemo<TotaisRelatorio>(() => {
+    let caixa = 0;
+    let cofre = 0;
+    let parcelasPagas = 0;
+    let operacoes = 0;
 
-    // Blindagem 1: Deduplicação de mercadorias. Se a API vier com um "JOIN" imperfeito 
-    // e enviar a mesma mercadoria duas vezes, bloqueamos pelo Set.
-    const mercadoriasProcessadas = new Set<string>();
+    const operacoesProcessadas =
+      new Set<number>();
 
-    mercadorias.forEach(merc => {
-      // Identificador único de fallback (caso falte a prop "id" ou venha mascarada)
-      const uniqueId = merc.id ? String(merc.id) : (merc.id_mercadoria ? String(merc.id_mercadoria) : JSON.stringify(merc));
-      if (mercadoriasProcessadas.has(uniqueId)) return;
-      mercadoriasProcessadas.add(uniqueId);
+    const parcelasProcessadas =
+      new Set<string>();
 
-      const dataOpStr = extrairDataString(merc.dataOperacao);
-      
-      // 1. ANÁLISE DOS VALORES PAGOS À VISTA (Na data da operação)
-      if (dataOpStr >= dataInicial && dataOpStr <= dataFinal) {
-        totalCaixa += Number(merc.valorPagoCaixa) || 0;
-        totalCofre += Number(merc.valorPagoCofre) || 0;
+    mercadorias.forEach(mercadoria => {
+      const id = converterNumero(
+        mercadoria.id
+      );
+
+      if (!id) {
+        return;
       }
 
-      // Prepara o array de parcelas de forma robusta
-      let parcelasArray: ParcelaMercadoria[] = [];
-      if (typeof merc.parcelas === 'string') {
-        try { parcelasArray = JSON.parse(merc.parcelas); } catch (e) { console.error(e) }
-      } else if (Array.isArray(merc.parcelas)) {
-        parcelasArray = merc.parcelas;
+      if (
+        operacoesProcessadas.has(id)
+      ) {
+        return;
       }
 
-      // 2. ANÁLISE DE PARCELAS PAGAS A PRAZO
-      if (parcelasArray.length > 0) {
-        // Blindagem 2: Evita contar duas parcelas com número idêntico se o JSON do BD estiver duplicado
-        const parcelasContadas = new Set<number>();
+      /*
+       * REGRA 1
+       *
+       * A operação entra no relatório usando
+       * EXCLUSIVAMENTE a dataAtualizacao.
+       *
+       * dataOperacao e dataCriacao não são
+       * utilizadas para o filtro da operação.
+       */
 
-        parcelasArray.forEach((parcela, index) => {
-          // Identificador da parcela
-          const pId = parcela.numero !== undefined ? parcela.numero : index;
-          if (parcelasContadas.has(pId)) return;
-          parcelasContadas.add(pId);
+      const dataAtualizacao =
+        extrairData(
+          mercadoria.dataAtualizacao
+        );
 
-          if (parcela.status === 'pago') {
-            // Se houver dataPagamento, usa ela, senão recai para o vencimento ou operação
-            const dataPagStr = extrairDataString(parcela.dataPagamento || parcela.vencimento || merc.dataOperacao);
-            
-            // Somente contabiliza as pagas estritamente no dia/período solicitado
-            if (dataPagStr >= dataInicial && dataPagStr <= dataFinal) {
-              const valorParcela = Number(parcela.valor) || 0;
-              const formaPagamento = (parcela.formaPagamento || '').toLowerCase();
-              
-              if (formaPagamento.includes('cofre')) {
-                totalCofre += valorParcela;
-              } else {
-                totalCaixa += valorParcela; 
-              }
-            }
+      if (!dataAtualizacao) {
+        return;
+      }
+
+      if (
+        dataAtualizacao < dataInicial ||
+        dataAtualizacao > dataFinal
+      ) {
+        return;
+      }
+
+      operacoesProcessadas.add(id);
+      operacoes++;
+
+      /*
+       * REGRA 2
+       *
+       * Primeiro contabilizamos os valores
+       * próprios da operação.
+       */
+
+      const valorCaixa =
+        converterNumero(
+          mercadoria.valorPagoCaixa
+        );
+
+      const valorCofre =
+        converterNumero(
+          mercadoria.valorPagoCofre
+        );
+
+      caixa += valorCaixa;
+      cofre += valorCofre;
+
+      /*
+       * REGRA 3
+       *
+       * Depois analisamos as parcelas.
+       *
+       * A parcela somente entra se:
+       *
+       * - estiver paga;
+       * - possuir dataPagamento;
+       * - a dataPagamento estiver dentro
+       *   do período selecionado.
+       *
+       * O vencimento NÃO é usado como
+       * data do pagamento.
+       */
+
+      const parcelas =
+        obterParcelas(
+          mercadoria.parcelas
+        );
+
+      parcelas.forEach(
+        (parcela, index) => {
+          if (
+            String(parcela.status)
+              .toLowerCase() !== 'pago'
+          ) {
+            return;
           }
-        });
-      }
+
+          const dataPagamento =
+            extrairData(
+              parcela.dataPagamento
+            );
+
+          if (!dataPagamento) {
+            return;
+          }
+
+          if (
+            dataPagamento < dataInicial ||
+            dataPagamento > dataFinal
+          ) {
+            return;
+          }
+
+          const numeroParcela =
+            parcela.numero !== undefined
+              ? converterNumero(
+                  parcela.numero
+                )
+              : index + 1;
+
+          const chave =
+            `${id}-${numeroParcela}`;
+
+          if (
+            parcelasProcessadas.has(chave)
+          ) {
+            return;
+          }
+
+          parcelasProcessadas.add(chave);
+
+          const valor =
+            converterNumero(
+              parcela.valor
+            );
+
+          if (valor <= 0) {
+            return;
+          }
+
+          parcelasPagas++;
+
+          if (
+            pagamentoNoCofre(
+              parcela.formaPagamento
+            )
+          ) {
+            cofre += valor;
+          } else {
+            caixa += valor;
+          }
+        }
+      );
     });
 
     return {
-      totalCaixa, 
-      totalCofre, 
-      totalGeral: totalCaixa + totalCofre
+      caixa,
+      cofre,
+      total: caixa + cofre,
+      parcelasPagas,
+      operacoes,
     };
-  }, [mercadorias, dataInicial, dataFinal]);
+  }, [
+    mercadorias,
+    dataInicial,
+    dataFinal,
+  ]);
 
-  // ================= RENDERIZAÇÃO =================
+  const periodos = [
+    {
+      value: 'hoje',
+      label: 'Hoje',
+    },
+    {
+      value: '7',
+      label: '7 dias',
+    },
+    {
+      value: '15',
+      label: '15 dias',
+    },
+    {
+      value: '30',
+      label: '30 dias',
+    },
+    {
+      value: '45',
+      label: '45 dias',
+    },
+    {
+      value: '60',
+      label: '60 dias',
+    },
+  ];
+
   return (
-    <div className="relatorio-saidas-container">
-      {/* HEADER */}
-      <div className="relatorio-header">
+    <main className="relatorio-saidas">
+      <header className="relatorio-saidas__header">
         <div>
-          <h2>Relatório de Saídas</h2>
-          <p>Utilize os filtros abaixo para analisar os dados de saídas.</p>
+          <span className="relatorio-saidas__eyebrow">
+            Financeiro
+          </span>
+
+          <h1>
+            Relatório de Saídas
+          </h1>
+
+          <p>
+            Acompanhe os valores retirados
+            do caixa e do cofre.
+          </p>
         </div>
-        <button className="btn-atualizar" onClick={buscarDados} disabled={loading}>
-          <RefreshCcw size={18} className={loading ? 'spin' : ''} />
+
+        <button
+          type="button"
+          className="relatorio-saidas__refresh"
+          onClick={buscarDados}
+          disabled={loading}
+        >
+          <RefreshCcw
+            size={17}
+            className={
+              loading
+                ? 'is-spinning'
+                : ''
+            }
+          />
+
           Atualizar
         </button>
-      </div>
+      </header>
 
-      {/* FILTROS */}
-      <div className="filter-section card">
-        <div className="periodo-rapido">
-          <span className="filter-label"><Calendar size={18}/> Período:</span>
-          {['hoje', '7', '15', '30', '45', '60'].map(p => (
-            <button 
-              key={p} 
-              className={`btn-periodo ${periodo === p ? 'active' : ''}`}
-              onClick={() => handlePeriodoChange(p)}
+      <section className="relatorio-saidas__filters">
+        <div className="relatorio-saidas__filter-title">
+          <Calendar size={18} />
+
+          <span>
+            Período
+          </span>
+        </div>
+
+        <div className="relatorio-saidas__periods">
+          {periodos.map(item => (
+            <button
+              type="button"
+              key={item.value}
+              className={
+                periodo === item.value
+                  ? 'active'
+                  : ''
+              }
+              onClick={() =>
+                alterarPeriodo(
+                  item.value
+                )
+              }
             >
-              {p === 'hoje' ? 'Hoje' : `${p} dias`}
+              {item.label}
             </button>
           ))}
-          <button 
-            className={`btn-periodo ${periodo === 'custom' ? 'active' : ''}`}
-            onClick={() => handlePeriodoChange('custom')}
+
+          <button
+            type="button"
+            className={
+              periodo === 'custom'
+                ? 'active'
+                : ''
+            }
+            onClick={() =>
+              alterarPeriodo('custom')
+            }
           >
             Personalizado
           </button>
         </div>
 
         {periodo === 'custom' && (
-          <div className="periodo-custom">
-            <div>
-              <label>Data Inicial</label>
-              <input type="date" value={dataInicial} onChange={(e) => setDataInicial(e.target.value)} />
-            </div>
-            <div>
-              <label>Data Final</label>
-              <input type="date" value={dataFinal} onChange={(e) => setDataFinal(e.target.value)} />
-            </div>
+          <div className="relatorio-saidas__custom">
+            <label>
+              <span>
+                Data inicial
+              </span>
+
+              <input
+                type="date"
+                value={dataInicial}
+                onChange={event => {
+                  setPeriodo('custom');
+
+                  setDataInicial(
+                    event.target.value
+                  );
+                }}
+              />
+            </label>
+
+            <label>
+              <span>
+                Data final
+              </span>
+
+              <input
+                type="date"
+                value={dataFinal}
+                onChange={event => {
+                  setPeriodo('custom');
+
+                  setDataFinal(
+                    event.target.value
+                  );
+                }}
+              />
+            </label>
           </div>
         )}
-      </div>
+      </section>
 
-      {/* ESTADOS DA TELA */}
-      {error && <div className="state-message error"><AlertCircle /> {error}</div>}
-      {loading && <div className="state-message loading">Processando saídas...</div>}
+      {error && (
+        <div className="relatorio-saidas__message relatorio-saidas__message--error">
+          <AlertCircle size={20} />
 
-      {!loading && !error && (
-        <>
-          {/* RESUMO GERAL */}
-          <div className="summary-banner card highlight-saida">
-            <div className="banner-icon"><TrendingDown size={40} /></div>
-            <div className="banner-content">
-              <h3 className="banner-title">TOTAL DE SAÍDAS (CUSTO)</h3>
-              <p className="total-value">{formatarMoeda(relatorio.totalGeral)}</p>
-            </div>
-          </div>
-
-          {/* SESSÃO DE ORIGENS (Centralizada visualmente) */}
-          <div className="summary-grid">
-            <div className="summary-card card">
-              <div className="card-header">
-                <h4>SAÍDAS POR ORIGEM</h4>
-              </div>
-              <div className="card-body forms-grid">
-                <div className="forma-item">
-                  <span>RETIRADO DO CAIXA</span>
-                  <strong>{formatarMoeda(relatorio.totalCaixa)}</strong>
-                </div>
-                <div className="forma-item">
-                  <span>RETIRADO DO COFRE</span>
-                  <strong>{formatarMoeda(relatorio.totalCofre)}</strong>
-                </div>
-              </div>
-              <div className="card-footer">
-                <span>Total de origens:</span>
-                <strong className="subtotal">{formatarMoeda(relatorio.totalGeral)}</strong>
-              </div>
-            </div>
-          </div>
-        </>
+          <span>
+            {error}
+          </span>
+        </div>
       )}
-    </div>
+
+      {loading ? (
+        <div className="relatorio-saidas__loading">
+          <RefreshCcw
+            size={24}
+            className="is-spinning"
+          />
+
+          <span>
+            Processando relatório...
+          </span>
+        </div>
+      ) : (
+        !error && (
+          <>
+            <section className="relatorio-saidas__hero">
+              <div className="relatorio-saidas__hero-icon">
+                <TrendingDown size={28} />
+              </div>
+
+              <div>
+                <span>
+                  Total de saídas
+                </span>
+
+                <strong>
+                  {moeda(
+                    relatorio.total
+                  )}
+                </strong>
+
+                <small>
+                  Total contabilizado
+                  no período selecionado
+                </small>
+              </div>
+            </section>
+
+            <section className="relatorio-saidas__grid">
+              <article className="relatorio-saidas__card">
+                <div className="relatorio-saidas__card-top">
+                  <span>
+                    Caixa
+                  </span>
+
+                  <div className="relatorio-saidas__dot relatorio-saidas__dot--caixa" />
+                </div>
+
+                <strong>
+                  {moeda(
+                    relatorio.caixa
+                  )}
+                </strong>
+
+                <small>
+                  Pagamentos retirados
+                  do caixa
+                </small>
+              </article>
+
+              <article className="relatorio-saidas__card">
+                <div className="relatorio-saidas__card-top">
+                  <span>
+                    Cofre
+                  </span>
+
+                  <div className="relatorio-saidas__dot relatorio-saidas__dot--cofre" />
+                </div>
+
+                <strong>
+                  {moeda(
+                    relatorio.cofre
+                  )}
+                </strong>
+
+                <small>
+                  Pagamentos retirados
+                  do cofre
+                </small>
+              </article>
+
+              <article className="relatorio-saidas__card">
+                <div className="relatorio-saidas__card-top">
+                  <span>
+                    Parcelas pagas
+                  </span>
+                </div>
+
+                <strong>
+                  {relatorio.parcelasPagas}
+                </strong>
+
+                <small>
+                  Baixas realizadas
+                  no período
+                </small>
+              </article>
+            </section>
+          </>
+        )
+      )}
+    </main>
   );
 }
+

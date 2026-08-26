@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import api from '../../api';
 import './RelatoriosEntrada.css';
-import { RefreshCcw, Calendar, Wallet, AlertCircle } from 'lucide-react';
+import {  Calendar, Wallet, AlertCircle } from 'lucide-react';
 
 // ================= TIPAGENS =================
 interface Venda {

@@ -1,193 +1,454 @@
-
+/* Layout Geral */
 .patrimonio-container {
   padding: 24px;
-  max-width: 800px;
+  max-width: 1300px;
   margin: 0 auto;
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: inherit;
+  animation: fadeIn 0.3s ease;
+  color: #1e293b;
 }
 
+/* Cabeçalho */
 .patrimonio-header {
-  margin-bottom: 24px;
-}
-
-.saldo-card {
-  background: #1e293b;
-  color: white;
-  padding: 24px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-}
-
-.saldo-icon {
-  color: #38bdf8;
-}
-
-.saldo-card h2 {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 500;
-  color: #94a3b8;
-}
-
-.saldo-valor {
-  margin: 4px 0 0 0;
-  font-size: 36px;
-  font-weight: bold;
-}
-
-.acoes-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
-  margin-bottom: 32px;
-}
-
-.btn-acao {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 16px;
-  border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  color: white;
-}
-
-.btn-inserir { background-color: #10b981; }
-.btn-inserir:hover { background-color: #059669; }
-
-.btn-tirar { background-color: #ef4444; }
-.btn-tirar:hover { background-color: #dc2626; }
-
-.btn-sangrar { background-color: #3b82f6; }
-.btn-sangrar:hover { background-color: #2563eb; }
-
-.formulario-movimentacao {
-  background: #f8fafc;
-  padding: 24px;
-  border-radius: 8px;
-  border: 1px solid #e2e8f0;
-  margin-bottom: 32px;
-}
-
-.formulario-movimentacao h3 {
-  margin-top: 0;
-  color: #0f172a;
-}
-
-.input-group {
-  margin-bottom: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.input-group label {
-  font-weight: 500;
-  color: #475569;
-}
-
-.input-group input {
-  padding: 12px;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  font-size: 16px;
-}
-
-.form-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-top: 24px;
-}
-
-.btn-cancelar {
-  padding: 10px 20px;
-  background: transparent;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  cursor: pointer;
-  color: #475569;
-  font-weight: 500;
-}
-
-.btn-confirmar {
-  padding: 10px 20px;
-  background: #0f172a;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 500;
-}
-
-.historico-section h3 {
-  color: #0f172a;
-  border-bottom: 2px solid #e2e8f0;
-  padding-bottom: 12px;
-}
-
-.historico-vazio {
-  color: #64748b;
-  text-align: center;
-  padding: 24px;
-}
-
-.historico-lista {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.historico-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px;
-  border-bottom: 1px solid #f1f5f9;
+  background: white;
+  padding: 20px 24px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  margin-bottom: 24px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.02);
 }
 
-.historico-info {
+.patrimonio-header-left {
   display: flex;
   align-items: center;
   gap: 16px;
 }
 
-.historico-info div {
+.patrimonio-btn-back {
+  background: #f1f5f9;
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #334155;
+  transition: all 0.2s;
+}
+
+.patrimonio-btn-back:hover { 
+  background: #e2e8f0; 
+  color: #0f172a; 
+}
+
+.patrimonio-header h1 { 
+  margin: 0 0 4px 0; 
+  font-size: 1.5rem; 
+  color: #0f172a; 
+}
+
+.patrimonio-subtitle { 
+  color: #64748b; 
+  font-size: 0.9rem; 
+}
+
+.btn-recarregar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-recarregar:hover:not(:disabled) {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+}
+
+/* Dashboard Cards */
+.patrimonio-dashboard {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.patrimonio-saldo-card {
+  background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+  color: white;
+  padding: 32px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  box-shadow: 0 8px 20px -4px rgba(15, 23, 42, 0.25);
+  position: relative;
+  overflow: hidden;
+}
+
+.patrimonio-saldo-card::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 250px;
+  height: 250px;
+  background: radial-gradient(circle, rgba(147, 51, 234, 0.15) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.patrimonio-saldo-card .saldo-icon {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  padding: 18px;
+  border-radius: 16px;
+  display: flex; 
+  align-items: center; 
+  justify-content: center;
+  color: #38bdf8;
+}
+
+.patrimonio-saldo-card .saldo-info span { 
+  font-size: 0.85rem; 
+  opacity: 0.8; 
+  text-transform: uppercase; 
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+
+.patrimonio-saldo-card .saldo-info h2 { 
+  margin: 6px 0 0 0; 
+  font-size: 2.6rem; 
+  letter-spacing: -0.02em; 
+  font-family: serif;
+}
+
+.patrimonio-actions-card {
+  background: white;
+  padding: 24px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
   display: flex;
   flex-direction: column;
+  justify-content: center;
 }
 
-.historico-info strong {
-  color: #1e293b;
-  font-size: 16px;
+.patrimonio-actions-card h3 { 
+  margin: 0 0 6px 0; 
+  color: #0f172a; 
+  font-size: 1.15rem;
 }
 
-.historico-info span {
+.patrimonio-actions-card p { 
+  margin: 0 0 16px 0; 
+  color: #64748b; 
+  font-size: 0.85rem; 
+}
+
+.action-buttons-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.btn-pat-action {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid transparent;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+
+.btn-guardar { 
+  background: #f0fdf4; 
+  color: #16a34a; 
+  border-color: #bbf7d0; 
+}
+.btn-guardar:hover { background: #dcfce7; }
+
+.btn-retirar { 
+  background: #fef2f2; 
+  color: #ef4444; 
+  border-color: #fecaca; 
+}
+.btn-retirar:hover { background: #fee2e2; }
+
+.btn-sangrar { 
+  background: #eff6ff; 
+  color: #2563eb; 
+  border-color: #bfdbfe; 
+}
+.btn-sangrar:hover { background: #dbeafe; }
+
+/* Grid de Históricos Lado a Lado */
+.patrimonio-history-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.patrimonio-history-card {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+}
+
+.history-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.history-header.entrada { background: #f8fafc; color: #16a34a; }
+.history-header.saida { background: #f8fafc; color: #ef4444; }
+.history-header h3 { margin: 0; font-size: 1rem; color: #0f172a; }
+
+.patrimonio-table-wrapper { 
+  overflow-x: auto; 
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+.patrimonio-table { 
+  width: 100%; 
+  border-collapse: collapse; 
+  text-align: left; 
+}
+
+.patrimonio-table th { 
+  background: white; 
+  color: #64748b; 
+  font-weight: 600; 
+  padding: 12px 16px; 
+  font-size: 0.8rem; 
+  text-transform: uppercase; 
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid #e2e8f0; 
+  position: sticky; 
+  top: 0; 
+  z-index: 10;
+}
+
+.patrimonio-table td { 
+  padding: 12px 16px; 
+  border-bottom: 1px solid #f1f5f9; 
+  color: #334155; 
+  font-size: 0.85rem; 
+  vertical-align: middle; 
+}
+
+.patrimonio-table tr:hover td { background: #f8fafc; }
+
+.badge-origem {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 12px;
+  text-transform: uppercase;
+}
+
+.badge-origem.sangria { background: #dbeafe; color: #1d4ed8; }
+.badge-origem.entrada { background: #f1f5f9; color: #475569; }
+
+.data-col { color: #64748b; font-size: 0.8rem !important; }
+.align-right { text-align: right; }
+.font-bold { font-weight: 700; font-family: serif; font-size: 1rem !important; }
+.text-green { color: #16a34a; }
+.text-red { color: #ef4444; }
+
+.patrimonio-empty-state { 
+  text-align: center; 
+  padding: 48px !important; 
+  color: #94a3b8; 
+}
+.patrimonio-empty-state p { margin-top: 8px; font-size: 0.9rem; }
+
+/* Modal / Popup */
+.pat-modal-overlay {
+  position: fixed; 
+  inset: 0;
+  background: rgba(15, 23, 42, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex; 
+  align-items: center; 
+  justify-content: center;
+  z-index: 1000; 
+  padding: 20px; 
+  animation: fadeIn 0.2s;
+}
+
+.pat-modal {
+  background: white; 
+  width: 100%; 
+  max-width: 480px;
+  border-radius: 16px; 
+  padding: 28px; 
+  box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+  animation: slideUp 0.2s ease;
+}
+
+.pat-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+.pat-modal-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #3b82f6;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.pat-modal-header h2 { 
+  margin: 4px 0 0 0; 
+  font-size: 1.25rem; 
+  color: #0f172a; 
+}
+
+.pat-btn-close {
+  background: #f1f5f9;
+  border: none;
   color: #64748b;
-  font-size: 14px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
-.icon-entrada { color: #10b981; }
-.icon-saida { color: #ef4444; }
+.pat-btn-close:hover { background: #e2e8f0; color: #0f172a; }
 
-.historico-valor {
-  font-weight: bold;
-  font-size: 18px;
+.form-group { 
+  display: flex; 
+  flex-direction: column; 
+  margin-bottom: 16px; 
 }
 
-.historico-item.entrada .historico-valor,
-.historico-item.sangria .historico-valor {
-  color: #10b981;
+.form-group label { 
+  font-size: 0.85rem; 
+  font-weight: 600; 
+  color: #334155; 
+  margin-bottom: 6px; 
 }
 
-.historico-item.saida .historico-valor {
-  color: #ef4444;
+.form-group input {
+  padding: 10px 14px; 
+  border: 1px solid #cbd5e1; 
+  border-radius: 8px; 
+  font-size: 0.95rem; 
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.form-group input:focus { 
+  border-color: #3b82f6; 
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.modal-alert {
+  display: flex; 
+  align-items: flex-start; 
+  gap: 10px;
+  padding: 12px; 
+  border-radius: 8px;
+  font-size: 0.85rem; 
+  margin-bottom: 16px;
+  line-height: 1.4;
+}
+
+.modal-alert.warning {
+  background: #fffbeb; 
+  color: #b45309; 
+  border: 1px solid #fef3c7;
+}
+
+.modal-alert.danger {
+  background: #fef2f2; 
+  color: #b91c1c; 
+  border: 1px solid #fee2e2;
+}
+
+.pat-modal-footer { 
+  display: flex; 
+  justify-content: flex-end; 
+  gap: 12px; 
+  margin-top: 24px; 
+}
+
+.pat-modal-footer button { 
+  padding: 10px 20px; 
+  border-radius: 8px; 
+  font-weight: 600; 
+  cursor: pointer; 
+  border: none;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+
+.pat-modal-footer .btn-cancelar { 
+  background: #f1f5f9; 
+  color: #475569; 
+}
+.pat-modal-footer .btn-cancelar:hover { background: #e2e8f0; }
+
+.pat-modal-footer .btn-confirmar.inserir,
+.pat-modal-footer .btn-confirmar.sangrar { 
+  background: #16a34a; 
+  color: white; 
+}
+.pat-modal-footer .btn-confirmar.inserir:hover,
+.pat-modal-footer .btn-confirmar.sangrar:hover { 
+  background: #15803d; 
+}
+
+.pat-modal-footer .btn-confirmar.tirar { 
+  background: #ef4444; 
+  color: white; 
+}
+.pat-modal-footer .btn-confirmar.tirar:hover { 
+  background: #dc2626; 
+}
+
+.spin { animation: spin 1s linear infinite; }
+@keyframes spin { 100% { transform: rotate(360deg); } }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Responsividade */
+@media (max-width: 960px) {
+  .patrimonio-dashboard { grid-template-columns: 1fr; }
+  .patrimonio-history-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 600px) {
+  .patrimonio-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .patrimonio-saldo-card .saldo-info h2 { font-size: 2rem; }
 }

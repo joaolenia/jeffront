@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import api from '../../api';
 import './RelatoriosCrediario.css';
-import { RefreshCcw, Calendar, BookOpen, AlertCircle, Users, Wallet, CreditCard } from 'lucide-react';
+import {  Calendar, BookOpen, AlertCircle, Users, Wallet, CreditCard } from 'lucide-react';
 
 // ================= TIPAGENS =================
 interface Pagamento {

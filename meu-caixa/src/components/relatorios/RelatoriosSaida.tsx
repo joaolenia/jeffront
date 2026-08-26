@@ -433,23 +433,6 @@ export default function RelatoriosSaida() {
           </p>
         </div>
 
-        <button
-          type="button"
-          className="relatorio-saidas__refresh"
-          onClick={buscarDados}
-          disabled={loading}
-        >
-          <RefreshCcw
-            size={17}
-            className={
-              loading
-                ? 'is-spinning'
-                : ''
-            }
-          />
-
-          Atualizar
-        </button>
       </header>
 
       <section className="relatorio-saidas__filters">

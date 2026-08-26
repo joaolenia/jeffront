@@ -1,0 +1,270 @@
+
+.relatorio-mercadorias-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  animation: fadeIn 0.3s ease;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.relatorio-mercadorias-container .card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+  padding: 24px;
+}
+
+.relatorio-mercadorias-container .relatorio-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.relatorio-mercadorias-container .relatorio-header h2 {
+  margin: 0 0 5px 0;
+  font-size: 1.5rem;
+  color: #1e293b;
+  font-family: serif; 
+}
+
+.relatorio-mercadorias-container .relatorio-header p {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.90rem;
+}
+
+.relatorio-mercadorias-container .btn-atualizar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.relatorio-mercadorias-container .btn-atualizar:hover:not(:disabled) {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+}
+
+.relatorio-mercadorias-container .spin { 
+  animation: spin 1s linear infinite; 
+}
+
+@keyframes spin {
+  100% { transform: rotate(360deg); }
+}
+
+.relatorio-mercadorias-container .filter-section {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.relatorio-mercadorias-container .periodo-rapido {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.relatorio-mercadorias-container .filter-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  color: #475569;
+  margin-right: 8px;
+  font-size: 0.9rem;
+}
+
+.relatorio-mercadorias-container .btn-periodo {
+  background: #f1f5f9;
+  border: 1px solid transparent;
+  color: #475569;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.relatorio-mercadorias-container .btn-periodo:hover { background: #e2e8f0; }
+
+.relatorio-mercadorias-container .btn-periodo.active {
+  background: #0ea5e9; /* Azul ciano correspondente */
+  color: white;
+  font-weight: 600;
+}
+
+.relatorio-mercadorias-container .periodo-custom {
+  display: flex;
+  gap: 20px;
+  padding-top: 15px;
+  border-top: 1px dashed #e2e8f0;
+  flex-wrap: wrap;
+}
+
+.relatorio-mercadorias-container .periodo-custom div {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.relatorio-mercadorias-container .periodo-custom label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.relatorio-mercadorias-container .periodo-custom input {
+  padding: 8px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  outline: none;
+  font-family: inherit;
+  color: #1e293b;
+}
+
+.relatorio-mercadorias-container .periodo-custom input:focus {
+  border-color: #0ea5e9;
+}
+
+.relatorio-mercadorias-container .state-message {
+  padding: 30px;
+  text-align: center;
+  border-radius: 8px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.relatorio-mercadorias-container .state-message.error {
+  background: #fef2f2;
+  color: #ef4444;
+  border: 1px solid #fecaca;
+}
+
+.relatorio-mercadorias-container .state-message.loading {
+  background: #f8fafc;
+  color: #64748b;
+  border: 1px dashed #cbd5e1;
+}
+
+.relatorio-mercadorias-container .summary-banner {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 30px;
+}
+
+.relatorio-mercadorias-container .summary-banner.highlight-mercadoria {
+  background: linear-gradient(135deg, #f0f9ff 0%, #fff 100%);
+  border-left: 4px solid #0ea5e9;
+}
+
+.relatorio-mercadorias-container .banner-icon {
+  width: 75px;
+  height: 75px;
+  border-radius: 50%;
+  background: #e0f2fe;
+  color: #0ea5e9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.relatorio-mercadorias-container .banner-title {
+  margin: 0 0 5px 0;
+  font-size: 0.9rem;
+  color: #64748b;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.relatorio-mercadorias-container .total-value {
+  margin: 0;
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+  font-family: serif;
+}
+
+.relatorio-mercadorias-container .metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.relatorio-mercadorias-container .metric-card {
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+}
+
+.relatorio-mercadorias-container .metric-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.relatorio-mercadorias-container .metric-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #64748b;
+  letter-spacing: 0.05em;
+}
+
+.relatorio-mercadorias-container .metric-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.relatorio-mercadorias-container .metric-icon.green { background: #f0fdf4; color: #16a34a; }
+.relatorio-mercadorias-container .metric-icon.orange { background: #fff7ed; color: #ea580c; }
+.relatorio-mercadorias-container .metric-icon.blue { background: #eff6ff; color: #0ea5e9; }
+
+.relatorio-mercadorias-container .metric-value {
+  font-size: 1.8rem;
+  font-weight: 800;
+  margin-bottom: 4px;
+  font-family: serif;
+}
+
+.relatorio-mercadorias-container .green-text { color: #16a34a; }
+.relatorio-mercadorias-container .orange-text { color: #ea580c; }
+.relatorio-mercadorias-container .blue-text { color: #0ea5e9; }
+
+.relatorio-mercadorias-container .metric-subtitle {
+  font-size: 0.85rem;
+  color: #94a3b8;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 600px) {
+  .relatorio-mercadorias-container .relatorio-header { flex-direction: column; align-items: flex-start; }
+  .relatorio-mercadorias-container .periodo-custom { flex-direction: column; }
+  .relatorio-mercadorias-container .total-value { font-size: 2rem; }
+}

@@ -169,10 +169,7 @@ export function RelatoriosEntrada() {
           <h2>Relatório de Entradas</h2>
           <p>Entradas financeiras à vista e pagamentos recebidos</p>
         </div>
-        <button className="btn-atualizar" onClick={buscarDados} disabled={loading}>
-          <RefreshCcw size={18} className={loading ? 'spin' : ''} />
-          Atualizar
-        </button>
+     
       </div>
 
       {/* FILTROS */}

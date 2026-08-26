@@ -1,0 +1,286 @@
+/* CSS Específico do RelatóriosPai */
+.relatorios-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.abas-container {
+  display: flex;
+  gap: 10px;
+  background: white;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+  flex-wrap: wrap;
+}
+
+.aba-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  color: #64748b;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.aba-btn:hover { background: #f1f5f9; }
+
+.aba-btn.entrada-active { background: #f0fdf4; color: #16a34a; }
+.aba-btn.saida-active { background: #fef2f2; color: #ef4444; }
+.aba-btn.crediario-active { background: #faf5ff; color: #9333ea; }
+
+/* CSS do Crediário */
+.relatorio-crediario-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  animation: fadeIn 0.3s ease;
+  max-width: 100%;
+}
+
+.relatorio-crediario-container .card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+  padding: 24px;
+}
+
+.relatorio-crediario-container .relatorio-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.relatorio-crediario-container .relatorio-header h2 {
+  margin: 0 0 5px 0;
+  font-size: 1.5rem;
+  color: #1e293b;
+  font-family: serif; 
+}
+
+.relatorio-crediario-container .relatorio-header p {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.90rem;
+}
+
+.relatorio-crediario-container .btn-atualizar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.relatorio-crediario-container .btn-atualizar:hover:not(:disabled) {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+}
+
+.relatorio-crediario-container .spin { animation: spin 1s linear infinite; }
+
+.relatorio-crediario-container .filter-section {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.relatorio-crediario-container .periodo-rapido {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.relatorio-crediario-container .filter-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  color: #475569;
+  margin-right: 8px;
+  font-size: 0.9rem;
+}
+
+.relatorio-crediario-container .btn-periodo {
+  background: #f1f5f9;
+  border: 1px solid transparent;
+  color: #475569;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.relatorio-crediario-container .btn-periodo:hover { background: #e2e8f0; }
+
+.relatorio-crediario-container .btn-periodo.active {
+  background: #9333ea; 
+  color: white;
+  font-weight: 600;
+}
+
+.relatorio-crediario-container .periodo-custom {
+  display: flex;
+  gap: 20px;
+  padding-top: 15px;
+  border-top: 1px dashed #e2e8f0;
+  flex-wrap: wrap;
+}
+
+.relatorio-crediario-container .periodo-custom div {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.relatorio-crediario-container .periodo-custom label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.relatorio-crediario-container .periodo-custom input {
+  padding: 8px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  outline: none;
+  font-family: inherit;
+  color: #1e293b;
+}
+
+.relatorio-crediario-container .state-message {
+  padding: 30px;
+  text-align: center;
+  border-radius: 8px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.relatorio-crediario-container .summary-banner {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 30px;
+}
+
+.relatorio-crediario-container .summary-banner.highlight-crediario {
+  background: linear-gradient(135deg, #faf5ff 0%, #fff 100%);
+  border-left: 4px solid #9333ea;
+}
+
+.relatorio-crediario-container .banner-icon {
+  width: 75px;
+  height: 75px;
+  border-radius: 50%;
+  background: #f3e8ff;
+  color: #9333ea;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.relatorio-crediario-container .banner-title {
+  margin: 0 0 5px 0;
+  font-size: 0.9rem;
+  color: #64748b;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.relatorio-crediario-container .total-value {
+  margin: 0;
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+  font-family: serif;
+}
+
+.relatorio-crediario-container .metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.relatorio-crediario-container .metric-card {
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+}
+
+.relatorio-crediario-container .metric-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.relatorio-crediario-container .metric-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #64748b;
+  letter-spacing: 0.05em;
+}
+
+.relatorio-crediario-container .metric-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.relatorio-crediario-container .metric-icon.green { background: #f0fdf4; color: #16a34a; }
+.relatorio-crediario-container .metric-icon.orange { background: #fff7ed; color: #ea580c; }
+.relatorio-crediario-container .metric-icon.blue { background: #eff6ff; color: #2563eb; }
+
+.relatorio-crediario-container .metric-value {
+  font-size: 1.8rem;
+  font-weight: 800;
+  margin-bottom: 4px;
+  font-family: serif;
+}
+
+.relatorio-crediario-container .green-text { color: #16a34a; }
+.relatorio-crediario-container .orange-text { color: #ea580c; }
+.relatorio-crediario-container .blue-text { color: #2563eb; }
+
+.relatorio-crediario-container .metric-subtitle {
+  font-size: 0.85rem;
+  color: #94a3b8;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 600px) {
+  .relatorio-crediario-container .relatorio-header { flex-direction: column; align-items: flex-start; }
+  .relatorio-crediario-container .periodo-custom { flex-direction: column; }
+  .relatorio-crediario-container .total-value { font-size: 2rem; }
+}

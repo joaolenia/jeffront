@@ -11,6 +11,8 @@ import './Relatorios.css';
 import { RelatorioVendas } from './relatorios/RelatorioVendas';
 import RelatoriosEntrada from './relatorios/RelatoriosEntrada'; // <-- NOVA IMPORTAÇÃO ADICIONADA
 import RelatoriosSaida from './relatorios/RelatoriosSaida'; // <-- NOVA IMPORTAÇÃO ADICIONADA
+import RelatoriosCrediario from './relatorios/RelatoriosCrediario';
+import RelatoriosMercadorias from './relatorios/RelatoriosMercadorias';
 
 type ReportType = 'vendas' | 'entradas' | 'saidas' | 'crediario' | 'mercadorias';
 
@@ -35,7 +37,11 @@ export function Relatorios() {
       case 'entradas':
         return <RelatoriosEntrada />; // <-- TELA DE ENTRADAS RENDERIZADA AQUI
       case 'saidas':
-        return <RelatoriosSaida />; // <-- TELA DE SAÍDAS RENDERIZADA AQUI
+        return <RelatoriosSaida />;
+      case 'crediario':
+        return <RelatoriosCrediario />;   
+      case 'mercadorias':
+        return <RelatoriosMercadorias />;
       default:
         return (
           <div className="report-placeholder">
@@ -72,10 +78,7 @@ export function Relatorios() {
       </aside>
 
       <main className="relatorios-content neo-panel">
-        <header className="content-header">
-          <h2>Relatório de {activeLabel}</h2>
-          <p>Utilize os filtros abaixo para analisar os dados de {activeLabel?.toLowerCase()}.</p>
-        </header>
+      
         
         {/* Renderiza o conteúdo do relatório ativo */}
         {renderReportContent()}

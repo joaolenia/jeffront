@@ -9,6 +9,7 @@ import { Relatorios } from './components/Relatorios';
 import Cofre from './components/cofre/Cofre'; // <-- Nova importação do Cofre
 import './App.css';
 import './components/Header.css'; 
+import { GlobalAlert } from './Alert';
 
 // Componente interno para podermos usar os hooks (useNavigate, useLocation)
 function AppContent() {
@@ -23,7 +24,10 @@ function AppContent() {
   };
 
   return (
+
     <div className="app-container">
+     <GlobalAlert />
+
       {/* Header integrado para permitir navegação */}
       <header className="main-header hide-on-print">
         <div className="logo-container">

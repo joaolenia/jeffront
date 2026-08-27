@@ -108,10 +108,19 @@ export function FichaDetalhes() {
       ? saldoDevedor
       : parseFloat(valorDigitado.replace(',', '.'));
 
-    if (!Number.isFinite(valor) || valor <= 0)
+    if (!Number.isFinite(valor) || valor <= 0) {
       return alert('Informe um valor de pagamento válido.');
-    if (valor > saldoDevedor)
+    }
+    
+    if (valor > saldoDevedor) {
       return alert('O valor do pagamento não pode ser maior que o saldo devedor.');
+    }
+
+    // Alerta de confirmação antes de submeter o pagamento
+    const confirmMessage = `Você está prestes a baixar um pagamento de ${formatCurrency(valor)} via ${formaPagamento}. Confirmar?`;
+    if (!window.confirm(confirmMessage)) {
+      return;
+    }
 
     setIsSubmitting(true);
     const data = new Date();

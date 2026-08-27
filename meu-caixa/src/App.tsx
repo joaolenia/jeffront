@@ -1,35 +1,68 @@
+import { useState } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
-import { Monitor, ShoppingCart, Ticket, Package, Lock, BarChart3, Building } from 'lucide-react';
+import { Monitor, ShoppingCart, Ticket, Package, Lock, BarChart3, Building, X, KeyRound } from 'lucide-react';
 import { Pdv } from './components/Pdv';
 import { FichasList } from './components/FichasList';
 import { FichaDetalhes } from './components/FichaDetalhes';
 import { Mercadorias } from './components/mercadorias/Mercadorias';
 import MercadoriaDetalhes from './components/mercadorias/MercadoriaDetalhes'; 
 import { Relatorios } from './components/Relatorios';
-import Cofre from './components/cofre/Cofre'; // <-- Nova importação do Cofre
+import Cofre from './components/cofre/Cofre';
 import './App.css';
 import './components/Header.css'; 
 import { GlobalAlert } from './Alert';
 import { Patrimonio } from './components/patrimonio/Patrimonio';
 
-// Componente interno para podermos usar os hooks (useNavigate, useLocation)
+// ================= CONFIGURAÇÃO DE SEGURANÇA =================
+const SENHA_MESTRE = '591576'; 
+// =============================================================
+
 function AppContent() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Função para verificar se a rota atual corresponde ao botão do menu para ativá-lo
+  // Estados do Modal de Senha
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [pendingRoute, setPendingRoute] = useState<string | null>(null);
+  const [passwordInput, setPasswordInput] = useState('');
+  const [passwordError, setPasswordError] = useState(false);
+
   const isActive = (path: string) => {
     if (path === '/' && location.pathname === '/') return true;
     if (path !== '/' && location.pathname.startsWith(path)) return true;
     return false;
   };
 
+  // Função que intercepta os cliques do menu
+  const handleNavClick = (path: string, requiresAuth: boolean = false) => {
+    if (requiresAuth) {
+      // Se a rota exige senha e a pessoa já não está nela, abre o modal
+      setPendingRoute(path);
+      setPasswordInput('');
+      setPasswordError(false);
+      setShowPasswordModal(true);
+    } else {
+      navigate(path);
+    }
+  };
+
+  const handlePasswordSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (passwordInput === SENHA_MESTRE) {
+      setShowPasswordModal(false);
+      if (pendingRoute) {
+        navigate(pendingRoute);
+        setPendingRoute(null);
+      }
+    } else {
+      setPasswordError(true);
+    }
+  };
+
   return (
-
     <div className="app-container">
-     <GlobalAlert />
+      <GlobalAlert />
 
-      {/* Header integrado para permitir navegação */}
       <header className="main-header hide-on-print">
         <div className="logo-container">
           <Monitor className="logo-icon" size={28} />
@@ -38,71 +71,102 @@ function AppContent() {
         <nav className="nav-menu">
           <button 
             className={`nav-item ${isActive('/') ? 'active' : ''}`}
-            onClick={() => navigate('/')}
+            onClick={() => handleNavClick('/', false)}
           >
             <ShoppingCart size={18} /> Caixa
           </button>
           
           <button 
             className={`nav-item ${isActive('/fichas') ? 'active' : ''}`}
-            onClick={() => navigate('/fichas')}
+            onClick={() => handleNavClick('/fichas', false)}
           >
             <Ticket size={18} /> Fichas
           </button>
           
           <button 
             className={`nav-item ${isActive('/mercadorias') ? 'active' : ''}`} 
-            onClick={() => navigate('/mercadorias')}
+            onClick={() => handleNavClick('/mercadorias', false)}
           >
             <Package size={18} /> Mercadorias
           </button>
           
+          {/* Rotas Protegidas por Senha (requiresAuth = true) */}
           <button 
-            className={`nav-item ${isActive('/cofre') ? 'active' : ''}`} 
-            onClick={() => navigate('/cofre')}
+            className={`nav-item auth-required ${isActive('/cofre') ? 'active' : ''}`} 
+            onClick={() => handleNavClick('/cofre', true)}
           >
             <Lock size={18} /> Cofre
           </button>
           
           <button 
-            className={`nav-item ${isActive('/relatorios') ? 'active' : ''}`} 
-            onClick={() => navigate('/relatorios')}
+            className={`nav-item auth-required ${isActive('/relatorios') ? 'active' : ''}`} 
+            onClick={() => handleNavClick('/relatorios', true)}
           >
             <BarChart3 size={18} /> Relatórios
           </button>
           
           <button 
-            className={`nav-item ${isActive('/patrimonio') ? 'active' : ''}`} 
-            onClick={() => navigate('/patrimonio')}
+            className={`nav-item auth-required ${isActive('/patrimonio') ? 'active' : ''}`} 
+            onClick={() => handleNavClick('/patrimonio', true)}
           >
             <Building size={18} /> Patrimonio
           </button>
         </nav>
       </header>
 
-      {/* Conteúdo Principal gerenciado pelo React Router */}
+      {/* Conteúdo Principal */}
       <Routes>
         <Route path="/" element={<Pdv />} />
-        
-        {/* Rotas de Fichas */}
         <Route path="/fichas" element={<FichasList />} />
         <Route path="/fichas/:id" element={<FichaDetalhes />} />
-        
-        {/* Rotas de Mercadorias */}
         <Route path="/mercadorias" element={<Mercadorias />} />
         <Route path="/mercadorias/:id" element={<MercadoriaDetalhes />} /> 
-        
-        {/* Outras Rotas */}
         <Route path="/relatorios" element={<Relatorios />} />
-        <Route path="/cofre" element={<Cofre />} /> {/* <-- Rota do Cofre atualizada */}
+        <Route path="/cofre" element={<Cofre />} />
         <Route path="/patrimonio" element={<Patrimonio/>} />
       </Routes>
+
+      {/* MODAL DE SENHA */}
+      {showPasswordModal && (
+        <div className="auth-modal-overlay" onMouseDown={(e) => {
+          if (e.target === e.currentTarget) setShowPasswordModal(false);
+        }}>
+          <div className="auth-modal">
+            <button className="auth-close-btn" onClick={() => setShowPasswordModal(false)}>
+              <X size={20} />
+            </button>
+            <div className="auth-icon-container">
+              <KeyRound size={32} className="auth-icon" />
+            </div>
+            <h2>Área Restrita</h2>
+            <p>Por favor, insira a senha de administrador para acessar esta tela.</p>
+            
+            <form onSubmit={handlePasswordSubmit} className="auth-form">
+              <input 
+                type="password" 
+                placeholder="Digite a senha..." 
+                value={passwordInput}
+                onChange={(e) => {
+                  setPasswordInput(e.target.value);
+                  setPasswordError(false);
+                }}
+                autoFocus
+                className={passwordError ? 'input-error' : ''}
+              />
+              {passwordError && <span className="error-message">Senha incorreta. Tente novamente.</span>}
+              
+              <button type="submit" className="auth-submit-btn">
+                Acessar
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
 
-// O componente raiz agora apenas exporta o AppContent, 
-// pois o BrowserRouter já está lá no main.tsx
 export function App() {
   return <AppContent />;
 }

@@ -108,6 +108,11 @@ export function Pdv() {
 
   // Método que unifica a Venda e a Ficha (se existir)
   const processarVenda = async (fichaCrediario: Ficha | null) => {
+    // === ALERTA DE CONFIRMAÇÃO ADICIONADO AQUI ===
+    if (!window.confirm('Tem certeza que deseja confirmar esta venda?')) {
+      return;
+    }
+
     if (loading) return; 
     setLoading(true);
 

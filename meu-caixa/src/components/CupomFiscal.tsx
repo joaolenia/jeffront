@@ -24,10 +24,10 @@ export function CupomFiscal({ itens, total, formaPagamento, valorRecebido, troco
     <div id="print-section" className="cupom-container">
       <div className="cupom-header">
         <h2>MERCADO BOM JESUS</h2>
-        <p>Av. Ver. Venceslau Gaias, 705</p>
+        <p>Av. Ver. Venceslau Gaias, SN</p>
         <p>Santana, Cruz Machado - PR</p>
-        <p>CEP: 84620-000</p>
-        <p>CNPJ: 35.041.960/0001-84</p>
+        <p>CEP: 84623-000</p>
+        <p>CNPJ: 68.193.177/0001-95</p>
         <hr className="dashed-line" />
         <h3>CUPOM NÃO FISCAL</h3>
         <hr className="dashed-line" />

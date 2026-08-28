@@ -116,9 +116,9 @@ export function FichaDetalhes() {
       return alert('O valor do pagamento não pode ser maior que o saldo devedor.');
     }
 
-    // Alerta de confirmação antes de submeter o pagamento
+    // === AWAIT ADICIONADO AQUI ===
     const confirmMessage = `Você está prestes a baixar um pagamento de ${formatCurrency(valor)} via ${formaPagamento}. Confirmar?`;
-    if (!window.confirm(confirmMessage)) {
+    if (!await window.confirm(confirmMessage)) {
       return;
     }
 
@@ -167,7 +167,6 @@ export function FichaDetalhes() {
   const handlePrintCompra = async (compra: any) => {
     let compraParaImprimir = { ...compra };
     
-    // Tenta buscar os detalhes dos itens na API de vendas
     if (!compraParaImprimir.itens && compra.idVenda) {
       try {
         const { data } = await api.get(`/vendas/${compra.idVenda}`);
@@ -399,7 +398,6 @@ export function FichaDetalhes() {
         </div>
       </div>
 
-      {/* ÁREA DE IMPRESSÃO (Oculta na tela normal) */}
       {printMode === 'FICHA' && ficha && (
         <div className="cupom-container">
           <div className="cupom-header">

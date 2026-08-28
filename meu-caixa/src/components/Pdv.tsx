@@ -49,7 +49,6 @@ export function Pdv() {
     let precoNum = 0;
     let qtdNum = parseInt(qtd, 10);
 
-    // Lógica para separar Preço * Quantidade (Ex: 1,09*12)
     if (inputVal.includes('*')) {
       const parts = inputVal.split('*');
       const pStr = parts[0].replace(',', '.');
@@ -89,8 +88,7 @@ export function Pdv() {
     setItensCaixa(itensCaixa.filter(item => item.id !== id));
   };
 
-  // Botão de Finalizar Venda foi clicado
-  const handleFinalizarClick = () => {
+  const handleFinalizarClick = async () => {
     if (itensCaixa.length === 0) return;
     
     if (formaPagamento === 'Dinheiro' && valorRecebidoNum < totalVenda) {
@@ -98,18 +96,18 @@ export function Pdv() {
       return;
     }
     
-    // Se for Crediário, interceptamos abrindo o Modal. Caso contrário, finaliza direto.
     if (formaPagamento === 'Crediário') {
       setShowCrediarioModal(true);
     } else {
-      processarVenda(null);
+      // Como a função de baixo agora tem 'await' e abre popup, precisamos chamar adequadamente
+      await processarVenda(null);
     }
   };
 
-  // Método que unifica a Venda e a Ficha (se existir)
   const processarVenda = async (fichaCrediario: Ficha | null) => {
-    // === ALERTA DE CONFIRMAÇÃO ADICIONADO AQUI ===
-    if (!window.confirm('Tem certeza que deseja confirmar esta venda?')) {
+    // === O SEGREDO ESTÁ NESTE AWAIT ===
+    // Ele diz ao React para pausar esta função e esperar o usuário clicar em Confirmar/Cancelar no Modal.
+    if (!await window.confirm('Tem certeza que deseja confirmar esta venda?')) {
       return;
     }
 
@@ -118,8 +116,6 @@ export function Pdv() {
 
     const isCrediario = formaPagamento === 'Crediário';
 
-    // O payload exato esperado pela entidade Venda no backend
-    // Se for crediário, o valor recebido e o troco no caixa são 0
     const payloadVenda = {
       itens: itensCaixa,
       total: totalVenda,
@@ -129,19 +125,17 @@ export function Pdv() {
     };
 
     try {
-      // 1. POST para salvar a venda no Caixa
       const responseVenda = await api.post('/vendas', payloadVenda);
 
       if (isCrediario && fichaCrediario) {
         const resumoItens = itensCaixa.map(i => `${i.qtd}x ${i.nome}`).join(', ');
         
-        // --- CORREÇÃO DE FUSO HORÁRIO ---
         const dataAtual = new Date();
         const dataLocal = new Date(dataAtual.getTime() - (dataAtual.getTimezoneOffset() * 60000));
         
         const novaCompra = {
-          idVenda: responseVenda.data?.id || Date.now(), // Fallback
-          data: dataLocal.toISOString(), // <-- AGORA COM O FUSO CORRETO
+          idVenda: responseVenda.data?.id || Date.now(),
+          data: dataLocal.toISOString(),
           resumoItens: resumoItens,
           valor: totalVenda
         };
@@ -154,12 +148,9 @@ export function Pdv() {
         setShowCrediarioModal(false);
       }
 
-      // Axios considera status 2xx como sucesso (NestJS retorna 201 Created por padrão no POST)
       if (responseVenda.status === 201 || responseVenda.status === 200) {
-        // Abre a tela de impressão ANTES de limpar os dados da tela
         window.print();
         
-        // Limpa a tela após a impressão
         alert(`Venda finalizada com sucesso! (${formaPagamento})`);
         setItensCaixa([]);
         setValorRecebido('');
@@ -172,18 +163,16 @@ export function Pdv() {
         console.error('Dados do erro do servidor:', error.response.data);
         alert(`Erro do Servidor: ${error.response.data.message || 'Verifique o console.'}`);
       } else if (error.request) {
-        console.error('Sem resposta do servidor (Possível erro de CORS ou API offline).');
+        console.error('Sem resposta do servidor.');
         alert('Erro de rede: O servidor não respondeu. A API está rodando corretamente?');
       } else {
         alert('Ocorreu um erro ao montar a requisição.');
       }
-      throw error; // Repassa erro pro Modal não fechar se houver falha
     } finally {
       setLoading(false);
     }
   };
 
-  // Processa a Sangria do Caixa
   const handleSalvarSangria = async (e: React.FormEvent) => {
     e.preventDefault();
     const valorNum = parseFloat(valorSangria.replace(',', '.'));
@@ -194,7 +183,9 @@ export function Pdv() {
     }
 
     const formatado = formatCurrency(valorNum);
-    if (!window.confirm(`Deseja realmente enviar ${formatado} para o cofre?`)) {
+    
+    // === AQUI TAMBÉM PRECISOU DO AWAIT ===
+    if (!await window.confirm(`Deseja realmente enviar ${formatado} para o cofre?`)) {
       return;
     }
 
@@ -219,10 +210,8 @@ export function Pdv() {
     }
   };
 
-  // Escuta o atalho de teclado F2
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Impede o atalho de agir se algum modal estiver aberto
       if (e.key === 'F2' && !showCrediarioModal && !showSangriaModal) {
         e.preventDefault();
         handleFinalizarClick();
@@ -243,7 +232,6 @@ export function Pdv() {
       />
 
       <div className="pdv-layout hide-on-print">
-        
         <div className="pdv-left-panel">
           <form className="add-item-form" onSubmit={handleAdicionarItem}>
             <div className="input-group" style={{ flex: 2 }}>
@@ -374,7 +362,7 @@ export function Pdv() {
               <button 
                 className="btn-action btn-sangria" 
                 onClick={() => setShowSangriaModal(true)}
-                disabled={loading || itensCaixa.length > 0} // Evita sangria durante uma venda em andamento
+                disabled={loading || itensCaixa.length > 0} 
                 title={itensCaixa.length > 0 ? "Finalize a venda atual primeiro" : "Retirar dinheiro do caixa"}
               >
                 <ArrowRightLeft size={20} />
@@ -394,7 +382,6 @@ export function Pdv() {
         />
       )}
 
-      {/* MODAL DE SANGRIA */}
       {showSangriaModal && (
         <div className="pdv-modal-overlay">
           <div className="pdv-modal">

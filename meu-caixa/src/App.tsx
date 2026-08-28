@@ -12,6 +12,7 @@ import './App.css';
 import './components/Header.css'; 
 import { GlobalAlert } from './Alert';
 import { Patrimonio } from './components/patrimonio/Patrimonio';
+import { GlobalConfirm } from './Confirm';
 
 // ================= CONFIGURAÇÃO DE SEGURANÇA =================
 const SENHA_MESTRE = '591576'; 
@@ -62,6 +63,7 @@ function AppContent() {
   return (
     <div className="app-container">
       <GlobalAlert />
+      <GlobalConfirm />
 
       <header className="main-header hide-on-print">
         <div className="logo-container">

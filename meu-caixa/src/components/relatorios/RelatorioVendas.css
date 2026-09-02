@@ -250,9 +250,15 @@
 .sale-card-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   border-bottom: 1px dashed #cbd5e1;
   padding-bottom: 12px;
+}
+
+.sale-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .sale-id {
@@ -276,6 +282,24 @@
 .sale-datetime .time {
   font-weight: 700;
   color: #475569;
+}
+
+.btn-delete-sale {
+  background: transparent;
+  border: none;
+  color: #cbd5e1;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.btn-delete-sale:hover {
+  background: #fef2f2;
+  color: #ef4444;
 }
 
 .sale-card-body {
@@ -369,6 +393,99 @@
 }
 
 @keyframes spin { 100% { transform: rotate(360deg); } }
+
+/* =========================================
+   Modal de Exclusão
+   ========================================= */
+.rv-modal-overlay {
+  position: fixed; 
+  inset: 0; 
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px); 
+  display: flex; 
+  align-items: center; 
+  justify-content: center;
+  z-index: 10000; 
+  padding: 20px;
+  animation: fadeIn 0.2s;
+}
+
+.rv-alert-box {
+  background: white; 
+  border-radius: 12px; 
+  padding: 24px; 
+  max-width: 400px; 
+  width: 100%;
+  box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+}
+
+.rv-alert-header { 
+  display: flex; 
+  align-items: center; 
+  gap: 12px; 
+  margin-bottom: 12px; 
+  color: #ef4444; 
+}
+
+.rv-alert-header h3 { 
+  margin: 0; 
+  font-size: 1.25rem; 
+  color: #0f172a; 
+}
+
+.rv-alert-body p { 
+  color: #475569; 
+  font-size: 0.95rem; 
+  margin: 0 0 16px 0; 
+  line-height: 1.4;
+}
+
+.rv-password-input {
+  width: 90%; 
+  padding: 12px; 
+  border: 1px solid #cbd5e1; 
+  border-radius: 8px;
+  text-align: center; 
+  font-size: 1rem; 
+  letter-spacing: 2px; 
+  margin-bottom: 20px; 
+  outline: none;
+}
+
+.rv-password-input:focus { 
+  border-color: #ef4444; 
+  box-shadow: 0 0 0 3px #fef2f2; 
+}
+
+.rv-alert-actions { 
+  display: flex; 
+  gap: 12px; 
+}
+
+.rv-alert-actions button { 
+  flex: 1; 
+  padding: 10px; 
+  border-radius: 8px; 
+  font-weight: 600; 
+  cursor: pointer; 
+  border: none; 
+}
+
+.btn-rv-cancel { background: #f1f5f9; color: #475569; }
+.btn-rv-cancel:hover { background: #e2e8f0; }
+
+.btn-rv-confirm { 
+  background: #ef4444; 
+  color: white; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  gap: 8px; 
+}
+.btn-rv-confirm:hover:not(:disabled) { background: #dc2626; }
+.btn-rv-confirm:disabled { opacity: 0.6; cursor: not-allowed; }
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
 /* Responsividade Mínima */
 @media (max-width: 768px) {

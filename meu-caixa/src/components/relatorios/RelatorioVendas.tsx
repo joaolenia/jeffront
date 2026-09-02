@@ -1,6 +1,5 @@
-import  { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { 
-   
   Calendar, 
   DollarSign, 
   CreditCard, 
@@ -10,12 +9,13 @@ import {
   TrendingUp, 
   AlertCircle,
   RefreshCw,
-  FileText
+  FileText,
+  Trash2,
+  Loader2
 } from 'lucide-react';
 import api from '../../api';
 import './RelatorioVendas.css';
 
-// Tipagens baseadas na sua entidade do backend
 interface ItemVenda {
   id: number;
   nome: string;
@@ -30,7 +30,7 @@ interface Venda {
   valorRecebido: number;
   troco: number;
   formaPagamento: string;
-  dataHora: string; // ou data_hora dependendo de como o TypeORM serializa
+  dataHora: string; 
 }
 
 type PeriodoType = 'hoje' | '7' | '15' | '30' | '45' | '60' | 'custom';
@@ -43,6 +43,11 @@ export function RelatorioVendas() {
   // Filtros
   const [periodo, setPeriodo] = useState<PeriodoType>('30');
   const [dataCustomizada, setDataCustomizada] = useState<string>('');
+
+  // Estados de Exclusão
+  const [saleToDelete, setSaleToDelete] = useState<number | null>(null);
+  const [deletePassword, setDeletePassword] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const fetchVendas = async () => {
     setLoading(true);
@@ -62,6 +67,34 @@ export function RelatorioVendas() {
     fetchVendas();
   }, []);
 
+  const handleDeleteClick = (id: number) => {
+    setSaleToDelete(id);
+    setDeletePassword('');
+  };
+
+  const handleConfirmDelete = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!saleToDelete) return;
+
+    if (deletePassword !== '591576') {
+      alert('Senha incorreta! Exclusão não autorizada.');
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      await api.delete(`/vendas/${saleToDelete}`);
+      alert('Venda excluída com sucesso!');
+      setSaleToDelete(null);
+      await fetchVendas(); // Recarrega os dados após a exclusão
+    } catch (err) {
+      console.error('Erro ao excluir venda:', err);
+      alert('Erro ao excluir a venda. Tente novamente.');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   // Lógica de Filtragem no Frontend
   const vendasFiltradas = useMemo(() => {
     if (!vendas.length) return [];
@@ -73,7 +106,6 @@ export function RelatorioVendas() {
     dataCorte.setHours(0, 0, 0, 0);
 
     if (periodo === 'custom' && dataCustomizada) {
-      // Ajusta para buscar do início ao fim do dia selecionado
       const [ano, mes, dia] = dataCustomizada.split('-').map(Number);
       dataCorte = new Date(ano, mes - 1, dia, 0, 0, 0, 0);
       hoje.setTime(new Date(ano, mes - 1, dia, 23, 59, 59, 999).getTime());
@@ -83,7 +115,6 @@ export function RelatorioVendas() {
     }
 
     return vendas.filter(venda => {
-      // Tenta pegar dataHora ou data_hora
       const dataString = venda.dataHora || (venda as any).data_hora;
       if (!dataString) return false;
       
@@ -131,7 +162,6 @@ export function RelatorioVendas() {
         qtdCrediario++;
         totalAPrazo += valor;
       } else {
-        // Fallback caso venha algo diferente (assume à vista)
         totalAVista += valor;
       }
     });
@@ -139,7 +169,6 @@ export function RelatorioVendas() {
     const qtdTotal = vendasFiltradas.length;
     const ticketMedio = qtdTotal > 0 ? totalGeral / qtdTotal : 0;
 
-    // Percentuais (evitando divisão por zero)
     const pct = (valor: number) => totalGeral > 0 ? ((valor / totalGeral) * 100).toFixed(1) : '0.0';
 
     return {
@@ -340,10 +369,18 @@ export function RelatorioVendas() {
             {vendasFiltradas.map((venda) => (
               <div key={venda.id} className="sale-card">
                 <div className="sale-card-header">
-                  <span className="sale-id">#{venda.id}</span>
-                  <div className="sale-datetime">
-                    <span>{formatDate(venda.dataHora || (venda as any).data_hora)}</span>
-                    <span className="time">{formatTime(venda.dataHora || (venda as any).data_hora)}</span>
+                  <div className="sale-id-container">
+                    <span className="sale-id">#{venda.id}</span>
+                  </div>
+                  <div className="sale-header-actions">
+                    <div className="sale-datetime">
+                      <span>{formatDate(venda.dataHora || (venda as any).data_hora)}</span>
+                      <span className="time">{formatTime(venda.dataHora || (venda as any).data_hora)}</span>
+                    </div>
+                    {/* Botão de Excluir */}
+                    <button className="btn-delete-sale" onClick={() => handleDeleteClick(venda.id)} title="Excluir Venda">
+                      <Trash2 size={16} />
+                    </button>
                   </div>
                 </div>
                 
@@ -364,6 +401,39 @@ export function RelatorioVendas() {
             ))}
           </div>
         </>
+      )}
+
+      {/* MODAL DE EXCLUSÃO DE VENDA */}
+      {saleToDelete !== null && (
+        <div className="rv-modal-overlay" onMouseDown={(e) => {
+          if (e.target === e.currentTarget) setSaleToDelete(null);
+        }}>
+          <div className="rv-alert-box">
+            <div className="rv-alert-header">
+              <AlertCircle size={28} />
+              <h3>Excluir Venda?</h3>
+            </div>
+            <div className="rv-alert-body">
+              <p>Você está prestes a excluir a venda <b>#{saleToDelete}</b>. Esta ação removerá o registro financeiro do banco de dados permanentemente.</p>
+              <form onSubmit={handleConfirmDelete}>
+                <input 
+                  type="password" 
+                  placeholder="Senha de Autorização" 
+                  className="rv-password-input"
+                  value={deletePassword}
+                  onChange={(e) => setDeletePassword(e.target.value)}
+                  autoFocus
+                />
+                <div className="rv-alert-actions">
+                  <button type="button" className="btn-rv-cancel" onClick={() => setSaleToDelete(null)} disabled={isDeleting}>Cancelar</button>
+                  <button type="submit" className="btn-rv-confirm" disabled={isDeleting || !deletePassword}>
+                    {isDeleting ? <Loader2 size={16} className="icon-spin" /> : <Trash2 size={16} />} Confirmar Exclusão
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

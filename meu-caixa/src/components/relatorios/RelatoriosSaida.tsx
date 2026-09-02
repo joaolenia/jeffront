@@ -1,4 +1,3 @@
-
 import { useEffect, useMemo, useState } from 'react';
 import {
   AlertCircle,
@@ -62,6 +61,9 @@ const calcularDataAnterior = (dias: number) => {
   return obterDataLocal(data);
 };
 
+// ==============================================================
+// EXTRAÇÃO DE DATA COM LOG PARA DEBUGAR O FORMATO
+// ==============================================================
 const extrairData = (
   valor?: string | Date | null
 ): string => {
@@ -71,14 +73,31 @@ const extrairData = (
     return obterDataLocal(valor);
   }
 
-  const texto = String(valor);
+  let texto = String(valor).trim();
+  if (!texto) return '';
 
-  if (texto.includes('T')) {
-    return texto.split('T')[0];
+  // Remove os microsegundos se houver (ex: .000000)
+  if (texto.includes('.')) {
+    texto = texto.split('.')[0];
   }
 
-  return texto.split(' ')[0];
+  // Se contiver espaço ou 'T' (ex: "2026-09-02")
+  if (texto.includes('T') || texto.includes(' ')) {
+    let isoString = texto.replace(' ', 'T');
+    if (!isoString.endsWith('Z') && !isoString.includes('+') && !isoString.includes('-', 10)) {
+      isoString += 'Z'; 
+    }
+    const d = new Date(isoString);
+    if (!isNaN(d.getTime())) {
+      const formatada = obterDataLocal(d);
+      return formatada;
+    }
+  }
+
+  // Fallback para datas puras
+  return texto.split('T')[0].split(' ')[0];
 };
+// ==============================================================
 
 const converterNumero = (valor: unknown) => {
   const numero = Number(valor);
@@ -103,7 +122,8 @@ const obterParcelas = (
     return Array.isArray(resultado)
       ? resultado
       : [];
-  } catch {
+  } catch (err) {
+    console.error('Erro ao fazer JSON.parse das parcelas:', err);
     return [];
   }
 };
@@ -165,6 +185,7 @@ export default function RelatoriosSaida() {
         ? response.data
         : [];
 
+      console.log('📌 Dados brutos recebidos do backend (/mercadorias):', dados);
       setMercadorias(dados);
     } catch (err) {
       console.error(
@@ -223,6 +244,8 @@ export default function RelatoriosSaida() {
     const parcelasProcessadas =
       new Set<string>();
 
+    console.log(`🔎 Filtrando relatório entre [${dataInicial}] e [${dataFinal}]`);
+
     mercadorias.forEach(mercadoria => {
       const id = converterNumero(
         mercadoria.id
@@ -232,88 +255,40 @@ export default function RelatoriosSaida() {
         return;
       }
 
-      if (
-        operacoesProcessadas.has(id)
-      ) {
-        return;
+      // Verificamos se a operação teve valores de entrada à vista dentro do período
+      const dataAtualizacao = extrairData(mercadoria.dataAtualizacao);
+      const operacaoNoPeriodo = dataAtualizacao && dataAtualizacao >= dataInicial && dataAtualizacao <= dataFinal;
+
+      if (operacaoNoPeriodo && !operacoesProcessadas.has(id)) {
+        operacoesProcessadas.add(id);
+        operacoes++;
+
+        const valorCaixa = converterNumero(mercadoria.valorPagoCaixa);
+        const valorCofre = converterNumero(mercadoria.valorPagoCofre);
+
+        caixa += valorCaixa;
+        cofre += valorCofre;
       }
 
-      /*
-       * REGRA 1
-       *
-       * A operação entra no relatório usando
-       * EXCLUSIVAMENTE a dataAtualizacao.
-       *
-       * dataOperacao e dataCriacao não são
-       * utilizadas para o filtro da operação.
-       */
-
-      const dataAtualizacao =
-        extrairData(
-          mercadoria.dataAtualizacao
-        );
-
-      if (!dataAtualizacao) {
-        return;
-      }
-
-      if (
-        dataAtualizacao < dataInicial ||
-        dataAtualizacao > dataFinal
-      ) {
-        return;
-      }
-
-      operacoesProcessadas.add(id);
-      operacoes++;
-
-      /*
-       * REGRA 2
-       *
-       * Primeiro contabilizamos os valores
-       * próprios da operação.
-       */
-
-      const valorCaixa =
-        converterNumero(
-          mercadoria.valorPagoCaixa
-        );
-
-      const valorCofre =
-        converterNumero(
-          mercadoria.valorPagoCofre
-        );
-
-      caixa += valorCaixa;
-      cofre += valorCofre;
-
-      /*
-       * REGRA 3
-       *
-       * Depois analisamos as parcelas.
-       *
-       * A parcela somente entra se:
-       *
-       * - estiver paga;
-       * - possuir dataPagamento;
-       * - a dataPagamento estiver dentro
-       *   do período selecionado.
-       *
-       * O vencimento NÃO é usado como
-       * data do pagamento.
-       */
-
+      // Analisamos as parcelas
       const parcelas =
         obterParcelas(
           mercadoria.parcelas
         );
 
+      if (parcelas.length > 0) {
+        console.log(`📦 Mercadoria ID ${id} possui ${parcelas.length} parcela(s):`, parcelas);
+      }
+
       parcelas.forEach(
         (parcela, index) => {
+          console.log(`👉 Analisando parcela [${index + 1}] da mercadoria ID ${id}:`, parcela);
+
           if (
             String(parcela.status)
               .toLowerCase() !== 'pago'
           ) {
+            console.log(`❌ Parcela ignorada: Status é '${parcela.status}' (diferente de 'pago')`);
             return;
           }
 
@@ -323,13 +298,17 @@ export default function RelatoriosSaida() {
             );
 
           if (!dataPagamento) {
+            console.log(`❌ Parcela ignorada: dataPagamento vazia ou inválida. Valor original:`, parcela.dataPagamento);
             return;
           }
+
+          console.log(`📅 Data de pagamento extraída: [${dataPagamento}] (Range permitido: ${dataInicial} até ${dataFinal})`);
 
           if (
             dataPagamento < dataInicial ||
             dataPagamento > dataFinal
           ) {
+            console.log(`❌ Parcela ignorada: Fora do período selecionado.`);
             return;
           }
 
@@ -346,6 +325,7 @@ export default function RelatoriosSaida() {
           if (
             parcelasProcessadas.has(chave)
           ) {
+            console.log(`⚠️ Parcela duplicada ignorada: ${chave}`);
             return;
           }
 
@@ -357,9 +337,11 @@ export default function RelatoriosSaida() {
             );
 
           if (valor <= 0) {
+            console.log(`❌ Parcela ignorada: Valor zerado ou inválido (${valor})`);
             return;
           }
 
+          console.log(`✅ PARCELA CONTABILIZADA COM SUCESSO! Valor: R$ ${valor}, Forma: ${parcela.formaPagamento}`);
           parcelasPagas++;
 
           if (
@@ -375,13 +357,16 @@ export default function RelatoriosSaida() {
       );
     });
 
-    return {
+    const resultadoFinal = {
       caixa,
       cofre,
       total: caixa + cofre,
       parcelasPagas,
       operacoes,
     };
+
+    console.log('📊 Resultado final do Relatório de Saídas:', resultadoFinal);
+    return resultadoFinal;
   }, [
     mercadorias,
     dataInicial,
@@ -633,4 +618,3 @@ export default function RelatoriosSaida() {
     </main>
   );
 }
-

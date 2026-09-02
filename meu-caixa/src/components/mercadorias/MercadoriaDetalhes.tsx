@@ -118,6 +118,13 @@ const MercadoriaDetalhes: React.FC = () => {
         }
       }
 
+// Função auxiliar local para garantir a data certa do Brasil
+      const getDataLocalFormatada = () => {
+        const d = new Date();
+        const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
+        return local.toISOString().split('T')[0];
+      };
+
       // 2. Atualizar APENAS o status e dados da parcela no JSON
       const parcelasAtualizadas = mercadoria.parcelas.map((parcela) =>
         parcela.numero === parcelaSelecionada.numero
@@ -125,11 +132,10 @@ const MercadoriaDetalhes: React.FC = () => {
               ...parcela,
               status: 'pago' as const,
               formaPagamento: origemDinheiro,
-              dataPagamento: new Date().toISOString().split('T')[0],
+              dataPagamento: getDataLocalFormatada(), // <-- Agora salva a data local correta
             }
           : parcela
       );
-
       const todasPagas = parcelasAtualizadas.every(
         (parcela) => parcela.status === 'pago'
       );

@@ -6,9 +6,11 @@ import {  Calendar, Wallet, AlertCircle } from 'lucide-react';
 // ================= TIPAGENS =================
 interface Venda {
   id: number;
-  dataHora: string;
+  dataHora?: string;
+  data_hora?: string;
   total: number;
-  formaPagamento: string; 
+  formaPagamento?: string; 
+  forma_pagamento?: string;
 }
 
 interface Pagamento {
@@ -29,7 +31,6 @@ const formatarMoeda = (valor: number) => {
   return (valor || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 };
 
-// Pega a data atual em formato YYYY-MM-DD respeitando o fuso horário local
 const getLocalISODate = (date: Date) => {
   const offset = date.getTimezoneOffset() * 60000;
   return new Date(date.getTime() - offset).toISOString().split('T')[0];
@@ -41,10 +42,8 @@ const calcularDataAnterior = (dias: number) => {
   return getLocalISODate(data);
 };
 
-// Extrai a porção da data 'YYYY-MM-DD' ignorando inteiramente a conversão do fuso
-const extrairDataString = (isoString: string) => {
-  if (!isoString) return '';
-  return isoString.split('T')[0].split(' ')[0];
+const removerAcentos = (texto: string) => {
+  return texto.normalize('NFD').replace(/[\u0300-\u036f]/g, "").toUpperCase();
 };
 
 export function RelatoriosEntrada() {
@@ -66,7 +65,6 @@ export function RelatoriosEntrada() {
     setError(null);
     try {
       const [vendasRes, fichasRes] = await Promise.all([
-        // Mantemos a busca com parâmetros caso o backend também filtre
         api.get('/vendas', { params: { dataInicial, dataFinal } }),
         api.get('/fichas') 
       ]);
@@ -113,20 +111,36 @@ export function RelatoriosEntrada() {
     let fichasPix = 0;
     let fichasCartao = 0;
 
+    // Converte os limites selecionados para Timestamps locais absolutos (00:00:00 até 23:59:59)
+    const inicioPeriodo = new Date(`${dataInicial}T00:00:00`).getTime();
+    const fimPeriodo = new Date(`${dataFinal}T23:59:59.999`).getTime();
+
+    // Função que equaliza qualquer data (vinda do banco com UTC ou Local) em um Timestamp comparável
+    const getTimestamp = (dateStr: string) => {
+      if (!dateStr) return 0;
+      // Força formato compatível com o Date do JS substituindo espaço por 'T'
+      return new Date(dateStr.replace(' ', 'T')).getTime();
+    };
+
     // Processar Vendas
     vendas.forEach(venda => {
-      const dataVendaStr = extrairDataString(venda.dataHora);
+      const timestamp = getTimestamp(venda.dataHora || venda.data_hora || '');
       
-      // Aplicamos o filtro no frontend para garantir segurança blindada do range da data
-      if (dataVendaStr >= dataInicial && dataVendaStr <= dataFinal) {
-        const forma = (venda.formaPagamento || '').toUpperCase();
+      // Validação de Fuso Horário corrigida usando Timestamp
+      if (timestamp >= inicioPeriodo && timestamp <= fimPeriodo) {
+        const rawForma = venda.formaPagamento || venda.forma_pagamento || '';
+        const forma = removerAcentos(rawForma);
         const valor = Number(venda.total) || 0;
 
-        if (forma === 'PRAZO' || forma === 'FIADO') return;
+        if (forma.includes('PRAZO') || forma.includes('FIADO') || forma.includes('CREDIARIO')) return;
 
-        if (forma.includes('DINHEIRO')) vendasDinheiro += valor;
-        else if (forma.includes('PIX')) vendasPix += valor;
-        else if (forma.includes('CARTAO') || forma.includes('CARTÃO')) vendasCartao += valor;
+        if (forma.includes('DINHEIRO')) {
+          vendasDinheiro += valor;
+        } else if (forma.includes('PIX')) {
+          vendasPix += valor;
+        } else if (forma.includes('CART') || forma.includes('CREDITO') || forma.includes('DEBITO')) {
+          vendasCartao += valor;
+        }
       }
     });
 
@@ -135,16 +149,19 @@ export function RelatoriosEntrada() {
       if (!ficha.pagamentos || !Array.isArray(ficha.pagamentos)) return;
       
       ficha.pagamentos.forEach(pag => {
-        const dataPagStr = extrairDataString(pag.data);
+        const timestamp = getTimestamp(pag.data || '');
         
-        // A comparação sendo feita usando string bypassa o problema do shift do Date.
-        if (dataPagStr >= dataInicial && dataPagStr <= dataFinal) {
-          const forma = (pag.forma || '').toUpperCase();
+        if (timestamp >= inicioPeriodo && timestamp <= fimPeriodo) {
+          const forma = removerAcentos(pag.forma || '');
           const valor = Number(pag.valor) || 0;
 
-          if (forma.includes('DINHEIRO')) fichasDinheiro += valor;
-          else if (forma.includes('PIX')) fichasPix += valor;
-          else if (forma.includes('CARTAO') || forma.includes('CARTÃO')) fichasCartao += valor;
+          if (forma.includes('DINHEIRO')) {
+            fichasDinheiro += valor;
+          } else if (forma.includes('PIX')) {
+            fichasPix += valor;
+          } else if (forma.includes('CART') || forma.includes('CREDITO') || forma.includes('DEBITO')) {
+            fichasCartao += valor;
+          }
         }
       });
     });
@@ -169,7 +186,6 @@ export function RelatoriosEntrada() {
           <h2>Relatório de Entradas</h2>
           <p>Entradas financeiras à vista e pagamentos recebidos</p>
         </div>
-     
       </div>
 
       {/* FILTROS */}
@@ -259,7 +275,6 @@ export function RelatoriosEntrada() {
                   <span>Dinheiro</span>
                   <strong>{formatarMoeda(relatorio.fichasDinheiro)}</strong>
                 </div>
-                {/* Adicionado forma-item do Pix */}
                 <div className="forma-item">
                   <span>Pix</span>
                   <strong>{formatarMoeda(relatorio.fichasPix)}</strong>

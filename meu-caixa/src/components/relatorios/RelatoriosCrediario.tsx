@@ -45,11 +45,35 @@ const calcularDataAnterior = (dias: number) => {
   return getLocalISODate(data);
 };
 
-// Extração robusta de 'YYYY-MM-DD'
+// ==============================================================
+// EXTRAÇÃO DE DATA BLINDADA PARA FUSO HORÁRIO
+// ==============================================================
 const extrairDataString = (isoString: string | undefined | null) => {
   if (!isoString) return '';
-  return isoString.split('T')[0].split(' ')[0];
+
+  let texto = String(isoString).trim();
+  if (!texto) return '';
+
+  // Remove microsegundos se houver
+  if (texto.includes('.')) {
+    texto = texto.split('.')[0];
+  }
+
+  // Se contiver hora (espaço ou 'T'), ajusta o fuso para a data local correta
+  if (texto.includes('T') || texto.includes(' ')) {
+    let isoStringFormatada = texto.replace(' ', 'T');
+    if (!isoStringFormatada.endsWith('Z') && !isoStringFormatada.includes('+') && !isoStringFormatada.includes('-', 10)) {
+      isoStringFormatada += 'Z'; 
+    }
+    const d = new Date(isoStringFormatada);
+    if (!isNaN(d.getTime())) {
+      return getLocalISODate(d);
+    }
+  }
+
+  return texto.split('T')[0].split(' ')[0];
 };
+// ==============================================================
 
 export default function RelatoriosCrediario() {
   const [periodo, setPeriodo] = useState<string>('todos');

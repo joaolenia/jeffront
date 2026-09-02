@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
-import { Monitor, ShoppingCart, Ticket, Package, Lock, BarChart3, Building, X, KeyRound } from 'lucide-react';
+import { Monitor, ShoppingCart, Ticket, Package, Lock, BarChart3, Building, X, KeyRound, DownloadCloud } from 'lucide-react';
 import { Pdv } from './components/Pdv';
 import { FichasList } from './components/FichasList';
 import { FichaDetalhes } from './components/FichaDetalhes';
@@ -13,6 +13,7 @@ import './components/Header.css';
 import { GlobalAlert } from './Alert';
 import { Patrimonio } from './components/patrimonio/Patrimonio';
 import { GlobalConfirm } from './Confirm';
+import api from './api'; // <-- Importação da API para o Backup
 
 // ================= CONFIGURAÇÃO DE SEGURANÇA =================
 const SENHA_MESTRE = '591576'; 
@@ -47,14 +48,35 @@ function AppContent() {
     }
   };
 
-  const handlePasswordSubmit = (e: React.FormEvent) => {
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (passwordInput === SENHA_MESTRE) {
+    
+    // Define a senha esperada com base na rota que está sendo acessada
+    let isPasswordCorrect = false;
+    if (pendingRoute === '/relatorios' || pendingRoute === 'backup') {
+      isPasswordCorrect = passwordInput === 'y';
+    } else {
+      isPasswordCorrect = passwordInput === SENHA_MESTRE;
+    }
+
+    if (isPasswordCorrect) {
       setShowPasswordModal(false);
-      if (pendingRoute) {
+      
+      // Se for a ação de backup, chama a API ao invés de navegar
+      if (pendingRoute === 'backup') {
+        try {
+          const response = await api.post('/backup/local', { senha: passwordInput });
+          alert(`Sucesso! O backup foi salvo na pasta:\n\n${response.data.caminho}`);
+        } catch (error: any) {
+          console.error(error);
+          alert(error.response?.data?.message || 'Erro ao gerar backup. Verifique o backend.');
+        }
+      } 
+      // Se for uma rota normal
+      else if (pendingRoute) {
         navigate(pendingRoute);
-        setPendingRoute(null);
       }
+      setPendingRoute(null);
     } else {
       setPasswordError(true);
     }
@@ -112,6 +134,14 @@ function AppContent() {
             onClick={() => handleNavClick('/patrimonio', true)}
           >
             <Building size={18} /> Patrimonio
+          </button>
+
+          {/* Botão de Backup */}
+          <button 
+            className="nav-item auth-required" 
+            onClick={() => handleNavClick('backup', true)}
+          >
+            <DownloadCloud size={18} /> Backup
           </button>
         </nav>
       </header>

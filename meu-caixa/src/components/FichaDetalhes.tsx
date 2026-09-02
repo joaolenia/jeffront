@@ -1,13 +1,28 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   AlertCircle, ArrowLeft, Banknote, CalendarDays, CheckCircle, ChevronRight,
   CircleDollarSign, CreditCard, DollarSign, Loader2, Receipt, ShieldCheck,
-  ShoppingBag, Smartphone, Trash2, TrendingUp, User, Wallet, Printer
+  ShoppingBag, Smartphone, Trash2, TrendingUp, User, Wallet, Printer, Edit2, Save, X, MessageSquareWarning
 } from 'lucide-react';
 import api from '../api';
 import './FichaDetalhes.css';
-import type { Ficha } from './FichasList';
+
+// Adicionamos 'observacao' à tipagem estendida
+interface Ficha {
+  id: number;
+  clienteNome: string;
+  telefone?: string;
+  limite?: number;
+  totalGasto?: number;
+  valorTotal?: number;
+  valorPago?: number;
+  status: string;
+  dataCriacao?: string;
+  compras?: any[];
+  pagamentos?: any[];
+  observacao?: string; // Novo campo de alerta
+}
 
 type ModoPagamento = 'INTEGRAL' | 'PARCIAL';
 type FormaPagamento = 'Dinheiro' | 'Cartão' | 'Pix';
@@ -56,15 +71,29 @@ export function FichaDetalhes() {
   const [ficha, setFicha] = useState<Ficha | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // Pagamento
   const [modoPagamento, setModoPagamento] = useState<ModoPagamento>('INTEGRAL');
   const [valorDigitado, setValorDigitado] = useState('');
   const [formaPagamento, setFormaPagamento] = useState<FormaPagamento>('Dinheiro');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Exclusão
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [deletePassword, setDeletePassword] = useState('');
 
+  // Impressão
   const [printMode, setPrintMode] = useState<PrintMode>('NONE');
   const [compraToPrint, setCompraToPrint] = useState<any>(null);
+
+  // Edição de Nome
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [newName, setNewName] = useState('');
+
+  // Edição de Observação (Alerta)
+  const [isEditingObs, setIsEditingObs] = useState(false);
+  const [newObs, setNewObs] = useState('');
 
   const fetchFicha = async (fichaId: string) => {
     setLoading(true);
@@ -94,12 +123,36 @@ export function FichaDetalhes() {
   const saldoDevedor = ficha
     ? Math.max(Number(ficha.valorTotal) - Number(ficha.valorPago), 0)
     : 0;
-  const percentualPago = ficha
+  const percentualPago = ficha && Number(ficha.valorTotal) > 0
     ? Math.min((Number(ficha.valorPago) / Number(ficha.valorTotal)) * 100, 100)
     : 0;
   const totalCompras = ficha?.compras?.length || 0;
   const totalPagamentos = ficha?.pagamentos?.length || 0;
-  const isPaga = !!ficha && (ficha.status === 'PAGA' || saldoDevedor <= 0);
+  const isPaga = !!ficha && (ficha.status === 'PAGA' || (saldoDevedor <= 0 && Number(ficha.valorTotal) > 0));
+
+  // -------- AÇÕES --------
+
+  const handleUpdateName = async () => {
+    if (!ficha || !newName.trim()) return setIsEditingName(false);
+    try {
+      await api.patch(`/fichas/${ficha.id}`, { clienteNome: newName });
+      setFicha({ ...ficha, clienteNome: newName });
+      setIsEditingName(false);
+    } catch (err) {
+      alert('Erro ao atualizar nome.');
+    }
+  };
+
+  const handleUpdateObs = async () => {
+    if (!ficha) return;
+    try {
+      await api.patch(`/fichas/${ficha.id}`, { observacao: newObs });
+      setFicha({ ...ficha, observacao: newObs });
+      setIsEditingObs(false);
+    } catch (err) {
+      alert('Erro ao atualizar observação.');
+    }
+  };
 
   const handleEfetuarPagamento = async () => {
     if (!ficha || isSubmitting) return;
@@ -116,7 +169,6 @@ export function FichaDetalhes() {
       return alert('O valor do pagamento não pode ser maior que o saldo devedor.');
     }
 
-    // === AWAIT ADICIONADO AQUI ===
     const confirmMessage = `Você está prestes a baixar um pagamento de ${formatCurrency(valor)} via ${formaPagamento}. Confirmar?`;
     if (!await window.confirm(confirmMessage)) {
       return;
@@ -147,6 +199,11 @@ export function FichaDetalhes() {
 
   const handleExcluirFicha = async () => {
     if (!ficha) return;
+    if (deletePassword !== '591576') {
+      alert('Senha incorreta! Exclusão não autorizada.');
+      return;
+    }
+
     setIsDeleting(true);
     try {
       await api.delete(`/fichas/${ficha.id}`);
@@ -156,6 +213,7 @@ export function FichaDetalhes() {
       alert('Erro ao excluir ficha. Verifique se existem restrições no backend.');
       setIsDeleting(false);
       setShowDeleteConfirm(false);
+      setDeletePassword('');
     }
   };
 
@@ -166,22 +224,20 @@ export function FichaDetalhes() {
 
   const handlePrintCompra = async (compra: any) => {
     let compraParaImprimir = { ...compra };
-    
     if (!compraParaImprimir.itens && compra.idVenda) {
       try {
         const { data } = await api.get(`/vendas/${compra.idVenda}`);
-        if (data && data.itens) {
-          compraParaImprimir.itens = data.itens;
-        }
+        if (data && data.itens) compraParaImprimir.itens = data.itens;
       } catch (err) {
         console.warn('Não foi possível carregar os detalhes da venda.', err);
       }
     }
-
     setCompraToPrint(compraParaImprimir);
     setPrintMode('COMPRA');
     setTimeout(() => window.print(), 200);
   };
+
+  // -------- RENDERIZAÇÃO --------
 
   if (loading) return (
     <div className="fd-centered-state">
@@ -209,6 +265,41 @@ export function FichaDetalhes() {
           <span className="fd-breadcrumb-current">Detalhes da conta</span>
         </div>
 
+        {/* ALERTA DE OBSERVAÇÃO (Se houver texto) */}
+        {ficha.observacao && !isEditingObs && (
+          <div className="fd-obs-alert">
+            <div className="fd-obs-icon"><MessageSquareWarning size={24} /></div>
+            <div className="fd-obs-content">
+              <strong>Aviso Importante sobre este cliente:</strong>
+              <p>{ficha.observacao}</p>
+            </div>
+            <button className="fd-obs-edit" onClick={() => { setNewObs(ficha.observacao || ''); setIsEditingObs(true); }} title="Editar aviso">
+              <Edit2 size={16} />
+            </button>
+          </div>
+        )}
+
+        {/* EDITOR DE OBSERVAÇÃO */}
+        {isEditingObs && (
+          <div className="fd-obs-alert editing">
+            <div className="fd-obs-icon"><MessageSquareWarning size={24} /></div>
+            <div className="fd-obs-content full-width">
+              <strong>Definir Aviso/Observação do Cliente:</strong>
+              <textarea 
+                value={newObs} 
+                onChange={(e) => setNewObs(e.target.value)} 
+                placeholder="Ex: Não vender fiado até dia 15..."
+                className="fd-obs-textarea"
+                autoFocus
+              />
+              <div className="fd-obs-actions">
+                <button onClick={() => setIsEditingObs(false)} className="btn-cancel">Cancelar</button>
+                <button onClick={handleUpdateObs} className="btn-save"><Save size={14}/> Salvar Aviso</button>
+              </div>
+            </div>
+          </div>
+        )}
+
         <header className="fd-header">
           <div className="fd-header-left">
             <div className="fd-avatar"><User size={24} /></div>
@@ -217,7 +308,29 @@ export function FichaDetalhes() {
                 <span>CONTA DE CLIENTE</span>
                 <span className="fd-code">#{String(ficha.id).padStart(5, '0')}</span>
               </div>
-              <h1>{ficha.clienteNome}</h1>
+              
+              {/* NOME DO CLIENTE EDITÁVEL */}
+              {isEditingName ? (
+                <div className="fd-name-editor">
+                  <input 
+                    type="text" 
+                    value={newName} 
+                    onChange={e => setNewName(e.target.value)} 
+                    autoFocus 
+                    onKeyDown={(e) => e.key === 'Enter' && handleUpdateName()}
+                  />
+                  <button onClick={handleUpdateName} className="btn-save"><Save size={18} /></button>
+                  <button onClick={() => setIsEditingName(false)} className="btn-cancel"><X size={18} /></button>
+                </div>
+              ) : (
+                <h1 className="fd-editable-title">
+                  {ficha.clienteNome} 
+                  <button className="fd-edit-btn" onClick={() => { setNewName(ficha.clienteNome); setIsEditingName(true); }}>
+                    <Edit2 size={18} />
+                  </button>
+                </h1>
+              )}
+
               <div className="fd-status-row">
                 <span className={`fd-status ${isPaga ? 'fd-status-paid' : 'fd-status-open'}`}>
                   <span className="fd-status-dot" />{isPaga ? 'Conta paga' : 'Conta aberta'}
@@ -227,34 +340,57 @@ export function FichaDetalhes() {
             </div>
           </div>
           <div className="fd-header-actions">
+            {!ficha.observacao && !isEditingObs && (
+              <button className="btn-warning-obs" onClick={() => { setNewObs(''); setIsEditingObs(true); }}>
+                <MessageSquareWarning size={16} /> <span>Criar Alerta</span>
+              </button>
+            )}
             <button className="btn-print-general" onClick={handlePrintFicha}>
               <Printer size={16} /> <span>Imprimir Ficha</span>
             </button>
-            <button className="btn-delete" onClick={() => setShowDeleteConfirm(true)}>
+            <button className="btn-delete" onClick={() => { setShowDeleteConfirm(true); setDeletePassword(''); }}>
               <Trash2 size={16} /> <span>Excluir ficha</span>
             </button>
           </div>
         </header>
 
+        {/* MODAL DE EXCLUSÃO COM SENHA */}
         {showDeleteConfirm && (
           <div className="fd-alert-box">
             <div className="fd-alert-icon"><AlertCircle size={21} /></div>
             <div className="fd-alert-content">
               <strong>Excluir esta ficha?</strong>
-              <p>A conta de <b>{ficha.clienteNome}</b> será apagada permanentemente. Essa ação não poderá ser desfeita.</p>
+              <p>A conta de <b>{ficha.clienteNome}</b> será apagada permanentemente. Para confirmar, digite a senha de autorização abaixo.</p>
+              
+              <input 
+                type="password" 
+                placeholder="Digite a senha de exclusão" 
+                className="fd-password-input"
+                value={deletePassword}
+                onChange={(e) => setDeletePassword(e.target.value)}
+                autoFocus
+              />
             </div>
             <div className="fd-alert-actions">
-              <button className="btn-alert-cancel" onClick={() => setShowDeleteConfirm(false)} disabled={isDeleting}>Cancelar</button>
-              <button className="btn-alert-confirm" onClick={handleExcluirFicha} disabled={isDeleting}>
-                {isDeleting ? <Loader2 size={16} className="spinner" /> : <><Trash2 size={15} /> Excluir</>}
+              <button className="btn-alert-cancel" onClick={() => { setShowDeleteConfirm(false); setDeletePassword(''); }} disabled={isDeleting}>Cancelar</button>
+              <button 
+                className="btn-alert-confirm" 
+                onClick={handleExcluirFicha} 
+                disabled={isDeleting || !deletePassword}
+              >
+                {isDeleting ? <Loader2 size={16} className="spinner" /> : <><Trash2 size={15} /> Confirmar Exclusão</>}
               </button>
             </div>
           </div>
         )}
 
+        {/* ========================================================= */}
+        {/* O RESTANTE DO CÓDIGO PERMANECE INTACTO (KPIs, Listas, etc) */}
+        {/* ========================================================= */}
+
         <section className="fd-kpi-grid">
-          <KpiCard icon={<ShoppingBag size={19} />} color="blue" label="Total comprado" value={formatCurrency(ficha.valorTotal)} />
-          <KpiCard icon={<CircleDollarSign size={19} />} color="green" label="Total pago" value={formatCurrency(ficha.valorPago)} />
+          <KpiCard icon={<ShoppingBag size={19} />} color="blue" label="Total comprado" value={formatCurrency(ficha.valorTotal as number)} />
+          <KpiCard icon={<CircleDollarSign size={19} />} color="green" label="Total pago" value={formatCurrency(ficha.valorPago as number)} />
           <KpiCard icon={<TrendingUp size={19} />} color="red" label="Saldo devedor" value={formatCurrency(saldoDevedor)} />
           <KpiCard icon={<Receipt size={19} />} color="purple" label="Movimentações" value={totalCompras + totalPagamentos} />
         </section>
@@ -269,8 +405,8 @@ export function FichaDetalhes() {
           </div>
           <div className="fd-progress-area">
             <div className="fd-progress-values">
-              <span>Pago <b>{formatCurrency(ficha.valorPago)}</b></span>
-              <span>Total <b>{formatCurrency(ficha.valorTotal)}</b></span>
+              <span>Pago <b>{formatCurrency(ficha.valorPago as number)}</b></span>
+              <span>Total <b>{formatCurrency(ficha.valorTotal as number)}</b></span>
             </div>
             <div className="fd-progress-track"><div className="fd-progress-fill" style={{ width: `${percentualPago}%` }} /></div>
           </div>
@@ -286,7 +422,7 @@ export function FichaDetalhes() {
               {totalCompras ? (
                 <div className="fd-table-responsive"><table className="fd-table">
                   <thead><tr><th>Data</th><th>Valor</th><th className="text-right">Ação</th></tr></thead>
-                  <tbody>{ficha.compras.map((compra, i) => (
+                  <tbody>{ficha.compras?.map((compra, i) => (
                     <tr key={i}>
                       <td><div className="fd-date-cell"><CalendarDays size={14} />{formatDate(compra.data)}</div></td>
                       <td><strong className="fd-table-value">{formatCurrency(compra.valor)}</strong></td>
@@ -309,7 +445,7 @@ export function FichaDetalhes() {
               {totalPagamentos ? (
                 <div className="fd-table-responsive"><table className="fd-table">
                   <thead><tr><th>Data</th><th>Forma</th><th className="text-right">Valor pago</th></tr></thead>
-                  <tbody>{ficha.pagamentos.map((pag, i) => (
+                  <tbody>{ficha.pagamentos?.map((pag, i) => (
                     <tr key={i}>
                       <td><div className="fd-date-cell"><CalendarDays size={14} />{formatDate(pag.data)}</div></td>
                       <td><span className="fd-payment-tag"><PaymentIcon forma={pag.forma} />{pag.forma}</span></td>
@@ -337,8 +473,8 @@ export function FichaDetalhes() {
               </div>
 
               <div className="fd-summary-list">
-                <div className="fd-summary-item"><span>Total da conta</span><strong>{formatCurrency(ficha.valorTotal)}</strong></div>
-                <div className="fd-summary-item"><span>Total já pago</span><strong className="text-green">{formatCurrency(ficha.valorPago)}</strong></div>
+                <div className="fd-summary-item"><span>Total da conta</span><strong>{formatCurrency(ficha.valorTotal as number)}</strong></div>
+                <div className="fd-summary-item"><span>Total já pago</span><strong className="text-green">{formatCurrency(ficha.valorPago as number)}</strong></div>
                 <div className="fd-summary-item final"><span>Restante</span><strong className={isPaga ? 'text-green' : 'text-red'}>{formatCurrency(saldoDevedor)}</strong></div>
               </div>
 
@@ -454,11 +590,11 @@ export function FichaDetalhes() {
           <div className="cupom-footer">
             <div className="info-row">
               <span>Total Comprado:</span>
-              <span>{formatCurrency(ficha.valorTotal)}</span>
+              <span>{formatCurrency(ficha.valorTotal as number)}</span>
             </div>
             <div className="info-row">
               <span>Total Pago:</span>
-              <span>{formatCurrency(ficha.valorPago)}</span>
+              <span>{formatCurrency(ficha.valorPago as number)}</span>
             </div>
             <div className="total-row">
               <span>Saldo Devedor:</span>

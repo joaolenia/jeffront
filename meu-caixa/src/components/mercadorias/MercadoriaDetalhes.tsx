@@ -11,6 +11,8 @@ import {
   Trash2,
   Wallet,
   X,
+  AlertCircle,
+  Loader2
 } from 'lucide-react';
 import api from '../../api';
 import './MercadoriaDetalhes.css';
@@ -43,8 +45,14 @@ const MercadoriaDetalhes: React.FC = () => {
   const [mercadoria, setMercadoria] = useState<Mercadoria | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Estados de Pagamento da Parcela
   const [parcelaSelecionada, setParcelaSelecionada] = useState<Parcela | null>(null);
   const [origemDinheiro, setOrigemDinheiro] = useState<'Caixa' | 'Cofre'>('Caixa');
+
+  // Estados de Exclusão Protegida
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deletePassword, setDeletePassword] = useState('');
 
   const carregarDetalhes = async () => {
     try {
@@ -67,17 +75,24 @@ const MercadoriaDetalhes: React.FC = () => {
   }, [id]);
 
   const handleExcluir = async () => {
-    if (!window.confirm(`Tem certeza que deseja excluir a nota de ${mercadoria?.fornecedorNome}?`)) {
+    if (!mercadoria) return;
+    
+    if (deletePassword !== '591576') {
+      alert('Senha incorreta! Exclusão não autorizada.');
       return;
     }
 
+    setIsDeleting(true);
     try {
       await api.delete(`/mercadorias/${id}`);
       alert('Operação excluída com sucesso.');
       navigate('/mercadorias');
     } catch (error) {
       console.error(error);
-      alert('Erro ao excluir.');
+      alert('Erro ao excluir a operação. Verifique a conexão com o servidor.');
+      setIsDeleting(false);
+      setShowDeleteConfirm(false);
+      setDeletePassword('');
     }
   };
 
@@ -119,8 +134,6 @@ const MercadoriaDetalhes: React.FC = () => {
         (parcela) => parcela.status === 'pago'
       );
 
-      // O valor da parcela paga NÃO deve ser somado no valorPagoCaixa/Cofre base. 
-      // Eles registram apenas a ENTRADA, para não dobrar em relatórios.
       const payload = {
         parcelas: parcelasAtualizadas,
         statusGeral: todasPagas ? 'concluido' : 'pendente',
@@ -154,12 +167,10 @@ const MercadoriaDetalhes: React.FC = () => {
 
     const total = Number(mercadoria.valorNota) || 0;
 
-    // Calcula de forma dinâmica quanto das parcelas já foi pago de fato
     const parcelasValorPago = mercadoria.parcelas?.reduce(
       (acc, parcela) => parcela.status === 'pago' ? acc + Number(parcela.valor) : acc, 0
     ) || 0;
 
-    // O pago total é a Entrada Inicial + Todas as Parcelas Pagas
     const pago = Number(mercadoria.valorPagoCaixa || 0) + Number(mercadoria.valorPagoCofre || 0) + parcelasValorPago;
     const restante = Math.max(total - pago, 0);
 
@@ -207,11 +218,41 @@ const MercadoriaDetalhes: React.FC = () => {
             <p>Registrada em {formatDate(mercadoria.dataOperacao)}</p>
           </div>
         </div>
-        <button className="btn-excluir" onClick={handleExcluir}>
+        <button className="btn-excluir" onClick={() => { setShowDeleteConfirm(true); setDeletePassword(''); }}>
           <Trash2 size={17} />
           Excluir operação
         </button>
       </header>
+
+      {/* PAINEL DE EXCLUSÃO COM SENHA */}
+      {showDeleteConfirm && (
+        <div className="md-alert-box">
+          <div className="md-alert-icon"><AlertCircle size={21} /></div>
+          <div className="md-alert-content">
+            <strong>Excluir esta operação?</strong>
+            <p>A nota de <b>{mercadoria.fornecedorNome}</b> será apagada permanentemente. Para confirmar, digite a senha de autorização abaixo.</p>
+            
+            <input 
+              type="password" 
+              placeholder="Digite a senha de exclusão" 
+              className="md-password-input"
+              value={deletePassword}
+              onChange={(e) => setDeletePassword(e.target.value)}
+              autoFocus
+            />
+          </div>
+          <div className="md-alert-actions">
+            <button className="btn-alert-cancel" onClick={() => { setShowDeleteConfirm(false); setDeletePassword(''); }} disabled={isDeleting}>Cancelar</button>
+            <button 
+              className="btn-alert-confirm" 
+              onClick={handleExcluir} 
+              disabled={isDeleting || !deletePassword}
+            >
+              {isDeleting ? <Loader2 size={16} className="spinner" /> : <><Trash2 size={15} /> Confirmar Exclusão</>}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* STATUS */}
       <section className="status-banner">
@@ -238,7 +279,7 @@ const MercadoriaDetalhes: React.FC = () => {
         </div>
       </section>
 
-      {/* INDICADORES (LIMITADO A 4 COLUNAS MAX) */}
+      {/* INDICADORES */}
       <section className="metric-grid">
         <div className="metric-card">
           <div className="metric-icon blue"><Receipt size={20} /></div>
@@ -399,7 +440,7 @@ const MercadoriaDetalhes: React.FC = () => {
         </div>
       </div>
 
-      {/* MODAL */}
+      {/* MODAL DE BAIXA DE PARCELA */}
       {parcelaSelecionada && (
         <div
           className="modal-overlay"

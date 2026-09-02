@@ -1271,3 +1271,137 @@
     width: 100%;
   }
 }
+
+/* =========================================================
+   PAINEL DE ALERTA DE EXCLUSÃO (MERCADORIAS)
+   ========================================================= */
+.md-alert-box {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 14px 16px;
+  margin-bottom: 24px;
+  border: 1px solid #fecaca;
+  border-left: 4px solid #ef4444;
+  border-radius: 10px;
+  background: #fff8f8;
+  animation: fadeIn 0.3s ease;
+}
+
+.md-alert-icon { 
+  display: flex; 
+  color: #ef4444; 
+}
+
+.md-alert-content { 
+  flex: 1; 
+}
+
+.md-alert-content strong {
+  display: block;
+  margin-bottom: 3px;
+  color: #991b1b;
+  font-size: 0.85rem;
+}
+
+.md-alert-content p {
+  margin: 0;
+  color: #7f1d1d;
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+
+.md-password-input {
+  width: 100%;
+  max-width: 300px;
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 1px solid #fca5a5;
+  background: #fff;
+  border-radius: 6px;
+  text-align: center;
+  letter-spacing: 2px;
+  outline: none;
+  font-size: 0.95rem;
+}
+
+.md-password-input:focus {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px #fef2f2;
+}
+
+.md-alert-actions { 
+  display: flex; 
+  align-items: center; 
+  gap: 7px; 
+}
+
+.btn-alert-cancel, 
+.btn-alert-confirm {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px;
+  border-radius: 7px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-alert-cancel {
+  border: 1px solid #d0d5dd;
+  background: #fff;
+  color: #475467;
+}
+
+.btn-alert-cancel:hover {
+  background: #f8fafc;
+}
+
+.btn-alert-confirm {
+  min-width: 90px;
+  gap: 4px;
+  border: 1px solid #ef4444;
+  background: #ef4444;
+  color: #fff;
+}
+
+.btn-alert-confirm:hover:not(:disabled) {
+  background: #dc2626;
+  border-color: #dc2626;
+}
+
+.btn-alert-confirm:disabled { 
+  opacity: 0.6; 
+  cursor: not-allowed; 
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 800px) {
+  .md-alert-box {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .md-password-input {
+    max-width: 100%;
+  }
+  .md-alert-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}
+
+@media (max-width: 600px) {
+  .md-alert-actions {
+    justify-content: stretch;
+  }
+  .btn-alert-cancel, 
+  .btn-alert-confirm {
+    flex: 1;
+  }
+}

@@ -198,6 +198,8 @@
 .btn-delete:hover { background: #fef2f2; border-color: #fca5a5; }
 
 .fd-alert-box {
+  display: flex;
+  align-items: center;
   gap: 13px;
   padding: 14px 16px;
   margin-bottom: 18px;
@@ -222,8 +224,11 @@
   line-height: 1.45;
 }
 
-.fd-alert-actions { gap: 7px; }
+.fd-alert-actions { display: flex; align-items: center; gap: 7px; }
 .btn-alert-cancel, .btn-alert-confirm {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: 8px 12px;
   border-radius: 7px;
   font-size: .7rem;
@@ -237,10 +242,219 @@
 }
 .btn-alert-confirm {
   min-width: 90px;
+  gap: 4px;
   border: 1px solid var(--fd-red);
   background: var(--fd-red);
   color: #fff;
 }
+.btn-alert-confirm:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* =========================================================
+   NOVOS ESTILOS: EDICAO DE NOME
+   ========================================================= */
+.fd-editable-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.fd-edit-btn {
+  background: transparent;
+  border: none;
+  color: #cbd5e1;
+  cursor: pointer;
+  opacity: 0;
+  transition: all 0.2s;
+  padding: 4px;
+}
+
+.fd-editable-title:hover .fd-edit-btn {
+  opacity: 1;
+  color: var(--fd-primary);
+}
+
+.fd-name-editor {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0;
+}
+
+.fd-name-editor input {
+  font-size: 1.5rem;
+  font-weight: 760;
+  color: var(--fd-text);
+  padding: 4px 8px;
+  border: 1px solid var(--fd-primary);
+  border-radius: 6px;
+  outline: none;
+  width: 300px;
+}
+
+.fd-name-editor button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.fd-name-editor .btn-save { color: var(--fd-green); background: #ecfdf3; }
+.fd-name-editor .btn-save:hover { background: #dcfce7; }
+
+.fd-name-editor .btn-cancel { color: var(--fd-red); background: #fef2f2; }
+.fd-name-editor .btn-cancel:hover { background: #fee2e2; }
+
+
+/* =========================================================
+   NOVOS ESTILOS: ALERTA DE OBSERVAÇÃO
+   ========================================================= */
+.fd-obs-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  position: relative;
+  box-shadow: 0 4px 6px -1px rgba(217, 119, 6, 0.05);
+}
+
+.fd-obs-alert.editing {
+  background: #fff;
+  border-color: var(--fd-border);
+  box-shadow: 0 1px 2px #10182808;
+}
+
+.fd-obs-icon {
+  color: var(--fd-orange);
+  margin-top: 2px;
+}
+
+.fd-obs-content {
+  flex: 1;
+}
+
+.fd-obs-content.full-width {
+  width: 100%;
+}
+
+.fd-obs-content strong {
+  display: block;
+  color: #92400e;
+  font-size: 0.95rem;
+  margin-bottom: 4px;
+}
+
+.fd-obs-content p {
+  margin: 0;
+  color: #b45309;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.fd-obs-edit {
+  background: transparent;
+  border: none;
+  color: var(--fd-orange);
+  opacity: 0.5;
+  cursor: pointer;
+  padding: 4px;
+  transition: opacity 0.2s;
+}
+
+.fd-obs-alert:hover .fd-obs-edit {
+  opacity: 1;
+}
+
+.fd-obs-textarea {
+  width: 100%;
+  min-height: 60px;
+  padding: 10px;
+  border: 1px solid var(--fd-border);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  resize: vertical;
+  margin-top: 8px;
+  outline: none;
+}
+
+.fd-obs-textarea:focus {
+  border-color: var(--fd-primary);
+  box-shadow: 0 0 0 3px #eff6ff;
+}
+
+.fd-obs-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.fd-obs-actions button {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.fd-obs-actions .btn-cancel { background: #f2f4f7; color: #475467; }
+.fd-obs-actions .btn-save { background: var(--fd-primary); color: white; }
+
+.btn-warning-obs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #fffbeb;
+  color: var(--fd-orange);
+  border: 1px solid #fde68a;
+  padding: 9px 13px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: .74rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-warning-obs:hover {
+  background: #fef3c7;
+}
+
+/* =========================================================
+   NOVOS ESTILOS: SENHA NO MODAL DE DELETAR
+   ========================================================= */
+.fd-password-input {
+  width: 100%;
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 1px solid #fca5a5;
+  background: #fff;
+  border-radius: 6px;
+  text-align: center;
+  letter-spacing: 2px;
+  outline: none;
+}
+
+.fd-password-input:focus {
+  border-color: var(--fd-red);
+  box-shadow: 0 0 0 3px #fef2f2;
+}
+
+/* =========================================
+   ESTILOS EXISTENTES
+   ========================================= */
 
 .fd-kpi-grid {
   display: grid;
@@ -250,6 +464,8 @@
 }
 
 .fd-kpi-card {
+  display: flex;
+  align-items: center;
   gap: 12px;
   min-height: 84px;
   padding: 15px;
@@ -281,6 +497,8 @@
 }
 
 .fd-progress-card {
+  display: flex;
+  align-items: center;
   justify-content: space-between;
   gap: 30px;
   padding: 16px 19px;
@@ -290,7 +508,7 @@
   background: #fff;
 }
 
-.fd-progress-info { gap: 11px; min-width: 250px; }
+.fd-progress-info { display: flex; align-items: center; gap: 11px; min-width: 250px; }
 .fd-progress-icon {
   width: 37px;
   height: 37px;
@@ -413,17 +631,8 @@
 .fd-table tbody tr:hover { background: #fafbfc; }
 .fd-table tbody tr:last-child td { border: 0; }
 
-.fd-date-cell { gap: 7px; color: #667085; }
+.fd-date-cell { display: flex; align-items: center; gap: 7px; color: #667085; }
 .fd-date-cell svg { color: var(--fd-muted); }
-
-.fd-item-cell { gap: 9px; max-width: 360px; }
-.fd-item-icon {
-  width: 27px;
-  height: 27px;
-  border-radius: 6px;
-  background: #f2f4f7;
-  color: #667085;
-}
 
 .fd-table-value {
   color: #344054;
@@ -488,7 +697,7 @@
 .fd-empty-list span { color: var(--fd-muted); font-size: .67rem; }
 
 .fd-payment-card { padding: 20px; border-top: 3px solid var(--fd-primary); }
-.fd-payment-header { gap: 10px; margin-bottom: 18px; }
+.fd-payment-header { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
 .fd-payment-icon {
   width: 37px;
   height: 37px;
@@ -540,12 +749,14 @@
   margin-bottom: 18px;
   border-bottom: 1px dashed #d0d5dd;
 }
-.fd-summary-item { justify-content: space-between; color: #667085; font-size: .73rem; }
+.fd-summary-item { display: flex; align-items: center; justify-content: space-between; color: #667085; font-size: .73rem; }
 .fd-summary-item strong { color: #344054; font-size: .78rem; font-weight: 750; }
 .fd-summary-item.final { padding-top: 7px; color: #344054; font-weight: 700; }
 .fd-summary-item.final strong { font-size: .88rem; }
 
 .fd-section-title {
+  display: flex;
+  align-items: center;
   justify-content: space-between;
   margin-bottom: 13px;
   color: #2563eb;
@@ -591,7 +802,7 @@
   font-weight: 700;
 }
 
-.fd-input-prefix { position: relative; }
+.fd-input-prefix { display: flex; align-items: center; position: relative; }
 .fd-input-prefix span {
   position: absolute;
   left: 13px;
@@ -627,7 +838,9 @@
   gap: 7px;
 }
 .fd-payment-option {
+  display: flex;
   flex-direction: column;
+  align-items: center;
   justify-content: center;
   gap: 5px;
   min-height: 58px;
@@ -668,6 +881,9 @@
 
 .fd-paid-state { padding: 22px 5px 6px; text-align: center; }
 .fd-paid-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 67px;
   height: 67px;
   margin: 0 auto 13px;
@@ -701,6 +917,9 @@
   color: #667085;
 }
 .fd-loading-icon, .fd-error-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 58px;
   height: 58px;
   margin-bottom: 12px;
@@ -742,25 +961,68 @@
   .cupom-container, .cupom-container * { visibility: visible; }
   
   .cupom-container {
-    display: block; position: absolute; left: 0; top: 0;
-    width: 80mm; padding: 0; margin: 0;
-    font-family: monospace; font-size: 12px; color: black;
+    display: block; 
+    position: absolute; 
+    left: 0; 
+    top: 0;
+    width: 80mm; /* Largura da bobina */
+    padding: 0 3mm; /* Respiro para não cortar texto na borda */
+    margin: 0;
+    font-family: 'Courier New', Courier, monospace; /* Fonte mais legível para térmica */
+    font-size: 15px; /* Fonte base ampliada */
+    color: black;
+    box-sizing: border-box;
   }
   
-  .cupom-header { text-align: center; }
-  .cupom-header h2 { font-size: 16px; margin: 4px 0; }
-  .cupom-header p { margin: 2px 0; font-size: 11px; }
-  .dashed-line { border: none; border-top: 1px dashed black; margin: 8px 0; }
+  .cupom-header { text-align: center; margin-bottom: 12px; }
+  .cupom-header h2 { font-size: 22px; margin: 4px 0; font-weight: bold; }
+  .cupom-header p { margin: 4px 0; font-size: 15px; }
   
-  .cupom-table { width: 100%; text-align: left; }
-  .cupom-table th, .cupom-table td { padding: 4px 0; }
+  .dashed-line { 
+    border: none; 
+    border-top: 1.5px dashed black; /* Linha pontilhada mais nítida */
+    margin: 12px 0; 
+  }
   
-  .cupom-footer { margin-top: 16px; }
-  .total-row, .info-row { display: flex; justify-content: space-between; margin: 4px 0; }
-  .total-row { font-weight: bold; font-size: 14px; margin: 8px 0; }
-  .cupom-footer p { text-align: center; }
+  .cupom-table { 
+    width: 100%; 
+    text-align: left; 
+    border-collapse: collapse;
+  }
+  .cupom-table th { 
+    padding: 6px 0; 
+    border-bottom: 1px solid black; /* Divisória clara no cabeçalho */
+    font-size: 15px;
+  }
+  .cupom-table td { 
+    padding: 6px 0; 
+    font-size: 15px;
+  }
+  
+  .cupom-footer { margin-top: 20px; }
+  
+  .info-row { 
+    display: flex; 
+    justify-content: space-between; 
+    margin: 6px 0; 
+    font-size: 15px;
+  }
+  
+  .total-row { 
+    display: flex; 
+    justify-content: space-between; 
+    margin: 12px 0; 
+    font-weight: bold; 
+    font-size: 18px; /* Valor total em destaque */
+    text-transform: uppercase;
+  }
+  
+  .cupom-footer p { 
+    text-align: center; 
+    margin-top: 24px; 
+    font-size: 13px; /* Data e hora sutilmente menores */
+  }
 }
-
 @media(max-width: 1100px) {
   .fd-kpi-grid { grid-template-columns: repeat(2, 1fr); }
   .fd-grid { grid-template-columns: 1fr; }
@@ -772,7 +1034,7 @@
   .btn-delete { align-self: flex-start; }
   .fd-progress-card { align-items: stretch; flex-direction: column; gap: 15px; }
   .fd-progress-area { width: 100%; }
-  .fd-alert-box { align-items: flex-start; flex-wrap: wrap; }
+  .fd-alert-box { align-items: flex-start; flex-direction: column; }
   .fd-alert-actions { width: 100%; justify-content: flex-end; }
 }
 @media(max-width: 600px) {

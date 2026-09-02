@@ -1,7 +1,17 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../../api';
 import './RelatoriosCrediario.css';
-import {  Calendar, BookOpen, AlertCircle, Users, Wallet, CreditCard } from 'lucide-react';
+import { 
+  BookOpen, 
+  AlertCircle, 
+  Users, 
+  Wallet, 
+  CreditCard,
+  Clock,
+  ChevronRight,
+  UserCircle
+} from 'lucide-react';
 
 // ================= TIPAGENS =================
 interface Pagamento {
@@ -34,54 +44,39 @@ const formatarMoeda = (valor: number) => {
   return (valor || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 };
 
-const getLocalISODate = (date: Date) => {
-  const offset = date.getTimezoneOffset() * 60000;
-  return new Date(date.getTime() - offset).toISOString().split('T')[0];
-};
-
-const calcularDataAnterior = (dias: number) => {
-  const data = new Date();
-  data.setDate(data.getDate() - dias);
-  return getLocalISODate(data);
-};
-
-// ==============================================================
-// EXTRAÇÃO DE DATA BLINDADA PARA FUSO HORÁRIO
-// ==============================================================
-const extrairDataString = (isoString: string | undefined | null) => {
-  if (!isoString) return '';
-
-  let texto = String(isoString).trim();
-  if (!texto) return '';
-
-  // Remove microsegundos se houver
-  if (texto.includes('.')) {
-    texto = texto.split('.')[0];
-  }
-
-  // Se contiver hora (espaço ou 'T'), ajusta o fuso para a data local correta
+// Conversão blindada de datas do banco (com e sem microsegundos/fuso)
+const parseDataSegura = (valor?: string | Date | null): Date => {
+  if (!valor) return new Date(0);
+  if (valor instanceof Date) return valor;
+  
+  let texto = String(valor).trim();
+  if (texto.includes('.')) texto = texto.split('.')[0];
+  
   if (texto.includes('T') || texto.includes(' ')) {
-    let isoStringFormatada = texto.replace(' ', 'T');
-    if (!isoStringFormatada.endsWith('Z') && !isoStringFormatada.includes('+') && !isoStringFormatada.includes('-', 10)) {
-      isoStringFormatada += 'Z'; 
+    let isoString = texto.replace(' ', 'T');
+    if (!isoString.endsWith('Z') && !isoString.includes('+') && !isoString.includes('-', 10)) {
+      isoString += 'Z'; 
     }
-    const d = new Date(isoStringFormatada);
-    if (!isNaN(d.getTime())) {
-      return getLocalISODate(d);
-    }
+    return new Date(isoString);
   }
-
-  return texto.split('T')[0].split(' ')[0];
+  
+  return new Date(texto + 'T12:00:00Z');
 };
-// ==============================================================
+
+const formatarDataExibicao = (valor?: string | Date | null) => {
+  const d = parseDataSegura(valor);
+  if (isNaN(d.getTime()) || d.getTime() === 0) return 'Data indisponível';
+  
+  return new Intl.DateTimeFormat('pt-BR', {
+    day: '2-digit', month: '2-digit', year: 'numeric',
+    hour: '2-digit', minute: '2-digit'
+  }).format(d);
+};
 
 export default function RelatoriosCrediario() {
-  const [periodo, setPeriodo] = useState<string>('todos');
-  const [dataInicial, setDataInicial] = useState<string>('');
-  const [dataFinal, setDataFinal] = useState<string>('');
-
+  const navigate = useNavigate();
   const [fichas, setFichas] = useState<Ficha[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
   // ================= EFEITO DE BUSCA =================
@@ -101,53 +96,21 @@ export default function RelatoriosCrediario() {
 
   useEffect(() => {
     buscarDados();
-    // Inicializa carregando tudo
-    setPeriodo('todos');
   }, []);
-
-  // ================= CONTROLE DE PERÍODO =================
-  const handlePeriodoChange = (novoPeriodo: string) => {
-    setPeriodo(novoPeriodo);
-    
-    if (novoPeriodo === 'todos') {
-      setDataInicial('');
-      setDataFinal('');
-      return;
-    }
-
-    const hojeAtual = getLocalISODate(new Date());
-    setDataFinal(hojeAtual);
-
-    switch (novoPeriodo) {
-      case 'hoje': setDataInicial(hojeAtual); break;
-      case '7': setDataInicial(calcularDataAnterior(7)); break;
-      case '15': setDataInicial(calcularDataAnterior(15)); break;
-      case '30': setDataInicial(calcularDataAnterior(30)); break;
-      case '45': setDataInicial(calcularDataAnterior(45)); break;
-      case '60': setDataInicial(calcularDataAnterior(60)); break;
-      case 'custom': break; 
-    }
-  };
 
   // ================= PROCESSAMENTO DE DADOS =================
   const relatorio = useMemo(() => {
     let totalCompras = 0;
     let totalPago = 0;
-    let clientesContabilizados = 0;
 
-    fichas.forEach(ficha => {
-      const dataCriacaoStr = extrairDataString(ficha.dataCriacao);
-      
-      // Avalia o filtro baseado exclusivamente na DATA DE CRIAÇÃO da ficha
-      if (periodo !== 'todos' && dataInicial && dataFinal) {
-        if (dataCriacaoStr < dataInicial || dataCriacaoStr > dataFinal) {
-          return; // Ignora se foi criada fora do período
-        }
-      }
+    // Ordenar fichas da mais nova (atualizada recentemente) para a mais antiga
+    const fichasOrdenadas = [...fichas].sort((a, b) => {
+      const dataA = parseDataSegura(a.dataAtualizacao || a.dataCriacao).getTime();
+      const dataB = parseDataSegura(b.dataAtualizacao || b.dataCriacao).getTime();
+      return dataB - dataA;
+    });
 
-      clientesContabilizados++;
-      
-      // Como o banco já traz o compilado nas chaves primárias, basta somá-las
+    fichasOrdenadas.forEach(ficha => {
       totalCompras += Number(ficha.valorTotal) || 0;
       totalPago += Number(ficha.valorPago) || 0;
     });
@@ -158,9 +121,10 @@ export default function RelatoriosCrediario() {
       totalCompras,
       totalPago,
       totalAberto,
-      clientesContabilizados
+      clientesContabilizados: fichasOrdenadas.length,
+      fichasOrdenadas
     };
-  }, [fichas, dataInicial, dataFinal, periodo]);
+  }, [fichas]);
 
   // ================= RENDERIZAÇÃO =================
   return (
@@ -169,43 +133,8 @@ export default function RelatoriosCrediario() {
       <div className="relatorio-header">
         <div>
           <h2>Relatório de Crediário</h2>
-          <p>Analise o volume de compras geradas e os pagamentos realizados no período.</p>
+          <p>Visão geral de todas as fichas, compras e pagamentos do sistema.</p>
         </div>
-      </div>
-
-      {/* FILTROS */}
-      <div className="filter-section card">
-        <div className="periodo-rapido">
-          <span className="filter-label"><Calendar size={18}/> Fichas criadas:</span>
-          {['todos', 'hoje', '7', '15', '30', '45', '60'].map(p => (
-            <button 
-              key={p} 
-              className={`btn-periodo ${periodo === p ? 'active' : ''}`}
-              onClick={() => handlePeriodoChange(p)}
-            >
-              {p === 'todos' ? 'Todo Período' : p === 'hoje' ? 'Hoje' : `${p} dias`}
-            </button>
-          ))}
-          <button 
-            className={`btn-periodo ${periodo === 'custom' ? 'active' : ''}`}
-            onClick={() => handlePeriodoChange('custom')}
-          >
-            Personalizado
-          </button>
-        </div>
-
-        {periodo === 'custom' && (
-          <div className="periodo-custom">
-            <div>
-              <label>Data Inicial</label>
-              <input type="date" value={dataInicial} onChange={(e) => setDataInicial(e.target.value)} />
-            </div>
-            <div>
-              <label>Data Final</label>
-              <input type="date" value={dataFinal} onChange={(e) => setDataFinal(e.target.value)} />
-            </div>
-          </div>
-        )}
       </div>
 
       {/* ESTADOS */}
@@ -218,11 +147,12 @@ export default function RelatoriosCrediario() {
           <div className="summary-banner card highlight-crediario">
             <div className="banner-icon"><BookOpen size={40} /></div>
             <div className="banner-content">
-              <h3 className="banner-title">COMPRAS NO CREDIÁRIO</h3>
+              <h3 className="banner-title">COMPRAS TOTAIS NO CREDIÁRIO</h3>
               <p className="total-value">{formatarMoeda(relatorio.totalCompras)}</p>
             </div>
           </div>
 
+          {/* MÉTRICAS */}
           <div className="metrics-grid">
             <div className="metric-card card">
               <div className="metric-header">
@@ -248,8 +178,64 @@ export default function RelatoriosCrediario() {
                 <div className="metric-icon blue"><Users size={20} /></div>
               </div>
               <strong className="metric-value blue-text">{relatorio.clientesContabilizados}</strong>
-              <span className="metric-subtitle">Fichas criadas no período</span>
+              <span className="metric-subtitle">Total de fichas no sistema</span>
             </div>
+          </div>
+
+          {/* GRID DE FICHAS */}
+          <div className="fichas-list-header">
+            <h3>Fichas Recentes</h3>
+            <span className="badge-count">{relatorio.clientesContabilizados} Fichas</span>
+          </div>
+
+          <div className="fichas-cards-grid">
+            {relatorio.fichasOrdenadas.map(ficha => {
+              const valorAbertoFicha = Math.max((Number(ficha.valorTotal) || 0) - (Number(ficha.valorPago) || 0), 0);
+              const quitada = valorAbertoFicha <= 0 && Number(ficha.valorTotal) > 0;
+
+              return (
+                <div 
+                  key={ficha.id} 
+                  className={`rc-ficha-card ${quitada ? 'quitada' : ''}`}
+                  onClick={() => navigate(`/fichas/${ficha.id}`)}
+                >
+                  <div className="rc-ficha-header">
+                    <span className="rc-ficha-id">#{ficha.id}</span>
+                    <div className="rc-ficha-date">
+                      <Clock size={12} />
+                      <span>{formatarDataExibicao(ficha.dataAtualizacao || ficha.dataCriacao)}</span>
+                    </div>
+                  </div>
+
+                  <div className="rc-ficha-body">
+                    <div className="rc-cliente-nome">
+                      <UserCircle size={18} className="text-slate" />
+                      <strong>{ficha.clienteNome}</strong>
+                    </div>
+                    
+                    <div className="rc-ficha-valores">
+                      <div className="rc-valor-item">
+                        <span className="label">Total Comprado</span>
+                        <span className="val total">{formatarMoeda(Number(ficha.valorTotal))}</span>
+                      </div>
+                      <div className="rc-valor-item">
+                        <span className="label">Total Pago</span>
+                        <span className="val pago">{formatarMoeda(Number(ficha.valorPago))}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="rc-ficha-footer">
+                    <div className={`rc-status-badge ${quitada ? 'success' : 'warning'}`}>
+                      {quitada ? 'Ficha Quitada' : `Aberto: ${formatarMoeda(valorAbertoFicha)}`}
+                    </div>
+                    <button className="rc-btn-acessar">
+                      Ver detalhes <ChevronRight size={14} />
+                    </button>
+                  </div>
+                </div>
+              )
+            })}
           </div>
         </>
       )}

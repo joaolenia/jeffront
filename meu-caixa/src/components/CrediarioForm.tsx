@@ -6,6 +6,7 @@ import './CrediarioForm.css';
 export interface Ficha {
   id: number;
   clienteNome: string;
+  observacao?: string; // Adicionado campo de observação
   compras: any[];
   pagamentos: any[];
   valorTotal: number;
@@ -19,7 +20,6 @@ interface CrediarioFormProps {
   onClose: () => void;
 }
 
-// Adicionada a etapa 'CREATE'
 type Step = 'SEARCH' | 'CREATE' | 'CONFIRM';
 
 export function CrediarioForm({ totalVenda, onConfirm, onClose }: CrediarioFormProps) {
@@ -30,6 +30,7 @@ export function CrediarioForm({ totalVenda, onConfirm, onClose }: CrediarioFormP
   
   // Estados para o novo cadastro
   const [novoNome, setNovoNome] = useState('');
+  const [novaObservacao, setNovaObservacao] = useState(''); // Novo estado
 
   const [loading, setLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -64,8 +65,8 @@ export function CrediarioForm({ totalVenda, onConfirm, onClose }: CrediarioFormP
   };
 
   const openCreateForm = () => {
-    // Pré-preenche o nome com o que o usuário já havia digitado na busca
     setNovoNome(searchQuery);
+    setNovaObservacao('');
     setError(null);
     setStep('CREATE');
   };
@@ -82,6 +83,7 @@ export function CrediarioForm({ totalVenda, onConfirm, onClose }: CrediarioFormP
     try {
       const novaFicha = {
         clienteNome: novoNome.trim(),
+        observacao: novaObservacao.trim(), // Enviando observação para o backend
         compras: [],
         pagamentos: [],
         valorTotal: 0,
@@ -177,6 +179,15 @@ export function CrediarioForm({ totalVenda, onConfirm, onClose }: CrediarioFormP
                       <div className="ficha-info">
                         <h4>{ficha.clienteNome}</h4>
                         <p>ID da Ficha: #{ficha.id}</p>
+                        
+                        {/* ALERTA DE OBSERVAÇÃO */}
+                        {ficha.observacao && (
+                          <div className="ficha-observacao-alert">
+                            <AlertCircle size={16} className="obs-icon" />
+                            <span>{ficha.observacao}</span>
+                          </div>
+                        )}
+
                       </div>
                       <div className="ficha-saldo">
                         <span>Saldo Devedor</span>
@@ -215,6 +226,17 @@ export function CrediarioForm({ totalVenda, onConfirm, onClose }: CrediarioFormP
                   />
                 </div>
 
+                <div className="form-group">
+                  <label htmlFor="input-observacao">Observação (Opcional)</label>
+                  <input 
+                    id="input-observacao"
+                    type="text" 
+                    value={novaObservacao}
+                    onChange={(e) => setNovaObservacao(e.target.value)}
+                    placeholder="Ex: Endereço, telefone, apelido..."
+                    disabled={loading}
+                  />
+                </div>
 
                 <div className="modal-actions" style={{ marginTop: '12px' }}>
                   <button 

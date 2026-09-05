@@ -92,7 +92,56 @@
 }
 .btn-icon-danger:hover { background: #fca5a5; color: white; }
 
-/* Resumo e Pagamento */
+/* Subtotal e Desconto */
+.summary-card h2 { margin: 0 0 8px 0; color: #1e293b; font-size: 1.2rem; }
+
+.subtotal-display {
+  display: flex;
+  justify-content: space-between;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #64748b;
+  margin-bottom: 10px;
+  padding: 0 4px;
+}
+
+.discount-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #fef2f2;
+  padding: 10px 14px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  border: 1px dashed #fca5a5;
+}
+
+.discount-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #ef4444;
+}
+
+.discount-section input {
+  width: 100px;
+  height: 38px;
+  text-align: right;
+  border: 1px solid #fca5a5;
+  border-radius: 6px;
+  padding: 0 12px;
+  font-weight: 700;
+  font-size: 1rem;
+  color: #ef4444;
+  outline: none;
+}
+
+.discount-section input:focus {
+  box-shadow: 0 0 0 3px #fee2e2;
+}
+
 .total-display {
   background: #0f172a; color: #38bdf8; font-size: 3rem; font-weight: 700;
   text-align: right; padding: 24px; border-radius: 8px; margin-bottom: 20px;
@@ -113,11 +162,7 @@
 .change-display { margin-top: 12px; font-size: 1.2rem; font-weight: 600; color: #0f172a; }
 .change-display span { color: #16a34a; font-size: 1.4rem; }
 
-.shortcuts-info { margin-top: auto; margin-bottom: 16px; padding: 12px; background: #f8fafc; border-radius: 8px; }
-.shortcuts-info p { margin: 6px 0; color: #475569; display: flex; align-items: center; gap: 12px; }
-.shortcuts-info span { background: #e2e8f0; padding: 4px 8px; border-radius: 4px; font-weight: bold; color: #0f172a; }
-
-.action-buttons { display: flex; flex-direction: column; gap: 12px; }
+.action-buttons { display: flex; flex-direction: column; gap: 12px; margin-top: auto; }
 .btn-action {
   display: flex; align-items: center; justify-content: center; gap: 12px;
   padding: 16px; border: none; border-radius: 8px; font-size: 1.1rem;
@@ -129,23 +174,22 @@
 .btn-primary { background-color: #3b82f6; }
 .btn-primary:hover:not(:disabled) { background-color: #2563eb; }
 
-/* Botão de Sangria (Nova Funcionalidade) */
+/* Botão de Sangria */
 .btn-sangria {
   background-color: #fef2f2;
   color: #ef4444;
   border: 1px solid #fecaca;
-  margin-top: 8px;
   padding: 14px;
 }
 .btn-sangria:hover:not(:disabled) { background-color: #fee2e2; }
 .btn-sangria:disabled { opacity: 0.5; cursor: not-allowed; background-color: #f1f5f9; color: #94a3b8; border-color: #e2e8f0;}
 
-/* Modal da Sangria (Reutilizando a identidade visual do Crediario/Cofre) */
+/* Modal da Sangria */
 .pdv-modal-overlay {
   position: fixed; top: 0; left: 0; right: 0; bottom: 0;
   background: rgba(15, 23, 42, 0.6);
   display: flex; align-items: center; justify-content: center;
-  z-index: 1000; padding: 20px;
+  z-index: 10000; padding: 20px;
 }
 
 .pdv-modal {

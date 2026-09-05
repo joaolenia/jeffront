@@ -1,3 +1,4 @@
+import React from 'react';
 
 interface Item {
   id: number;
@@ -8,18 +9,24 @@ interface Item {
 
 interface CupomFiscalProps {
   itens: Item[];
+  subtotal: number;
+  desconto: number;
   total: number;
   formaPagamento: string;
   valorRecebido: number;
   troco: number;
+  dataVenda?: string; // Nova propriedade opcional para receber a data original
 }
 
 export function CupomFiscal({
   itens,
+  subtotal,
+  desconto,
   total,
   formaPagamento,
   valorRecebido,
   troco,
+  dataVenda,
 }: CupomFiscalProps) {
   const formatCurrency = (value: number) =>
     new Intl.NumberFormat('pt-BR', {
@@ -27,7 +34,14 @@ export function CupomFiscal({
       currency: 'BRL',
     }).format(value);
 
-  const dataAtual = new Date().toLocaleString('pt-BR');
+  // Se recebeu dataVenda, formata ela. Se não, usa a data atual.
+  let dataExibicao = new Date().toLocaleString('pt-BR');
+  if (dataVenda) {
+    const d = new Date(dataVenda);
+    if (!isNaN(d.getTime())) {
+      dataExibicao = d.toLocaleString('pt-BR');
+    }
+  }
 
   const linha = {
     border: '0',
@@ -65,42 +79,10 @@ export function CupomFiscal({
           MERCADO BOM JESUS
         </h2>
 
-        <p
-          style={{
-            margin: '2px 0',
-            fontSize: '13px',
-          }}
-        >
-          Av. Ver. Venceslau Gaias, SN
-        </p>
-
-        <p
-          style={{
-            margin: '2px 0',
-            fontSize: '13px',
-          }}
-        >
-          Santana, Cruz Machado - PR
-        </p>
-
-        <p
-          style={{
-            margin: '2px 0',
-            fontSize: '13px',
-          }}
-        >
-          CEP: 84623-000
-        </p>
-
-        <p
-          style={{
-            margin: '2px 0',
-            fontSize: '13px',
-            fontWeight: 700,
-          }}
-        >
-          CNPJ: 68.193.177/0001-95
-        </p>
+        <p style={{ margin: '2px 0', fontSize: '13px' }}>Av. Ver. Venceslau Gaias, SN</p>
+        <p style={{ margin: '2px 0', fontSize: '13px' }}>Santana, Cruz Machado - PR</p>
+        <p style={{ margin: '2px 0', fontSize: '13px' }}>CEP: 84623-000</p>
+        <p style={{ margin: '2px 0', fontSize: '13px', fontWeight: 700 }}>CNPJ: 68.193.177/0001-95</p>
 
         <p
           className="cupom-data"
@@ -110,21 +92,11 @@ export function CupomFiscal({
             fontWeight: 700,
           }}
         >
-          {dataAtual}
+          {dataExibicao}
         </p>
 
         <hr style={linha} />
-
-        <h3
-          style={{
-            margin: '5px 0',
-            fontSize: '17px',
-            fontWeight: 900,
-          }}
-        >
-          CUPOM NÃO FISCAL
-        </h3>
-
+        <h3 style={{ margin: '5px 0', fontSize: '17px', fontWeight: 900 }}>CUPOM NÃO FISCAL</h3>
         <hr style={linha} />
       </div>
 
@@ -140,114 +112,25 @@ export function CupomFiscal({
       >
         <thead>
           <tr>
-            <th
-              className="col-qtd"
-              style={{
-                width: '13%',
-                padding: '3px 0',
-                textAlign: 'center',
-                fontSize: '12px',
-                fontWeight: 900,
-              }}
-            >
-              QTD
-            </th>
-
-            <th
-              className="col-desc"
-              style={{
-                width: '39%',
-                padding: '3px 2px',
-                textAlign: 'left',
-                fontSize: '12px',
-                fontWeight: 900,
-              }}
-            >
-              DESCRIÇÃO
-            </th>
-
-            <th
-              className="col-unit"
-              style={{
-                width: '23%',
-                padding: '3px 0',
-                textAlign: 'right',
-                fontSize: '12px',
-                fontWeight: 900,
-              }}
-            >
-              V.UN
-            </th>
-
-            <th
-              className="col-total"
-              style={{
-                width: '25%',
-                padding: '3px 0',
-                textAlign: 'right',
-                fontSize: '12px',
-                fontWeight: 900,
-              }}
-            >
-              TOTAL
-            </th>
+            <th className="col-qtd" style={{ width: '13%', padding: '3px 0', textAlign: 'center', fontSize: '12px', fontWeight: 900 }}>QTD</th>
+            <th className="col-desc" style={{ width: '39%', padding: '3px 2px', textAlign: 'left', fontSize: '12px', fontWeight: 900 }}>DESCRIÇÃO</th>
+            <th className="col-unit" style={{ width: '23%', padding: '3px 0', textAlign: 'right', fontSize: '12px', fontWeight: 900 }}>V.UN</th>
+            <th className="col-total" style={{ width: '25%', padding: '3px 0', textAlign: 'right', fontSize: '12px', fontWeight: 900 }}>TOTAL</th>
           </tr>
         </thead>
-
         <tbody>
           {itens.map((item) => (
             <tr key={item.id}>
-              <td
-                className="col-qtd"
-                style={{
-                  padding: '4px 0',
-                  textAlign: 'center',
-                  fontSize: '14px',
-                  fontWeight: 700,
-                  verticalAlign: 'top',
-                }}
-              >
+              <td className="col-qtd" style={{ padding: '4px 0', textAlign: 'center', fontSize: '14px', fontWeight: 700, verticalAlign: 'top' }}>
                 {item.qtd}
               </td>
-
-              <td
-                className="col-desc"
-                style={{
-                  padding: '4px 2px',
-                  textAlign: 'left',
-                  fontSize: '14px',
-                  fontWeight: 600,
-                  verticalAlign: 'top',
-                  overflowWrap: 'break-word',
-                }}
-              >
+              <td className="col-desc" style={{ padding: '4px 2px', textAlign: 'left', fontSize: '14px', fontWeight: 600, verticalAlign: 'top', overflowWrap: 'break-word' }}>
                 {item.nome}
               </td>
-
-              <td
-                className="col-unit"
-                style={{
-                  padding: '4px 0',
-                  textAlign: 'right',
-                  fontSize: '13px',
-                  verticalAlign: 'top',
-                  whiteSpace: 'nowrap',
-                }}
-              >
+              <td className="col-unit" style={{ padding: '4px 0', textAlign: 'right', fontSize: '13px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>
                 {formatCurrency(item.preco)}
               </td>
-
-              <td
-                className="col-total"
-                style={{
-                  padding: '4px 0',
-                  textAlign: 'right',
-                  fontSize: '13px',
-                  fontWeight: 800,
-                  verticalAlign: 'top',
-                  whiteSpace: 'nowrap',
-                }}
-              >
+              <td className="col-total" style={{ padding: '4px 0', textAlign: 'right', fontSize: '13px', fontWeight: 800, verticalAlign: 'top', whiteSpace: 'nowrap' }}>
                 {formatCurrency(item.qtd * item.preco)}
               </td>
             </tr>
@@ -256,15 +139,24 @@ export function CupomFiscal({
       </table>
 
       {/* RODAPÉ */}
-      <div
-        className="cupom-footer"
-        style={{
-          marginTop: '2px',
-        }}
-      >
+      <div className="cupom-footer" style={{ marginTop: '2px' }}>
         <hr style={linha} />
 
-        {/* TOTAL */}
+        {/* SUBTOTAL E DESCONTO (Exibido apenas se houver desconto) */}
+        {desconto > 0 && (
+          <div style={{ paddingBottom: '4px', borderBottom: '1px dashed #000', marginBottom: '8px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', margin: '2px 0' }}>
+              <span>Subtotal:</span>
+              <span>{formatCurrency(subtotal)}</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', fontWeight: 'bold', margin: '2px 0' }}>
+              <span>Desconto:</span>
+              <span>- {formatCurrency(desconto)}</span>
+            </div>
+          </div>
+        )}
+
+        {/* TOTAL GERAL */}
         <div
           className="total-row"
           style={{
@@ -275,117 +167,30 @@ export function CupomFiscal({
             padding: '3px 0 5px',
           }}
         >
-          <span
-            style={{
-              fontSize: '19px',
-              fontWeight: 900,
-            }}
-          >
-            TOTAL
-          </span>
-
-          <span
-            style={{
-              fontSize: '20px',
-              fontWeight: 900,
-              whiteSpace: 'nowrap',
-            }}
-          >
+          <span style={{ fontSize: '19px', fontWeight: 900 }}>TOTAL</span>
+          <span style={{ fontSize: '20px', fontWeight: 900, whiteSpace: 'nowrap' }}>
             {formatCurrency(total)}
           </span>
         </div>
 
-        {/* PAGAMENTO */}
-        <div
-          className="payment-info"
-          style={{
-            width: '100%',
-            marginTop: '5px',
-            fontSize: '14px',
-          }}
-        >
-          {/* PAGAMENTO */}
-          <div
-            style={{
-              display: 'block',
-              width: '100%',
-              padding: '3px 0',
-            }}
-          >
-            <div
-              style={{
-                fontWeight: 700,
-                marginBottom: '1px',
-              }}
-            >
-              Pagamento:
-            </div>
-
-            <div
-              style={{
-                fontWeight: 900,
-                width: '100%',
-              }}
-            >
-              {formaPagamento}
-            </div>
+        {/* INFORMAÇÕES DE PAGAMENTO */}
+        <div className="payment-info" style={{ width: '100%', marginTop: '5px', fontSize: '14px' }}>
+          
+          <div style={{ display: 'block', width: '100%', padding: '3px 0' }}>
+            <div style={{ fontWeight: 700, marginBottom: '1px' }}>Pagamento:</div>
+            <div style={{ fontWeight: 900, width: '100%' }}>{formaPagamento}</div>
           </div>
 
-          {/* RECEBIDO */}
           {formaPagamento === 'Dinheiro' && (
             <>
-              <div
-                style={{
-                  display: 'block',
-                  width: '100%',
-                  padding: '3px 0',
-                }}
-              >
-                <div
-                  style={{
-                    fontWeight: 700,
-                    marginBottom: '1px',
-                  }}
-                >
-                  Recebido:
-                </div>
-
-                <div
-                  style={{
-                    fontWeight: 800,
-                    width: '100%',
-                  }}
-                >
-                  {formatCurrency(valorRecebido)}
-                </div>
+              <div style={{ display: 'block', width: '100%', padding: '3px 0' }}>
+                <div style={{ fontWeight: 700, marginBottom: '1px' }}>Recebido:</div>
+                <div style={{ fontWeight: 800, width: '100%' }}>{formatCurrency(valorRecebido)}</div>
               </div>
 
-              {/* TROCO */}
-              <div
-                style={{
-                  display: 'block',
-                  width: '100%',
-                  padding: '3px 0',
-                }}
-              >
-                <div
-                  style={{
-                    fontWeight: 700,
-                    marginBottom: '1px',
-                  }}
-                >
-                  Troco:
-                </div>
-
-                <div
-                  style={{
-                    fontWeight: 900,
-                    fontSize: '15px',
-                    width: '100%',
-                  }}
-                >
-                  {formatCurrency(troco)}
-                </div>
+              <div style={{ display: 'block', width: '100%', padding: '3px 0' }}>
+                <div style={{ fontWeight: 700, marginBottom: '1px' }}>Troco:</div>
+                <div style={{ fontWeight: 900, fontSize: '15px', width: '100%' }}>{formatCurrency(troco)}</div>
               </div>
             </>
           )}
@@ -394,31 +199,11 @@ export function CupomFiscal({
         <hr style={linha} />
 
         {/* MENSAGEM */}
-        <div
-          style={{
-            textAlign: 'center',
-            width: '100%',
-          }}
-        >
-          <p
-            className="agradecimento"
-            style={{
-              margin: '5px 0 3px',
-              fontSize: '14px',
-              fontWeight: 700,
-            }}
-          >
+        <div style={{ textAlign: 'center', width: '100%' }}>
+          <p className="agradecimento" style={{ margin: '5px 0 3px', fontSize: '14px', fontWeight: 700 }}>
             Obrigado pela preferência!
           </p>
-
-          <p
-            className="volte-sempre"
-            style={{
-              margin: '3px 0',
-              fontSize: '17px',
-              fontWeight: 900,
-            }}
-          >
+          <p className="volte-sempre" style={{ margin: '3px 0', fontSize: '17px', fontWeight: 900 }}>
             VOLTE SEMPRE
           </p>
         </div>
@@ -426,4 +211,3 @@ export function CupomFiscal({
     </div>
   );
 }
-

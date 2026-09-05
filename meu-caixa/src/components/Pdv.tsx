@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { CheckCircle, Trash2, Plus, DollarSign, CreditCard, BookOpen, Loader2, ArrowRightLeft } from 'lucide-react';
+import { CheckCircle, Trash2, Plus, DollarSign, CreditCard, BookOpen, Loader2, ArrowRightLeft, Percent } from 'lucide-react';
 import { CupomFiscal } from './CupomFiscal';
 import api from '../api';
 import './Pdv.css';
@@ -21,6 +21,8 @@ export function Pdv() {
   const [preco, setPreco] = useState('');
   const [qtd, setQtd] = useState('1');
   
+  // Estados de Desconto e Pagamento
+  const [desconto, setDesconto] = useState('');
   const [formaPagamento, setFormaPagamento] = useState<FormaPagamento>('Dinheiro');
   const [valorRecebido, setValorRecebido] = useState('');
   const [loading, setLoading] = useState(false);
@@ -33,7 +35,11 @@ export function Pdv() {
 
   const precoInputRef = useRef<HTMLInputElement>(null);
 
-  const totalVenda = itensCaixa.reduce((acc, item) => acc + (item.qtd * item.preco), 0);
+  // Cálculos Financeiros
+  const subtotal = itensCaixa.reduce((acc, item) => acc + (item.qtd * item.preco), 0);
+  const descontoNum = parseFloat(desconto.replace(',', '.')) || 0;
+  const totalVenda = Math.max(subtotal - descontoNum, 0);
+  
   const valorRecebidoNum = parseFloat(valorRecebido.replace(',', '.')) || 0;
   const troco = formaPagamento === 'Dinheiro' && valorRecebidoNum > totalVenda 
     ? valorRecebidoNum - totalVenda 
@@ -99,14 +105,11 @@ export function Pdv() {
     if (formaPagamento === 'Crediário') {
       setShowCrediarioModal(true);
     } else {
-      // Como a função de baixo agora tem 'await' e abre popup, precisamos chamar adequadamente
       await processarVenda(null);
     }
   };
 
   const processarVenda = async (fichaCrediario: Ficha | null) => {
-    // === O SEGREDO ESTÁ NESTE AWAIT ===
-    // Ele diz ao React para pausar esta função e esperar o usuário clicar em Confirmar/Cancelar no Modal.
     if (!await window.confirm('Tem certeza que deseja confirmar esta venda?')) {
       return;
     }
@@ -116,6 +119,8 @@ export function Pdv() {
 
     const isCrediario = formaPagamento === 'Crediário';
 
+    // Se o backend tiver os campos de subtotal e desconto, você pode adicioná-los aqui futuramente.
+    // Atualmente ele salva o "total" como o valor final cobrado do cliente.
     const payloadVenda = {
       itens: itensCaixa,
       total: totalVenda,
@@ -137,7 +142,7 @@ export function Pdv() {
           idVenda: responseVenda.data?.id || Date.now(),
           data: dataLocal.toISOString(),
           resumoItens: resumoItens,
-          valor: totalVenda
+          valor: totalVenda // O total salvo no crediário já é com o desconto aplicado
         };
 
         await api.patch(`/fichas/${fichaCrediario.id}`, {
@@ -154,16 +159,15 @@ export function Pdv() {
         alert(`Venda finalizada com sucesso! (${formaPagamento})`);
         setItensCaixa([]);
         setValorRecebido('');
+        setDesconto('');
         setFormaPagamento('Dinheiro');
       }
     } catch (error: any) {
       console.error('Erro ao salvar a venda:', error);
       
       if (error.response) {
-        console.error('Dados do erro do servidor:', error.response.data);
         alert(`Erro do Servidor: ${error.response.data.message || 'Verifique o console.'}`);
       } else if (error.request) {
-        console.error('Sem resposta do servidor.');
         alert('Erro de rede: O servidor não respondeu. A API está rodando corretamente?');
       } else {
         alert('Ocorreu um erro ao montar a requisição.');
@@ -184,7 +188,6 @@ export function Pdv() {
 
     const formatado = formatCurrency(valorNum);
     
-    // === AQUI TAMBÉM PRECISOU DO AWAIT ===
     if (!await window.confirm(`Deseja realmente enviar ${formatado} para o cofre?`)) {
       return;
     }
@@ -225,6 +228,8 @@ export function Pdv() {
     <div className="pdv-container">
       <CupomFiscal 
         itens={itensCaixa} 
+        subtotal={subtotal}
+        desconto={descontoNum}
         total={totalVenda} 
         formaPagamento={formaPagamento}
         valorRecebido={formaPagamento === 'Crediário' ? 0 : valorRecebidoNum}
@@ -306,6 +311,27 @@ export function Pdv() {
 
         <div className="pdv-right-panel">
           <div className="summary-card">
+            
+            <div className="subtotal-display">
+              <span>Subtotal</span>
+              <span>{formatCurrency(subtotal)}</span>
+            </div>
+
+            <div className="discount-section">
+              <div className="discount-label">
+                <Percent size={18} /> Desconto (R$)
+              </div>
+              <input 
+                type="number" 
+                step="0.01" 
+                min="0"
+                placeholder="0,00"
+                value={desconto}
+                onChange={(e) => setDesconto(e.target.value)}
+                disabled={loading || itensCaixa.length === 0}
+              />
+            </div>
+
             <h2>Total da Venda</h2>
             <div className="total-display">{formatCurrency(totalVenda)}</div>
 
